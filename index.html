@@ -106,32 +106,69 @@
       box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(225, 29, 72, 0.15);
     }
 
-    /* Premium Poker Felt / Table Surface */
+    /* Premium Luxury Casino Felt / Table Arena */
     .noir-table {
-      background: radial-gradient(ellipse at 50% 45%, #14151e 0%, #0c0d12 75%, #07070a 100%);
-      border: 1.5px solid rgba(255, 255, 255, 0.09);
-      box-shadow: inset 0 0 80px rgba(0, 0, 0, 0.9), 0 24px 60px -12px rgba(0, 0, 0, 0.85);
+      background: radial-gradient(ellipse at 50% 38%, #1c1e2b 0%, #12131b 55%, #08090d 100%);
+      border: 2px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 
+        inset 0 0 0 1px rgba(255, 255, 255, 0.06),
+        inset 0 0 120px rgba(0, 0, 0, 0.94),
+        0 28px 70px -12px rgba(0, 0, 0, 0.95);
       perspective: 1100px;
       position: relative;
     }
     .noir-table::before {
       content: "";
       position: absolute;
-      inset: 12px;
-      border: 1px dashed rgba(255, 255, 255, 0.05);
+      inset: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.04);
       border-radius: inherit;
       pointer-events: none;
+      box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.6);
+    }
+    .noir-table::after {
+      content: "";
+      position: absolute;
+      inset: 22px;
+      border: 1px dashed rgba(225, 29, 72, 0.08);
+      border-radius: inherit;
+      pointer-events: none;
+    }
+
+    /* Community Card Slot Footprints */
+    .community-card-slot {
+      width: 58px;
+      height: 84px;
+      border-radius: 9px;
+      border: 1.5px dashed rgba(255, 255, 255, 0.12);
+      background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.03) 0%, rgba(0, 0, 0, 0.28) 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      color: rgba(255, 255, 255, 0.35);
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.45);
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+    @media (min-width: 640px) {
+      .community-card-slot {
+        width: 70px;
+        height: 100px;
+        border-radius: 11px;
+      }
     }
 
     /* Realistic Luxury Playing Cards */
     .playing-card {
       width: 58px;
-      height: 82px;
-      border-radius: 8px;
-      background-color: #ffffff;
-      border: 1px solid #d4d4d8;
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55), 0 1px 3px rgba(0, 0, 0, 0.3);
-      transition: transform 0.26s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.26s ease, border-color 0.2s ease;
+      height: 84px;
+      border-radius: 9px;
+      background: linear-gradient(145deg, #ffffff 0%, #fbfbfc 100%);
+      border: 1px solid rgba(0, 0, 0, 0.12);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.55), 0 1px 3px rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgba(255, 255, 255, 0.85);
+      transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.24s ease, border-color 0.2s ease;
       position: relative;
       display: flex;
       flex-direction: column;
@@ -142,22 +179,26 @@
       transform-style: preserve-3d;
       will-change: transform, opacity;
       transform: rotateZ(var(--rest-rot, 0deg));
+      user-select: none;
     }
     @media (min-width: 640px) {
       .playing-card {
-        width: 68px;
-        height: 96px;
+        width: 70px;
+        height: 100px;
         padding: 6px 7px;
-        border-radius: 10px;
+        border-radius: 11px;
       }
+    }
+    .playing-card:hover {
+      box-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.75), 0 2px 6px rgba(0, 0, 0, 0.45);
     }
     .playing-card.is-animating {
       transition: none !important;
       pointer-events: none;
     }
     .playing-card.card-sm {
-      width: 26px;
-      height: 38px;
+      width: 28px;
+      height: 40px;
       padding: 2px 3px;
       border-radius: 5px;
       font-size: 0.6rem;
@@ -173,23 +214,55 @@
       }
     }
     .playing-card.selected {
-      transform: translate3d(0, -16px, 14px) scale(1.05) rotateZ(0deg) !important;
+      transform: translate3d(0, -18px, 16px) scale(1.05) rotateZ(0deg) !important;
       background-color: #ffffff;
       border-color: #e11d48;
-      box-shadow: 0 18px 32px -4px rgba(225, 29, 72, 0.45), 0 0 0 2px #e11d48;
+      box-shadow: 0 20px 36px -4px rgba(225, 29, 72, 0.45), 0 0 0 2px #e11d48;
       z-index: 25;
     }
     .playing-card.card-back {
-      background: radial-gradient(circle at 50% 50%, #1e1f2b 0%, #101117 100%);
+      background: #090a10;
       border: 1px solid rgba(255, 255, 255, 0.18);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65);
+      position: relative;
+      overflow: hidden;
     }
-    .playing-card.card-back::after {
+    .playing-card.card-back::before {
       content: "";
       position: absolute;
       inset: 3px;
-      border: 1px solid rgba(225, 29, 72, 0.4);
-      border-radius: 6px;
-      background: repeating-linear-gradient(45deg, rgba(225, 29, 72, 0.04), rgba(225, 29, 72, 0.04) 3px, transparent 3px, transparent 6px);
+      border-radius: inherit;
+      background: 
+        radial-gradient(circle at 50% 50%, #171826 0%, #08090f 100%),
+        repeating-conic-gradient(from 45deg, rgba(225, 29, 72, 0.08) 0deg 90deg, rgba(14, 16, 26, 0.45) 90deg 180deg) 0 0/10px 10px;
+      border: 1px solid rgba(225, 29, 72, 0.45);
+    }
+    .playing-card.card-back::after {
+      content: "N";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 24px;
+      height: 24px;
+      border-radius: 5px;
+      border: 1px solid rgba(225, 29, 72, 0.65);
+      background: radial-gradient(circle, #200810 0%, #090a10 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 900;
+      color: #fb7185;
+      text-shadow: 0 0 8px rgba(225, 29, 72, 0.7);
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.85), inset 0 0 4px rgba(225, 29, 72, 0.35);
+      z-index: 2;
+    }
+    .playing-card.card-sm.card-back::after {
+      width: 14px;
+      height: 14px;
+      font-size: 7px;
     }
 
     /* 3D Card Deck Shoe Origin */
@@ -873,6 +946,10 @@
 
           <!-- Blackjack Dealer Station (Centered when mode is Blackjack) -->
           <div id="centerBlackjack" class="hidden flex flex-col items-center justify-center pt-2">
+            <div class="bj-felt-marking text-center select-none pointer-events-none mb-2.5">
+              <div class="text-[10px] sm:text-xs font-bold tracking-[0.25em] text-rose-300/40 uppercase font-serif">BLACKJACK PAYS 3 TO 2</div>
+              <div class="text-[8px] sm:text-[9px] tracking-widest text-zinc-500/50 uppercase font-mono mt-0.5">Dealer Must Stand on 17 &bull; Insurance Pays 2 to 1</div>
+            </div>
             <div class="flex items-center gap-2 mb-2">
               <span class="text-xs font-bold text-zinc-400 uppercase tracking-widest font-mono">DEALER</span>
               <span id="bjDealerScoreBadge" class="px-2.5 py-0.5 rounded-full bg-white/10 text-white font-mono text-xs font-bold border border-white/10">?</span>
@@ -896,12 +973,16 @@
           <!-- Hold'em Center Felt: Pot + 5 Community Slots -->
           <div id="centerHoldem" class="hidden flex flex-col items-center w-full space-y-3">
             <div class="flex items-center gap-2.5">
-              <div id="holdemPotPill" class="px-4 py-1 rounded-full bg-rose-600/20 border border-rose-500/40 text-xs sm:text-sm font-mono font-bold text-white shadow-lg flex items-center gap-1.5 transition-transform duration-200">
-                <span class="noir-chip-mini"></span>
-                <span>POT $<span id="holdemPotAmount">0</span></span>
+              <div id="holdemPotPill" class="px-4 py-1.5 rounded-full bg-gradient-to-r from-rose-950/80 via-rose-900/40 to-charcoal-900 border border-rose-500/40 text-xs sm:text-sm font-mono font-bold text-white shadow-xl shadow-rose-950/50 flex items-center gap-2 transition-transform duration-200">
+                <span class="flex items-center -space-x-1.5">
+                  <span class="w-3.5 h-3.5 rounded-full bg-rose-500 border border-rose-200 ring-1 ring-black/40 shadow-sm"></span>
+                  <span class="w-3.5 h-3.5 rounded-full bg-amber-400 border border-amber-100 ring-1 ring-black/40 shadow-sm"></span>
+                  <span class="w-3.5 h-3.5 rounded-full bg-blue-500 border border-blue-200 ring-1 ring-black/40 shadow-sm"></span>
+                </span>
+                <span class="tracking-wide">POT $<span id="holdemPotAmount" class="text-rose-300">0</span></span>
               </div>
               <span id="holdemStreetBadge" class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-white/10 text-zinc-300 font-bold tracking-wider">PRE-FLOP</span>
-              <div id="holdemCallPill" class="px-3 py-1 rounded-full bg-charcoal-900 border border-white/10 text-xs text-zinc-400">
+              <div id="holdemCallPill" class="px-3 py-1 rounded-full bg-charcoal-900/90 border border-white/10 text-xs text-zinc-400 shadow-md">
                 To Call: <span id="holdemCurrentBet" class="text-white font-mono font-bold">$0</span>
               </div>
             </div>
@@ -919,7 +1000,7 @@
               </div>
             </div>
 
-            <div id="bluffCenterPileVisual" class="flex flex-col items-center justify-center min-h-[96px] px-4 py-2 rounded-2xl w-full transition-transform duration-200">
+            <div id="bluffCenterPileVisual" class="flex flex-col items-center justify-center min-h-[96px] px-4 py-2 rounded-2xl w-full border border-dashed border-rose-500/20 bg-black/10 transition-transform duration-200">
               <div id="bluffPileStackCards" class="flex items-center justify-center gap-2 mb-1.5"></div>
               <div id="bluffLastClaimText" class="text-xs font-medium text-zinc-400">Select cards below to play</div>
             </div>
@@ -1425,6 +1506,12 @@
       return deck;
     }
 
+    const ROYAL_FACE_ART = {
+      K: '<svg class="w-6 h-6 sm:w-7 sm:h-7 mx-auto fill-current opacity-85" viewBox="0 0 24 24"><path d="M5 16L3 5L8.5 10L12 4L15.5 10L21 5L19 16H5M5 18H19C19.55 18 20 18.45 20 19C20 19.55 19.55 20 19 20H5C4.45 20 4 19.55 4 19C4 18.45 4.45 18 5 18Z"/></svg>',
+      Q: '<svg class="w-6 h-6 sm:w-7 sm:h-7 mx-auto fill-current opacity-85" viewBox="0 0 24 24"><path d="M12 3L14.5 8.5L20 8L17 13L21 17H3L7 13L4 8L9.5 8.5L12 3M6 19H18V21H6V19Z"/></svg>',
+      J: '<svg class="w-6 h-6 sm:w-7 sm:h-7 mx-auto fill-current opacity-85" viewBox="0 0 24 24"><path d="M12 2C8.5 2 6 5 6 9V12C6 13.5 7 14.5 8 15V17L12 21L16 17V15C17 14.5 18 13.5 18 12V9C18 5 15.5 2 12 2M10 8H14V10H10V8M9 11H15V13H9V11Z"/></svg>'
+    };
+
     function renderCardHTML(card, opts = {}) {
       const isFaceDown = !card || Boolean(opts.faceDown);
       const animKey = opts.animKey || (card && card.uid) || '';
@@ -1445,24 +1532,50 @@
       const clickAttr = opts.selectable ? `data-card-uid="${card.uid}"` : '';
       const svgIcon = SUIT_SVG[card.suit] || '';
       const miniSvg = SUIT_SVG_MINI[card.suit] || '';
+
       if (opts.small) {
         return `
           <div class="playing-card card-sm ${card.color}" ${styleAttr} ${dataAttrs}>
-            <div class="font-bold text-[9px] sm:text-[10px] leading-none">${card.rank}</div>
+            <div class="font-black text-[9px] sm:text-[10px] leading-none text-left">${card.rank}</div>
             <div class="text-center my-auto flex items-center justify-center">${miniSvg}</div>
           </div>
         `;
       }
+
+      let centerArtHTML = '';
+      if (card.rank === 'A') {
+        centerArtHTML = `
+          <div class="relative flex items-center justify-center pointer-events-none">
+            <div class="absolute inset-0 -m-1.5 rounded-full border border-current opacity-20 scale-125"></div>
+            <div class="scale-125 sm:scale-150 transform transition-transform">${svgIcon}</div>
+          </div>
+        `;
+      } else if (ROYAL_FACE_ART[card.rank]) {
+        centerArtHTML = `
+          <div class="relative flex items-center justify-center flex-col pointer-events-none">
+            ${ROYAL_FACE_ART[card.rank]}
+            <span class="text-[8px] font-bold font-mono uppercase tracking-widest opacity-60 mt-0.5">${card.rank === 'K' ? 'KING' : card.rank === 'Q' ? 'QUEEN' : 'JACK'}</span>
+          </div>
+        `;
+      } else {
+        centerArtHTML = `<div class="text-center my-auto flex items-center justify-center transform scale-110 sm:scale-125">${svgIcon}</div>`;
+      }
+
       return `
         <div class="playing-card ${selClass} ${card.color}" ${styleAttr} ${dataAttrs} ${clickAttr}>
-          <div class="font-extrabold text-xs sm:text-sm leading-none flex items-center justify-between">
-            <span>${card.rank}</span>
-            ${miniSvg}
+          <!-- Top-Left Corner Index -->
+          <div class="flex flex-col items-center self-start leading-none pointer-events-none">
+            <span class="font-black text-xs sm:text-sm tracking-tight">${card.rank}</span>
+            <span class="mt-0.5">${miniSvg}</span>
           </div>
-          <div class="text-center my-auto flex items-center justify-center">${svgIcon}</div>
-          <div class="font-extrabold text-[11px] sm:text-xs leading-none flex items-center justify-between rotate-180">
-            <span>${card.rank}</span>
-            ${miniSvg}
+          <!-- Center Art (Ace / Royal Court / Number Pip) -->
+          <div class="text-center my-auto flex items-center justify-center pointer-events-none relative">
+            ${centerArtHTML}
+          </div>
+          <!-- Bottom-Right Inverted Corner Index -->
+          <div class="flex flex-col items-center self-end leading-none rotate-180 pointer-events-none">
+            <span class="font-black text-xs sm:text-sm tracking-tight">${card.rank}</span>
+            <span class="mt-0.5">${miniSvg}</span>
           </div>
         </div>
       `;
@@ -3906,16 +4019,27 @@
 
     function renderBlackjackView(me) {
       const dealerBox = document.getElementById('bjDealerCards');
-      dealerBox.innerHTML = state.bj.dealerCards
-        .map((c, idx) =>
-          renderCardHTML(c, {
-            faceDown: idx === 1 && state.bj.dealerHoleHidden,
-            animKey: c.uid,
-            zone: 'bj_dealer',
-            orderHint: idx === 0 ? 1 : idx === 1 ? 8 : 10 + idx
-          })
-        )
-        .join('');
+      if (state.bj.dealerCards.length === 0) {
+        dealerBox.innerHTML = `
+          <div class="community-card-slot shrink-0 opacity-40">
+            <span class="text-[9px] font-mono font-bold tracking-widest text-zinc-500">HOLE</span>
+          </div>
+          <div class="community-card-slot shrink-0 opacity-40">
+            <span class="text-[9px] font-mono font-bold tracking-widest text-zinc-500">UP</span>
+          </div>
+        `;
+      } else {
+        dealerBox.innerHTML = state.bj.dealerCards
+          .map((c, idx) =>
+            renderCardHTML(c, {
+              faceDown: idx === 1 && state.bj.dealerHoleHidden,
+              animKey: c.uid,
+              zone: 'bj_dealer',
+              orderHint: idx === 0 ? 1 : idx === 1 ? 8 : 10 + idx
+            })
+          )
+          .join('');
+      }
 
       const dScoreEl = document.getElementById('bjDealerScoreBadge');
       if (state.bj.dealerCards.length === 0) {
@@ -3975,6 +4099,7 @@
 
       const commBox = document.getElementById('holdemCommunityCards');
       let commHTML = '';
+      const slotLabels = ['FLOP', 'FLOP', 'FLOP', 'TURN', 'RIVER'];
       for (let i = 0; i < 5; i++) {
         const c = state.holdem.community[i];
         if (c) {
@@ -3984,7 +4109,11 @@
             orderHint: i
           });
         } else {
-          commHTML += `<div class="w-[58px] h-[82px] sm:w-[68px] sm:h-[96px] rounded-lg sm:rounded-xl border border-white/10 bg-white/[0.02] shrink-0"></div>`;
+          commHTML += `
+            <div class="community-card-slot shrink-0">
+              <span class="text-[9px] sm:text-[10px] font-mono font-bold tracking-wider text-zinc-500/70">${slotLabels[i]}</span>
+            </div>
+          `;
         }
       }
       commBox.innerHTML = commHTML;
@@ -4069,7 +4198,11 @@
         document.getElementById('bluffLastClaimText').textContent =
           `${lp.playerName} played ${lp.count}x ${lp.claimedRank}`;
       } else {
-        stackEl.innerHTML = `<div class="w-[58px] h-[82px] rounded-lg border border-dashed border-white/20 flex items-center justify-center text-xs text-zinc-500 font-mono">PILE</div>`;
+        stackEl.innerHTML = `
+          <div class="community-card-slot shrink-0">
+            <span class="text-[9px] font-mono font-bold tracking-widest text-zinc-500">BLUFF PILE</span>
+          </div>
+        `;
         document.getElementById('bluffLastClaimText').textContent =
           'Pick a rank and play 1–4 cards';
       }
