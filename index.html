@@ -942,6 +942,10 @@
             </div>
             <h2 class="text-2xl sm:text-3xl font-extrabold text-white">Multiplayer Waiting Room</h2>
             <p class="text-xs sm:text-sm text-zinc-400 mt-0.5">Share the room code or invite link with friends to join.</p>
+            <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-zinc-900 border border-zinc-800 text-[10px] font-mono text-zinc-400 mt-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+              <span>Dealer is 100% Automated • All Participants Join as Players</span>
+            </div>
           </div>
 
           <!-- Big Room Code Banner -->
@@ -1046,11 +1050,11 @@
           <div id="centerBlackjack" class="hidden flex flex-col items-center justify-center pt-2">
             <div class="bj-felt-marking text-center select-none pointer-events-none mb-2.5">
               <div class="text-[10px] sm:text-xs font-bold tracking-[0.25em] text-rose-300/40 uppercase font-serif">BLACKJACK PAYS 3 TO 2</div>
-              <div class="text-[8px] sm:text-[9px] tracking-widest text-zinc-500/50 uppercase font-mono mt-0.5">Dealer Must Stand on 17 &bull; Insurance Pays 2 to 1</div>
+              <div class="text-[8px] sm:text-[9px] tracking-widest text-zinc-500/50 uppercase font-mono mt-0.5">Dealer Must Stand on 17 &bull; Insurance Pays 2 to 1 &bull; Automated Shoe</div>
             </div>
             <div class="flex items-center gap-2 mb-2">
-              <span class="text-xs font-bold text-zinc-400 uppercase tracking-widest font-mono">DEALER</span>
-              <span id="bjDealerScoreBadge" class="px-2.5 py-0.5 rounded-full bg-white/10 text-white font-mono text-xs font-bold border border-white/10">?</span>
+              <span class="text-xs font-bold text-zinc-400 uppercase tracking-widest font-mono">AUTOMATED HOUSE DEALER</span>
+              <span id="bjDealerScoreBadge" class="px-2.5 py-0.5 rounded-lg bg-zinc-900 text-white font-mono text-xs font-bold border border-zinc-700">?</span>
             </div>
             <div id="bjDealerCards" class="flex items-center justify-center gap-2 min-h-[86px]"></div>
           </div>
@@ -1117,7 +1121,7 @@
               <div class="flex items-center gap-1.5">
                 <span id="activePlayerName" class="text-xs sm:text-sm font-bold text-white">Alex</span>
                 <span class="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-rose-600/20 text-rose-300 border border-rose-500/30">You</span>
-                <span id="activePlayerRoleBadge" class="hidden text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-white/15 text-white font-mono">D</span>
+                <span id="activePlayerRoleBadge" class="hidden text-[10px] font-bold px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-zinc-700 font-mono">BTN</span>
               </div>
               <div class="flex items-center gap-2">
                 <div id="activeHandEvalBadge" class="text-[11px] font-medium text-zinc-400">Ready</div>
@@ -1178,7 +1182,7 @@
               </div>
             </div>
             <button id="btnBjDeal" type="button" class="w-full py-3.5 rounded-xl bg-white hover:bg-zinc-200 text-zinc-950 font-bold text-xs uppercase tracking-wider transition">
-              Deal Hand
+              Place Bet &amp; Deal Hand
             </button>
           </div>
 
@@ -1413,6 +1417,15 @@
       </div>
 
       <div class="space-y-4 text-xs text-zinc-300 leading-relaxed">
+        <div class="p-3.5 rounded-xl bg-zinc-900 border border-zinc-800 space-y-1">
+          <div class="font-bold text-white text-xs flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            <span>Automated Casino Dealer</span>
+          </div>
+          <p class="text-[11px] text-zinc-400 leading-normal">
+            The dealer in NOIR is completely automated by the platform engine. No player ever acts as or joins as the dealer. In Texas Hold'em, the <span class="text-zinc-200 font-mono font-bold">BTN</span> badge indicates betting order rotation (Dealer Button), while cards are dealt automatically.
+          </p>
+        </div>
         <div class="p-4 rounded-2xl bg-charcoal-900 border border-white/5 space-y-1.5">
           <div class="font-bold text-white text-sm flex items-center justify-between">
             <span>Blackjack (21)</span>
@@ -2555,6 +2568,33 @@
           if (data && data.player && data.player.name) {
             pulseMultiplayerSyncDot();
             showToast(`${data.player.name} joined room`);
+            if (isHostUser() && !data.isSpectator) {
+              const p = data.player;
+              const existingIdx = state.players.findIndex(pl => pl.id === p.id);
+              if (existingIdx !== -1) {
+                state.players[existingIdx].name = p.name || state.players[existingIdx].name;
+                state.players[existingIdx].avatar = p.avatar || state.players[existingIdx].avatar;
+                state.players[existingIdx].isDisconnected = false;
+              } else if (state.players.length < (state.maxSeats || 6)) {
+                state.players.push({
+                  id: p.id,
+                  name: p.name,
+                  avatar: p.avatar || '02',
+                  chips: p.chips || (state.players[0] && state.players[0].chips) || 2500,
+                  isHost: false,
+                  isBot: false,
+                  cards: [],
+                  bjBet: 100,
+                  bjStatus: '',
+                  pokerBet: 0,
+                  pokerFolded: false,
+                  pokerRole: '',
+                  justJoined: true
+                });
+              }
+              broadcastRoomState();
+              renderAll();
+            }
           }
         });
 
@@ -2563,8 +2603,27 @@
           showToast('Player reconnected to room');
         });
 
-        socket.on('player_disconnected', () => {
+        socket.on('player_disconnected', (data) => {
           pulseMultiplayerSyncDot();
+          if (data && data.playerId) {
+            const pIdx = state.players.findIndex(p => p.id === data.playerId);
+            if (pIdx !== -1) {
+              const plName = state.players[pIdx].name;
+              showToast(`${plName} disconnected`);
+              if (state.inWaitingRoom && isHostUser()) {
+                state.players.splice(pIdx, 1);
+                broadcastRoomState();
+                renderAll();
+                return;
+              } else {
+                state.players[pIdx].isDisconnected = true;
+              }
+            }
+            if (isHostUser()) {
+              broadcastRoomState();
+              renderAll();
+            }
+          }
         });
       } catch (err) {
         console.warn('[NOIR Socket] Socket init error:', err);
@@ -2631,7 +2690,7 @@
     }
 
     function createPrivateRoom(startChips, maxSeats, selectedGame, autoAddBots = false) {
-      const hostName = (document.getElementById('inputPlayerName').value || 'Alex').trim();
+      const hostName = (document.getElementById('inputPlayerName')?.value || 'Alex').trim();
       const myId = getStoredMyId();
       state.roomCode = generateRoomCode();
       state.gameMode = selectedGame || 'blackjack';
@@ -2670,7 +2729,6 @@
       }
 
       resetAnimationTracking(false);
-      broadcastRoomState();
 
       if (socket && isSocketConnected) {
         socket.emit('create_room', {
@@ -2679,6 +2737,7 @@
         });
       }
 
+      broadcastRoomState();
       renderAll();
       showToast(`Private Room ${state.roomCode} created!`);
     }
@@ -3325,7 +3384,7 @@
         p.cards = [state.holdem.deck.pop(), state.holdem.deck.pop()];
         p.pokerBet = 0;
         p.pokerFolded = false;
-        p.pokerRole = i === state.holdem.dealerIdx ? 'D' : i === sbIdx ? 'SB' : i === bbIdx ? 'BB' : '';
+        p.pokerRole = i === state.holdem.dealerIdx ? 'BTN' : i === sbIdx ? 'SB' : i === bbIdx ? 'BB' : '';
       }
 
       const sbAmt = Math.min(state.holdem.smallBlind, state.players[sbIdx].chips);
@@ -4147,7 +4206,7 @@
 
           const initials = getPlayerInitials(p.name);
           const rolePill = state.gameMode === 'holdem' && p.pokerRole
-            ? `<span class="text-[9px] font-bold px-1 rounded bg-white/10 text-zinc-300 font-mono">${p.pokerRole}</span>`
+            ? `<span class="text-[9px] font-bold px-1 rounded bg-zinc-800 text-zinc-300 border border-zinc-700 font-mono" title="${p.pokerRole === 'BTN' ? 'Button Position (Dealer is Automated)' : p.pokerRole}">${p.pokerRole}</span>`
             : '';
           const timerBarHTML = isTurn
             ? `<div class="absolute top-0 left-0 right-0 h-1 bg-white/5 overflow-hidden rounded-t-2xl"><div class="turn-timer-bar w-full" style="--turn-ms:2800ms;"></div></div>`
@@ -4295,6 +4354,7 @@
       const roleBadge = document.getElementById('activePlayerRoleBadge');
       if (me.pokerRole) {
         roleBadge.textContent = me.pokerRole;
+        roleBadge.title = me.pokerRole === 'BTN' ? 'Button Position (Dealer is Automated)' : me.pokerRole;
         roleBadge.classList.remove('hidden');
       } else {
         roleBadge.classList.add('hidden');

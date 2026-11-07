@@ -253,6 +253,35 @@ io.on('connection', (socket) => {
       socket.data.playerId = player ? player.id : null;
       socket.data.isSpectator = Boolean(asSpectator);
 
+      // Register player in server authoritative state
+      if (!asSpectator && player && roomEntry.state && Array.isArray(roomEntry.state.players)) {
+        const existingIdx = roomEntry.state.players.findIndex(p => p.id === player.id);
+        if (existingIdx !== -1) {
+          roomEntry.state.players[existingIdx].name = player.name || roomEntry.state.players[existingIdx].name;
+          roomEntry.state.players[existingIdx].avatar = player.avatar || roomEntry.state.players[existingIdx].avatar;
+          roomEntry.state.players[existingIdx].isDisconnected = false;
+          if (Array.isArray(player.cards) && player.cards.length > 0) {
+            roomEntry.state.players[existingIdx].cards = player.cards;
+          }
+        } else if (roomEntry.state.players.length < (roomEntry.state.maxSeats || 6)) {
+          roomEntry.state.players.push({
+            id: player.id,
+            name: player.name || ('Player ' + (roomEntry.state.players.length + 1)),
+            avatar: player.avatar || '02',
+            chips: player.chips || (roomEntry.state.players[0] && roomEntry.state.players[0].chips) || 2500,
+            isHost: false,
+            isBot: false,
+            cards: Array.isArray(player.cards) ? player.cards : [],
+            bjBet: 100,
+            bjStatus: '',
+            pokerBet: 0,
+            pokerFolded: false,
+            pokerRole: ''
+          });
+        }
+        roomEntry.updatedAt = Date.now();
+      }
+
       // If joining as spectator, register in spectators list
       if (asSpectator && roomEntry.state) {
         roomEntry.state.spectators = roomEntry.state.spectators || [];
@@ -435,13 +464,20 @@ io.on('connection', (socket) => {
   // 8. Leave Room
   socket.on('leave_room', (data) => {
     const code = (data && data.roomCode) || socket.data.roomCode;
+    const playerId = (data && data.playerId) || socket.data.playerId;
     if (code) {
       socket.leave(code);
+      const roomEntry = rooms.get(code);
+      if (roomEntry && roomEntry.state && Array.isArray(roomEntry.state.players) && playerId) {
+        roomEntry.state.players = roomEntry.state.players.filter(p => p.id !== playerId);
+        roomEntry.updatedAt = Date.now();
+      }
       socket.to(code).emit('player_disconnected', {
         socketId: socket.id,
-        playerId: socket.data.playerId
+        playerId
       });
-      console.log(`[Player Left] ${socket.id} from Room ${code}`);
+      broadcastMaskedRoomState(code);
+      console.log(`[Player Left] ${socket.id} (${playerId}) from Room ${code}`);
     }
   });
 
