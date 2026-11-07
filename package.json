@@ -8,7 +8,16 @@
     "deploy:vercel": "npx vercel --prod",
     "deploy:netlify": "npx netlify deploy --prod --dir=."
   },
-  "keywords": ["card-game", "blackjack", "poker", "bluff", "multiplayer"],
+  "keywords": [
+    "card-game",
+    "blackjack",
+    "poker",
+    "bluff",
+    "multiplayer"
+  ],
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "socket.io": "^4.8.4"
+  }
 }

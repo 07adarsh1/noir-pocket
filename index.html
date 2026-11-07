@@ -4,6 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>NOIR — Premium Multiplayer Card Lounge</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    if (typeof io === 'undefined') {
+      const s = document.createElement('script');
+      s.src = 'https://cdn.socket.io/4.7.5/socket.io.min.js';
+      document.head.appendChild(s);
+    }
+  </script>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1715,6 +1723,14 @@
       const fxEvent = Object.assign({ id: Date.now() + secureRandomInt(99999) }, fxPayload);
       state.lastFxEvent = fxEvent;
       emitTableFx(fxEvent);
+      if (typeof socket !== 'undefined' && socket && isSocketConnected && state.inRoom) {
+        try {
+          socket.emit('sync_fx', {
+            roomCode: state.roomCode,
+            fx: fxEvent
+          });
+        } catch (e) {}
+      }
     }
 
     // =========================================================================
@@ -1839,15 +1855,123 @@
     }
 
     let roomChannel = null;
+    let socket = null;
+    let isSocketConnected = false;
+
+    function getSanitizedState() {
+      return JSON.parse(JSON.stringify({
+        inRoom: state.inRoom,
+        inWaitingRoom: state.inWaitingRoom,
+        roomCode: state.roomCode,
+        gameMode: state.gameMode,
+        hostId: state.hostId,
+        maxSeats: state.maxSeats,
+        players: state.players,
+        bannerText: state.bannerText,
+        lastFxEvent: state.lastFxEvent,
+        bj: state.bj,
+        holdem: state.holdem,
+        bluff: state.bluff
+      }));
+    }
+
+    function updateSyncIndicator(isOnline) {
+      const dot = document.getElementById('multiplayerSyncDot');
+      if (!dot) return;
+      if (isOnline) {
+        dot.className = 'w-2 h-2 rounded-full bg-emerald-400 live-sync-dot';
+        dot.title = 'Live Socket.IO WebSocket Connected';
+      } else {
+        dot.className = 'w-2 h-2 rounded-full bg-amber-400 live-sync-dot';
+        dot.title = 'Local Peer Sync Active';
+      }
+    }
+
+    function applyRemoteState(incoming) {
+      if (!incoming) return;
+      const myId = getStoredMyId();
+      const myIdx = (incoming.players || []).findIndex(p => p.id === myId);
+      Object.assign(state, incoming);
+      if (myIdx !== -1) {
+        state.activeSeatIndex = myIdx;
+      }
+      pulseMultiplayerSyncDot();
+      renderAll();
+      if (incoming.lastFxEvent) emitTableFx(incoming.lastFxEvent);
+    }
+
+    function initSocket() {
+      if (typeof io === 'undefined') {
+        updateSyncIndicator(false);
+        return;
+      }
+      try {
+        socket = io({
+          transports: ['websocket', 'polling'],
+          reconnection: true,
+          reconnectionAttempts: 15,
+          reconnectionDelay: 1000
+        });
+
+        socket.on('connect', () => {
+          isSocketConnected = true;
+          updateSyncIndicator(true);
+          console.log('[NOIR Socket] Connected to server, ID:', socket.id);
+          // If already in a room, re-join/sync
+          if (state.inRoom && state.roomCode) {
+            const myId = getStoredMyId();
+            const me = state.players[state.activeSeatIndex] || {
+              id: myId,
+              name: (document.getElementById('inputPlayerName')?.value || 'Alex').trim(),
+              avatar: state.selectedAvatar || '01',
+              chips: 2500
+            };
+            if (state.hostId === myId) {
+              socket.emit('create_room', { roomCode: state.roomCode, state: getSanitizedState() });
+            } else {
+              socket.emit('join_room', { roomCode: state.roomCode, player: me });
+            }
+          }
+        });
+
+        socket.on('disconnect', () => {
+          isSocketConnected = false;
+          updateSyncIndicator(false);
+          console.log('[NOIR Socket] Disconnected from server');
+        });
+
+        socket.on('room_sync', (data) => {
+          if (!data || !data.state || data.roomCode !== state.roomCode) return;
+          applyRemoteState(data.state);
+        });
+
+        socket.on('table_fx', (fx) => {
+          if (fx) emitTableFx(fx);
+        });
+
+        socket.on('player_connected', (data) => {
+          if (data && data.player && data.player.name) {
+            pulseMultiplayerSyncDot();
+            showToast(`${data.player.name} joined room`);
+          }
+        });
+
+        socket.on('player_disconnected', () => {
+          pulseMultiplayerSyncDot();
+        });
+      } catch (err) {
+        console.warn('[NOIR Socket] Socket init error:', err);
+        updateSyncIndicator(false);
+      }
+    }
+
+    // Local Tab Broadcast fallback
     try {
       if (typeof BroadcastChannel !== 'undefined') {
         roomChannel = new BroadcastChannel('noir_room_sync');
         roomChannel.onmessage = (ev) => {
           if (ev.data && ev.data.type === 'STATE_SYNC' && ev.data.roomCode === state.roomCode) {
-            Object.assign(state, ev.data.payload);
-            pulseMultiplayerSyncDot();
-            renderAll();
-            if (state.lastFxEvent) emitTableFx(state.lastFxEvent);
+            applyRemoteState(ev.data.payload);
           }
         };
       }
@@ -1855,9 +1979,7 @@
         if (state.inRoom && ev.key === 'noir_room_' + state.roomCode && ev.newValue) {
           try {
             const incoming = JSON.parse(ev.newValue);
-            Object.assign(state, incoming);
-            pulseMultiplayerSyncDot();
-            renderAll();
+            applyRemoteState(incoming);
           } catch (err) {}
         }
       });
@@ -1865,39 +1987,27 @@
 
     function broadcastRoomState() {
       try {
+        const payload = getSanitizedState();
+
+        // 1. Remote WebSocket sync
+        if (socket && isSocketConnected && state.inRoom) {
+          socket.emit('sync_state', {
+            roomCode: state.roomCode,
+            state: payload
+          });
+        }
+
+        // 2. Local tab sync
         if (roomChannel && state.inRoom) {
           roomChannel.postMessage({
             type: 'STATE_SYNC',
             roomCode: state.roomCode,
-            payload: JSON.parse(JSON.stringify({
-              inRoom: state.inRoom,
-              inWaitingRoom: state.inWaitingRoom,
-              roomCode: state.roomCode,
-              gameMode: state.gameMode,
-              hostId: state.hostId,
-              maxSeats: state.maxSeats,
-              players: state.players,
-              bannerText: state.bannerText,
-              lastFxEvent: state.lastFxEvent,
-              bj: state.bj,
-              holdem: state.holdem,
-              bluff: state.bluff
-            }))
+            payload: payload
           });
         }
-        safeSetRoomStore('noir_room_' + state.roomCode, JSON.stringify({
-          inRoom: state.inRoom,
-          inWaitingRoom: state.inWaitingRoom,
-          roomCode: state.roomCode,
-          gameMode: state.gameMode,
-          hostId: state.hostId,
-          maxSeats: state.maxSeats,
-          players: state.players,
-          bannerText: state.bannerText,
-          bj: state.bj,
-          holdem: state.holdem,
-          bluff: state.bluff
-        }));
+
+        // 3. LocalStorage
+        safeSetRoomStore('noir_room_' + state.roomCode, JSON.stringify(payload));
       } catch (e) {}
     }
 
@@ -1944,32 +2054,19 @@
 
       resetAnimationTracking(false);
       broadcastRoomState();
+
+      if (socket && isSocketConnected) {
+        socket.emit('create_room', {
+          roomCode: state.roomCode,
+          state: getSanitizedState()
+        });
+      }
+
       renderAll();
       showToast(`Private Room ${state.roomCode} created!`);
     }
 
-    function joinWithRoomCode(code) {
-      const cleanCode = (code || '').trim().toUpperCase();
-      if (!cleanCode || cleanCode.length < 4) {
-        showToast('Please enter a valid room code');
-        return;
-      }
-
-      const myId = getStoredMyId();
-      const myName = (document.getElementById('inputPlayerName').value || 'Friend').trim();
-      const myAvatar = state.selectedAvatar || '02';
-
-      let roomData = null;
-      try {
-        const raw = safeGetRoomStore('noir_room_' + cleanCode);
-        if (raw) roomData = JSON.parse(raw);
-      } catch (e) {}
-
-      if (!roomData) {
-        showToast(`Room ${cleanCode} not found or expired`);
-        return;
-      }
-
+    function seatPlayerInRoom(roomData, cleanCode, myId, myName, myAvatar) {
       const currentCount = (roomData.players || []).length;
       const maxAllowed = roomData.maxSeats || 6;
       const existingIdx = (roomData.players || []).findIndex(p => p.id === myId || p.name.toLowerCase() === myName.toLowerCase());
@@ -2019,6 +2116,55 @@
       broadcastRoomState();
       renderAll();
       showToast(`Joined Room ${cleanCode}`);
+    }
+
+    function joinWithRoomCode(code) {
+      const cleanCode = (code || '').trim().toUpperCase();
+      if (!cleanCode || cleanCode.length < 4) {
+        showToast('Please enter a valid room code');
+        return;
+      }
+
+      const myId = getStoredMyId();
+      const myName = (document.getElementById('inputPlayerName').value || 'Friend').trim();
+      const myAvatar = state.selectedAvatar || '02';
+
+      function attemptLocalStorageJoin() {
+        let roomData = null;
+        try {
+          const raw = safeGetRoomStore('noir_room_' + cleanCode);
+          if (raw) roomData = JSON.parse(raw);
+        } catch (e) {}
+
+        if (!roomData) {
+          showToast(`Room ${cleanCode} not found or expired`);
+          return;
+        }
+        seatPlayerInRoom(roomData, cleanCode, myId, myName, myAvatar);
+      }
+
+      // Check Socket.IO first if connected
+      if (socket && isSocketConnected) {
+        const tempPlayer = {
+          id: myId,
+          name: myName,
+          avatar: myAvatar,
+          chips: 2500,
+          isHost: false,
+          isBot: false
+        };
+
+        socket.emit('join_room', { roomCode: cleanCode, player: tempPlayer }, (res) => {
+          if (res && res.ok && res.state) {
+            seatPlayerInRoom(res.state, cleanCode, myId, myName, myAvatar);
+          } else {
+            attemptLocalStorageJoin();
+          }
+        });
+        return;
+      }
+
+      attemptLocalStorageJoin();
     }
 
     function addBotToRoom() {
@@ -3586,14 +3732,28 @@
     // 10. EVENT LISTENERS & INITIALIZATION
     // =========================================================================
     window.addEventListener('DOMContentLoaded', () => {
+      // Connect to Live Socket.IO Game Server
+      initSocket();
+
+      function leaveCurrentRoom() {
+        clearTimeout(window.__aiTurnTimer);
+        if (typeof socket !== 'undefined' && socket && isSocketConnected && state.inRoom) {
+          try {
+            socket.emit('leave_room', { roomCode: state.roomCode, playerId: state.myPlayerId });
+          } catch (e) {}
+        }
+        state.inRoom = false;
+        state.inWaitingRoom = false;
+        const drawer = document.getElementById('tableToolsDrawer');
+        if (drawer) drawer.classList.add('hidden');
+        renderAll();
+      }
+
       // Global Nav Logo
       document.getElementById('btnNavLogo').addEventListener('click', () => {
         if (state.inRoom) {
           if (confirm('Leave current table and return to main lobby?')) {
-            clearTimeout(window.__aiTurnTimer);
-            state.inRoom = false;
-            state.inWaitingRoom = false;
-            renderAll();
+            leaveCurrentRoom();
           }
         }
       });
@@ -3716,11 +3876,7 @@
 
       document.getElementById('btnWaitingAddBot').addEventListener('click', addBotToRoom);
       document.getElementById('btnWaitingStartGame').addEventListener('click', hostStartGame);
-      document.getElementById('btnWaitingLeave').addEventListener('click', () => {
-        state.inRoom = false;
-        state.inWaitingRoom = false;
-        renderAll();
-      });
+      document.getElementById('btnWaitingLeave').addEventListener('click', leaveCurrentRoom);
       document.getElementById('btnWaitingGameSwitch').addEventListener('click', () => {
         const modes = ['blackjack', 'holdem', 'bluff'];
         const next = modes[(modes.indexOf(state.gameMode) + 1) % modes.length];
@@ -3764,13 +3920,7 @@
           renderAll();
         }
       });
-      document.getElementById('btnLeaveRoom').addEventListener('click', () => {
-        clearTimeout(window.__aiTurnTimer);
-        state.inRoom = false;
-        state.inWaitingRoom = false;
-        document.getElementById('tableToolsDrawer').classList.add('hidden');
-        renderAll();
-      });
+      document.getElementById('btnLeaveRoom').addEventListener('click', leaveCurrentRoom);
 
       // Quick Reaction Buttons
       document.querySelectorAll('.react-btn').forEach(btn => {
