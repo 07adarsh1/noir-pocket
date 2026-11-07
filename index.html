@@ -2140,11 +2140,30 @@
       if (incoming.lastFxEvent) emitTableFx(incoming.lastFxEvent);
     }
 
+    function isHostUser() {
+      const myId = getStoredMyId();
+      return Boolean(
+        (state.hostId && state.hostId === myId) ||
+        (state.players && state.players[0] && state.players[0].id === myId) ||
+        !state.inRoom
+      );
+    }
+
+    try {
+      Object.defineProperty(state, 'isHost', {
+        get() {
+          return isHostUser();
+        },
+        configurable: true,
+        enumerable: true
+      });
+    } catch (e) {}
+
     // =========================================================================
     // TIER 1: HOST AUTHORITY ACTION DISPATCHER & RELAY
     // =========================================================================
     function dispatchTableAction(action, payload = {}) {
-      if (state.isHost) {
+      if (isHostUser()) {
         executeTableAction(action, payload);
       } else {
         if (socket && isSocketConnected && state.inRoom) {
@@ -2162,6 +2181,9 @@
     function executeTableAction(action, payload = {}) {
       const sIdx = payload.seatIdx !== undefined ? payload.seatIdx : state.activeSeatIndex;
       switch (action) {
+        case 'bj_deal':
+          dealBlackjackRound();
+          break;
         case 'bj_hit':
           state.bj.turnSeat = sIdx;
           bjHit(sIdx);
@@ -2178,6 +2200,9 @@
           state.bj.turnSeat = sIdx;
           bjSplitPair(sIdx);
           break;
+        case 'poker_new_hand':
+          startHoldemHand();
+          break;
         case 'poker_fold':
           state.holdem.turnSeat = sIdx;
           pokerActionFold(sIdx);
@@ -2189,6 +2214,9 @@
         case 'poker_raise':
           state.holdem.turnSeat = sIdx;
           pokerActionRaise(sIdx, payload.amount);
+          break;
+        case 'bluff_new_game':
+          startBluffGame();
           break;
         case 'bluff_play':
           state.bluff.turnSeat = sIdx;
@@ -2394,7 +2422,7 @@
         });
 
         socket.on('player_action', (data) => {
-          if (state.isHost && data && data.action) {
+          if (isHostUser() && data && data.action) {
             executeTableAction(data.action, data.payload);
           }
         });
@@ -2482,7 +2510,7 @@
       return code;
     }
 
-    function createPrivateRoom(startChips, maxSeats, selectedGame) {
+    function createPrivateRoom(startChips, maxSeats, selectedGame, autoAddBots = false) {
       const hostName = (document.getElementById('inputPlayerName').value || 'Alex').trim();
       const myId = getStoredMyId();
       state.roomCode = generateRoomCode();
@@ -2510,6 +2538,16 @@
           pokerRole: ''
         }
       ];
+
+      // Auto-seed required bots for quick play so the room is immediately playable!
+      if (autoAddBots) {
+        if (state.gameMode === 'holdem') {
+          addBotToRoom(false);
+        } else if (state.gameMode === 'bluff') {
+          addBotToRoom(false);
+          addBotToRoom(false);
+        }
+      }
 
       resetAnimationTracking(false);
       broadcastRoomState();
@@ -2664,14 +2702,13 @@
       attemptLocalStorageJoin();
     }
 
-    function addBotToRoom() {
-      const myId = getStoredMyId();
-      if (state.hostId !== myId) {
+    function addBotToRoom(shouldRender = true) {
+      if (!isHostUser()) {
         showToast('Only the room host can add bots');
         return;
       }
       if (state.players.length >= (state.maxSeats || 6)) {
-        showToast(`Room is at max capacity (${state.maxSeats})`);
+        if (shouldRender) showToast(`Room is at max capacity (${state.maxSeats})`);
         return;
       }
 
@@ -2697,14 +2734,15 @@
       };
 
       state.players.push(botPlayer);
-      broadcastRoomState();
-      renderAll();
-      showToast(`Added ${botName} (BOT) to table`);
+      if (shouldRender) {
+        broadcastRoomState();
+        renderAll();
+        showToast(`Added ${botName} (BOT) to table`);
+      }
     }
 
     function removeBotFromRoom(botId) {
-      const myId = getStoredMyId();
-      if (state.hostId !== myId) {
+      if (!isHostUser()) {
         showToast('Only the room host can manage players');
         return;
       }
@@ -2712,25 +2750,23 @@
       if (targetIdx === -1) return;
       const targetName = state.players[targetIdx].name;
       state.players.splice(targetIdx, 1);
-      if (state.activeSeatIndex >= state.players.length) {
-        state.activeSeatIndex = 0;
-      }
+      const myId = getStoredMyId();
+      const myIdx = state.players.findIndex(p => p.id === myId);
+      state.activeSeatIndex = myIdx !== -1 ? myIdx : 0;
       broadcastRoomState();
       renderAll();
       showToast(`Removed ${targetName}`);
     }
 
     function hostStartGame() {
-      const myId = getStoredMyId();
-      if (state.hostId !== myId) {
+      if (!isHostUser()) {
         showToast('Waiting for the host to start the table');
         return;
       }
 
       const minRequired = state.gameMode === 'bluff' ? 3 : state.gameMode === 'holdem' ? 2 : 1;
-      if (state.players.length < minRequired) {
-        showToast(`Need at least ${minRequired} players/bots to start ${state.gameMode.toUpperCase()}`);
-        return;
+      while (state.players.length < minRequired) {
+        addBotToRoom(false);
       }
 
       state.inWaitingRoom = false;
@@ -2777,9 +2813,20 @@
     function switchGameMode(newMode) {
       clearTimeout(window.__aiTurnTimer);
       state.gameMode = newMode;
-      state.activeSeatIndex = 0;
+      const myId = getStoredMyId();
+      const myIdx = state.players.findIndex(p => p.id === myId);
+      if (myIdx !== -1) {
+        state.activeSeatIndex = myIdx;
+      }
       resetAnimationTracking(false);
       document.getElementById('tableToolsDrawer').classList.add('hidden');
+
+      // Auto-ensure minimum required participants for the target mode
+      const minRequired = newMode === 'bluff' ? 3 : newMode === 'holdem' ? 2 : 1;
+      while (state.players.length < minRequired) {
+        addBotToRoom(false);
+      }
+
       if (newMode === 'blackjack') {
         setupBlackjackBetting();
       } else if (newMode === 'holdem') {
@@ -3690,11 +3737,18 @@
       const minRequired = state.gameMode === 'bluff' ? 3 : state.gameMode === 'holdem' ? 2 : 1;
       const reqText = document.getElementById('waitingRequirementText');
       const canStart = count >= minRequired;
-      if (btnStart) btnStart.disabled = !canStart;
+      if (btnStart) {
+        btnStart.disabled = false;
+        if (canStart) {
+          btnStart.innerHTML = '<span>Start Game Now</span>';
+        } else {
+          btnStart.innerHTML = `<span>Add AI Bots &amp; Start ${state.gameMode.toUpperCase()}</span>`;
+        }
+      }
       if (reqText) {
         reqText.textContent = canStart
           ? `Ready to start table! (${count} seated, min ${minRequired} required)`
-          : `Need at least ${minRequired} players/bots to start ${state.gameMode.toUpperCase()} (${count}/${minRequired})`;
+          : `Need at least ${minRequired} players/bots to start ${state.gameMode.toUpperCase()} (${count}/${minRequired}) — clicking Start will auto-fill bots!`;
       }
 
       const rosterList = document.getElementById('waitingRosterList');
@@ -4077,8 +4131,11 @@
       document.getElementById('bjActionPanel').classList.toggle('hidden', isSpec || isBetting);
       document.getElementById('bjCurrentBetInput').textContent = me.bjBet || 100;
 
-      const canSplit = me.cards.length === 2 && me.cards[0].rank === me.cards[1].rank;
-      const canDouble = me.cards.length === 2 && me.chips >= me.bjBet;
+      const isMyTurn = state.bj.phase === 'playing' && state.bj.turnSeat === state.activeSeatIndex;
+      const canSplit = isMyTurn && me.cards.length === 2 && me.cards[0].rank === me.cards[1].rank;
+      const canDouble = isMyTurn && me.cards.length === 2 && me.chips >= me.bjBet;
+      document.getElementById('btnBjHit').disabled = !isMyTurn;
+      document.getElementById('btnBjStand').disabled = !isMyTurn;
       document.getElementById('btnBjSplit').disabled = !canSplit;
       document.getElementById('btnBjDouble').disabled = !canDouble;
     }
@@ -4142,6 +4199,15 @@
         toCall === 0 ? 'Check' : `Call $${Math.min(me.chips, toCall)}`;
 
       const isShowdown = state.holdem.phase === 'showdown';
+      const isMyHoldemTurn = !isShowdown && state.holdem.turnSeat === state.activeSeatIndex && !me.pokerFolded;
+      document.getElementById('btnPokerFold').disabled = !isMyHoldemTurn;
+      document.getElementById('btnPokerCheckCall').disabled = !isMyHoldemTurn;
+      document.getElementById('btnPokerRaise').disabled = !isMyHoldemTurn;
+      document.getElementById('holdemRaiseSlider').disabled = !isMyHoldemTurn;
+      document.querySelectorAll('.poker-preset-btn').forEach(b => {
+        b.disabled = !isMyHoldemTurn;
+      });
+
       document.getElementById('holdemRaiseRow').classList.toggle('hidden', isShowdown);
       document.getElementById('btnPokerNewHand').classList.toggle('hidden', !isShowdown);
 
@@ -4272,11 +4338,15 @@
         });
       });
 
+      const isMyBluffTurn = state.bluff.phase === 'playing' && state.bluff.turnSeat === state.activeSeatIndex;
       const targetRank = state.bluff.declaredRank || state.bluff.chosenRankInput;
-      document.getElementById('btnBluffPlayCards').textContent = `Play ${
+      const btnPlay = document.getElementById('btnBluffPlayCards');
+      btnPlay.textContent = `Play ${
         selectedList.length || 1
       }x ${targetRank}`;
-      document.getElementById('btnBluffChallenge').disabled = !state.bluff.lastPlay;
+      btnPlay.disabled = !isMyBluffTurn;
+      document.getElementById('btnBluffPass').disabled = !isMyBluffTurn || !state.bluff.lastPlay;
+      document.getElementById('btnBluffChallenge').disabled = !isMyBluffTurn || !state.bluff.lastPlay;
       document.getElementById('btnBluffNewGame').classList.toggle('hidden', state.bluff.phase !== 'gameover');
     }
 
@@ -4357,7 +4427,7 @@
       document.querySelectorAll('[data-lobby-quick-game]').forEach(btn => {
         btn.addEventListener('click', () => {
           const game = btn.getAttribute('data-lobby-quick-game');
-          createPrivateRoom(2500, 4, game);
+          createPrivateRoom(2500, 4, game, true);
         });
       });
 
@@ -4549,7 +4619,13 @@
           renderAll();
         }
       });
-      document.getElementById('btnBjDeal').addEventListener('click', dealBlackjackRound);
+      document.getElementById('btnBjDeal').addEventListener('click', () => {
+        if (isHostUser()) {
+          dealBlackjackRound();
+        } else {
+          dispatchTableAction('bj_deal');
+        }
+      });
       document.getElementById('btnBjHit').addEventListener('click', () => {
         dispatchTableAction('bj_hit', { seatIdx: state.activeSeatIndex });
       });
@@ -4591,7 +4667,13 @@
         const val = parseInt(raiseSlider.value, 10) || state.holdem.currentBet + 100;
         dispatchTableAction('poker_raise', { seatIdx: state.activeSeatIndex, amount: val });
       });
-      document.getElementById('btnPokerNewHand').addEventListener('click', startHoldemHand);
+      document.getElementById('btnPokerNewHand').addEventListener('click', () => {
+        if (isHostUser()) {
+          startHoldemHand();
+        } else {
+          dispatchTableAction('poker_new_hand');
+        }
+      });
 
       // 3. BLUFF EVENT LISTENERS
       document.getElementById('btnBluffPlayCards').addEventListener('click', () => {
@@ -4612,7 +4694,13 @@
       document.getElementById('btnBluffChallenge').addEventListener('click', () => {
         dispatchTableAction('bluff_challenge', { seatIdx: state.activeSeatIndex });
       });
-      document.getElementById('btnBluffNewGame').addEventListener('click', startBluffGame);
+      document.getElementById('btnBluffNewGame').addEventListener('click', () => {
+        if (isHostUser()) {
+          startBluffGame();
+        } else {
+          dispatchTableAction('bluff_new_game');
+        }
+      });
 
       // 4. DRAWER CONTROLS: PACING, CHAT, HISTORY
       function updatePacingButtonsUI() {
