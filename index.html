@@ -4,6 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>NOIR — Premium Multiplayer Card Lounge</title>
+  <meta name="description" content="Sleek, minimal, high-stakes multiplayer card gaming. Play Blackjack, Texas Hold'em, and Bluff with friends in real time." />
+  <meta property="og:title" content="NOIR — Premium Multiplayer Card Lounge" />
+  <meta property="og:description" content="Step into NOIR: sleek, minimal, high-stakes multiplayer Blackjack, Texas Hold'em, and Bluff." />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="NOIR Lounge" />
+  <meta name="theme-color" content="#050507" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <script src="/socket.io/socket.io.js"></script>
   <script>
     if (typeof io === 'undefined') {
@@ -339,6 +347,30 @@
       accent-color: #e11d48;
     }
 
+    /* Speech Bubble Pop Animation */
+    @keyframes bubblePop {
+      0% { opacity: 0; transform: translateY(8px) scale(0.9); }
+      12% { opacity: 1; transform: translateY(0) scale(1); }
+      85% { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(-6px) scale(0.92); }
+    }
+    .speech-bubble-pop {
+      animation: bubblePop 4.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      pointer-events: none;
+    }
+    .speech-bubble-tail::after {
+      content: '';
+      position: absolute;
+      bottom: -6px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+      border-top: 6px solid rgba(27, 28, 39, 0.95);
+    }
+
     /* Hover Micro-interactions */
     button:not(:disabled):active {
       transform: scale(0.97);
@@ -376,6 +408,7 @@
           <span id="multiplayerSyncDot" class="w-2 h-2 rounded-full bg-emerald-400 live-sync-dot" title="Live Sync Active"></span>
           <span class="text-zinc-400 font-mono text-[11px]">ROOM</span>
           <span id="headerRoomCode" class="font-mono font-bold text-white tracking-wider">CLUB42</span>
+          <span id="headerSpectatorBadge" class="hidden px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 font-mono text-[10px] font-bold">SPECTATING</span>
           <button id="btnHeaderCopyCode" type="button" class="ml-1 text-[11px] font-semibold text-rose-400 hover:text-rose-300 transition flex items-center gap-1">
             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
@@ -469,6 +502,48 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
             </svg>
           </button>
+        </div>
+
+        <!-- Game Speed Selector (TIER 2) -->
+        <div class="space-y-2 pt-4 border-t border-white/10">
+          <label class="text-xs font-semibold text-zinc-300 block">Game Pacing</label>
+          <div class="grid grid-cols-2 gap-2 bg-charcoal-900 p-1 rounded-xl border border-white/5">
+            <button id="btnPacingCinematic" type="button" class="py-2 px-3 rounded-lg text-xs font-semibold transition bg-rose-600 text-white shadow-md">
+              Cinematic (Normal)
+            </button>
+            <button id="btnPacingFast" type="button" class="py-2 px-3 rounded-lg text-xs font-semibold transition text-zinc-400 hover:text-white">
+              Turbo (Fast)
+            </button>
+          </div>
+          <p class="text-[10px] text-zinc-500">Cinematic offers realistic dealer pauses; Turbo speeds up turns &amp; flights.</p>
+        </div>
+
+        <!-- Table Chat & Presets (TIER 2) -->
+        <div class="space-y-2 pt-4 border-t border-white/10">
+          <label class="text-xs font-semibold text-zinc-300 block">Table Chat &amp; Banter</label>
+          <div class="flex gap-2">
+            <input id="inputTableChat" type="text" maxlength="60" placeholder="Type a message..." class="flex-1 px-3 py-2 rounded-xl bg-charcoal-900 border border-white/10 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-rose-500 transition" />
+            <button id="btnSendTableChat" type="button" class="px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs transition">Send</button>
+          </div>
+          <div class="grid grid-cols-3 gap-1.5 pt-1">
+            <button type="button" data-chat-preset="Nice hand!" class="chat-preset-btn py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] text-zinc-300 transition">Nice hand!</button>
+            <button type="button" data-chat-preset="All in!" class="chat-preset-btn py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] text-zinc-300 transition">All in!</button>
+            <button type="button" data-chat-preset="You're bluffing!" class="chat-preset-btn py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] text-zinc-300 transition">Bluffing!</button>
+            <button type="button" data-chat-preset="Good game!" class="chat-preset-btn py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] text-zinc-300 transition">GG!</button>
+            <button type="button" data-chat-preset="Check" class="chat-preset-btn py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] text-zinc-300 transition">Check</button>
+            <button type="button" data-chat-preset="Rematch?" class="chat-preset-btn py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] text-zinc-300 transition">Rematch?</button>
+          </div>
+        </div>
+
+        <!-- Hand History / Activity Log (TIER 2) -->
+        <div class="space-y-2 pt-4 border-t border-white/10">
+          <div class="flex items-center justify-between">
+            <label class="text-xs font-semibold text-zinc-300">Hand History &amp; Activity</label>
+            <button id="btnClearHistory" type="button" class="text-[10px] text-zinc-500 hover:text-zinc-300 transition">Clear</button>
+          </div>
+          <div id="handHistoryContainer" class="max-h-36 overflow-y-auto custom-scrollbar space-y-1.5 p-2 rounded-xl bg-charcoal-900/80 border border-white/5 text-[11px]">
+            <div class="text-zinc-500 italic text-center py-2">No moves recorded yet</div>
+          </div>
         </div>
 
         <!-- Quick Chat Reactions -->
@@ -865,7 +940,13 @@
                 <span class="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-rose-600/20 text-rose-300 border border-rose-500/30">You</span>
                 <span id="activePlayerRoleBadge" class="hidden text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-white/15 text-white font-mono">D</span>
               </div>
-              <div id="activeHandEvalBadge" class="text-[11px] font-medium text-zinc-400">Ready</div>
+              <div class="flex items-center gap-2">
+                <div id="activeHandEvalBadge" class="text-[11px] font-medium text-zinc-400">Ready</div>
+                <div id="dockTurnTimerPill" class="hidden items-center gap-1.5 px-2 py-0.5 rounded-full bg-rose-950/80 border border-rose-500/40 text-[10px] font-mono font-bold text-rose-300">
+                  <span class="w-1.5 h-1.5 rounded-full bg-rose-400 animate-ping"></span>
+                  <span id="dockTurnTimerVal">25s</span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -884,6 +965,18 @@
         <!-- Active Turn Timer Bar -->
         <div id="userTurnTimerWrap" class="hidden absolute top-0 left-0 right-0 h-1 bg-white/5 overflow-hidden">
           <div id="userTurnTimerBar" class="turn-timer-bar w-full" style="--turn-ms:25000ms;"></div>
+        </div>
+
+        <!-- Spectator Banner (Visible when spectating) -->
+        <div id="spectatorDockBanner" class="hidden w-full py-3 px-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+            <div>
+              <span class="font-bold text-white uppercase tracking-wider">Spectator Mode</span>
+              <div class="text-[11px] text-zinc-400">Watching live cards &amp; bets &bull; Use chat or reactions in menu</div>
+            </div>
+          </div>
+          <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300">LIVE</span>
         </div>
 
         <!-- Player's Private Hole Cards Row -->
@@ -1447,11 +1540,28 @@
       return shoeRect;
     }
 
+    function getPacingDelays() {
+      const isFast = state.gamePacing === 'fast';
+      return {
+        isFast,
+        flightDurationDeck: isFast ? 320 : 720,
+        flightDurationHand: isFast ? 260 : 640,
+        flightStagger: isFast ? 90 : 260,
+        flipDuration: isFast ? 320 : 680,
+        chipFlight: isFast ? 350 : 800,
+        botDelay: isFast ? 850 : 2400,
+        streetPause: isFast ? 550 : 1450,
+        dealerStep: isFast ? 550 : 1350,
+        bluffInspect: isFast ? 950 : 2400
+      };
+    }
+
     function launchUnclippedCardFlight(item, delayMs, stage, stageRect, shoeRect) {
       const targetEl = item.el;
       const endRect = targetEl.getBoundingClientRect();
       if (endRect.width === 0) return;
 
+      const delays = getPacingDelays();
       const startRect = resolveOriginRectForCard(item, shoeRect);
       const startCenterX = startRect.left + startRect.width / 2;
       const startCenterY = startRect.top + startRect.height / 2;
@@ -1460,7 +1570,8 @@
 
       const dx = startCenterX - endCenterX;
       const dy = startCenterY - endCenterY;
-      const durationMs = item.fromDeck ? 720 : 640;
+      const durationMs = item.fromDeck ? delays.flightDurationDeck : delays.flightDurationHand;
+      const effectiveDelay = delays.isFast ? Math.floor(delayMs * 0.4) : delayMs;
 
       targetEl.style.opacity = '0';
 
@@ -1480,7 +1591,7 @@
 
       const startRot = item.fromDeck ? (dx < 0 ? '-20deg' : '20deg') : '12deg';
       const midRot = item.restRot || '0deg';
-      const endTime = performance.now() + delayMs + durationMs;
+      const endTime = performance.now() + effectiveDelay + durationMs;
       inFlightAnimations.set(item.key, { endTime, flyerEl: flyer });
 
       if (flyer.animate) {
@@ -1511,7 +1622,7 @@
           ],
           {
             duration: durationMs,
-            delay: delayMs,
+            delay: effectiveDelay,
             easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
             fill: 'forwards'
           }
@@ -1531,15 +1642,17 @@
           if (flyer.parentNode) flyer.remove();
           const currentTarget = document.querySelector(`[data-anim-key="${item.key}"]`);
           if (currentTarget) currentTarget.style.opacity = '1';
-        }, delayMs + durationMs);
+        }, effectiveDelay + durationMs);
       }
     }
 
     function launch3DCardFlip(cardEl, animKey, delayMs, restRot = '0deg') {
       if (!cardEl || !cardEl.animate) return;
+      const delays = getPacingDelays();
       cardEl.classList.add('is-animating', 'flip-back-phase');
-      const durationMs = 680;
-      const midpointMs = delayMs + Math.floor(durationMs * 0.46);
+      const durationMs = delays.flipDuration;
+      const effectiveDelay = delays.isFast ? Math.floor(delayMs * 0.4) : delayMs;
+      const midpointMs = effectiveDelay + Math.floor(durationMs * 0.46);
       setTimeout(() => {
         const currentEl = document.querySelector(`[data-anim-key="${animKey}"]`) || cardEl;
         if (currentEl) currentEl.classList.remove('flip-back-phase');
@@ -1563,7 +1676,7 @@
         ],
         {
           duration: durationMs,
-          delay: delayMs,
+          delay: effectiveDelay,
           easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
           fill: 'forwards'
         }
@@ -1749,6 +1862,12 @@
       hostId: '',
       maxSeats: 4,
       autoPlayFriends: true,
+      isSpectator: false,
+      gamePacing: 'cinematic',
+      turnSecondsLeft: 25,
+      spectators: [],
+      chatMessages: [],
+      handHistory: [],
       players: [],
       bannerText: 'Place your bet to begin',
       lastActorName: '',
@@ -1869,6 +1988,9 @@
         players: state.players,
         bannerText: state.bannerText,
         lastFxEvent: state.lastFxEvent,
+        gamePacing: state.gamePacing,
+        handHistory: state.handHistory,
+        spectators: state.spectators,
         bj: state.bj,
         holdem: state.holdem,
         bluff: state.bluff
@@ -1890,14 +2012,219 @@
     function applyRemoteState(incoming) {
       if (!incoming) return;
       const myId = getStoredMyId();
+      const isSpectator = state.isSpectator || (incoming.spectators && incoming.spectators.some(s => s.id === myId));
       const myIdx = (incoming.players || []).findIndex(p => p.id === myId);
       Object.assign(state, incoming);
-      if (myIdx !== -1) {
+      if (isSpectator) {
+        state.isSpectator = true;
+        state.activeSeatIndex = -1;
+      } else if (myIdx !== -1) {
         state.activeSeatIndex = myIdx;
+        state.isSpectator = false;
       }
       pulseMultiplayerSyncDot();
       renderAll();
       if (incoming.lastFxEvent) emitTableFx(incoming.lastFxEvent);
+    }
+
+    // =========================================================================
+    // TIER 1: HOST AUTHORITY ACTION DISPATCHER & RELAY
+    // =========================================================================
+    function dispatchTableAction(action, payload = {}) {
+      if (state.isHost) {
+        executeTableAction(action, payload);
+      } else {
+        if (socket && isSocketConnected && state.inRoom) {
+          socket.emit('player_action', {
+            roomCode: state.roomCode,
+            action,
+            payload
+          });
+        } else {
+          executeTableAction(action, payload);
+        }
+      }
+    }
+
+    function executeTableAction(action, payload = {}) {
+      const sIdx = payload.seatIdx !== undefined ? payload.seatIdx : state.activeSeatIndex;
+      switch (action) {
+        case 'bj_hit':
+          state.bj.turnSeat = sIdx;
+          bjHit(sIdx);
+          break;
+        case 'bj_stand':
+          state.bj.turnSeat = sIdx;
+          bjStand(sIdx);
+          break;
+        case 'bj_double':
+          state.bj.turnSeat = sIdx;
+          bjDoubleDown(sIdx);
+          break;
+        case 'bj_split':
+          state.bj.turnSeat = sIdx;
+          bjSplitPair(sIdx);
+          break;
+        case 'poker_fold':
+          state.holdem.turnSeat = sIdx;
+          pokerActionFold(sIdx);
+          break;
+        case 'poker_check_call':
+          state.holdem.turnSeat = sIdx;
+          pokerActionCheckCall(sIdx);
+          break;
+        case 'poker_raise':
+          state.holdem.turnSeat = sIdx;
+          pokerActionRaise(sIdx, payload.amount);
+          break;
+        case 'bluff_play':
+          state.bluff.turnSeat = sIdx;
+          bluffPlaySelectedCards(sIdx, payload.uids, payload.declaredRank);
+          break;
+        case 'bluff_pass':
+          state.bluff.turnSeat = sIdx;
+          bluffPassTurn(sIdx);
+          break;
+        case 'bluff_challenge':
+          bluffCallChallenge(sIdx);
+          break;
+      }
+    }
+
+    // =========================================================================
+    // TIER 1: TURN INACTIVITY COUNTDOWN ENGINE
+    // =========================================================================
+    function clearTurnCountdown() {
+      clearInterval(window.__turnCountdownInterval);
+      state.turnSecondsLeft = 25;
+      const pill = document.getElementById('dockTurnTimerPill');
+      if (pill) {
+        pill.classList.add('hidden');
+        pill.classList.remove('flex');
+      }
+      document.querySelectorAll('[id^="turnTimerBadge_"]').forEach(el => el.classList.add('hidden'));
+    }
+
+    function startTurnCountdown(seatIdx) {
+      clearTurnCountdown();
+      const p = state.players[seatIdx];
+      if (!p || p.isBot) return;
+
+      state.turnSecondsLeft = 25;
+      updateTurnTimerDisplay(seatIdx);
+
+      window.__turnCountdownInterval = setInterval(() => {
+        state.turnSecondsLeft--;
+        updateTurnTimerDisplay(seatIdx);
+
+        if (state.turnSecondsLeft <= 0) {
+          clearTurnCountdown();
+          handleAutoTimeoutAction(seatIdx);
+        }
+      }, 1000);
+    }
+
+    function updateTurnTimerDisplay(seatIdx) {
+      const pill = document.getElementById('dockTurnTimerPill');
+      const val = document.getElementById('dockTurnTimerVal');
+      if (pill && val) {
+        if (seatIdx === state.activeSeatIndex) {
+          pill.classList.remove('hidden');
+          pill.classList.add('flex');
+          val.textContent = `${state.turnSecondsLeft}s`;
+        } else {
+          pill.classList.add('hidden');
+          pill.classList.remove('flex');
+        }
+      }
+
+      const oppBadge = document.getElementById(`turnTimerBadge_${seatIdx}`);
+      if (oppBadge) {
+        oppBadge.textContent = `${state.turnSecondsLeft}s`;
+        oppBadge.classList.remove('hidden');
+      }
+    }
+
+    function handleAutoTimeoutAction(seatIdx) {
+      const p = state.players[seatIdx];
+      if (!p) return;
+      showToast(`${p.name} turn timed out — auto action taken`);
+
+      if (state.gameMode === 'blackjack') {
+        dispatchTableAction('bj_stand', { seatIdx });
+      } else if (state.gameMode === 'holdem') {
+        const curBet = p.pokerBet || 0;
+        const needed = Math.max(0, state.holdem.currentBet - curBet);
+        if (needed === 0) {
+          dispatchTableAction('poker_check_call', { seatIdx });
+        } else {
+          dispatchTableAction('poker_fold', { seatIdx });
+        }
+      } else if (state.gameMode === 'bluff') {
+        if (state.bluff.pile && state.bluff.pile.length > 0) {
+          dispatchTableAction('bluff_pass', { seatIdx });
+        } else if (p.cards && p.cards.length > 0) {
+          dispatchTableAction('bluff_play', {
+            seatIdx,
+            uids: [p.cards[0].uid],
+            declaredRank: p.cards[0].rank
+          });
+        }
+      }
+    }
+
+    // =========================================================================
+    // TIER 2: TABLE CHAT & FLOATING SPEECH BUBBLE ENGINE
+    // =========================================================================
+    function sendTableChatMessage(text) {
+      const msg = (text || '').trim();
+      if (!msg) return;
+      const me = state.players[state.activeSeatIndex] || { name: 'Player' };
+      
+      const payload = {
+        roomCode: state.roomCode,
+        senderName: me.name,
+        senderSeat: state.activeSeatIndex,
+        message: msg
+      };
+
+      if (socket && isSocketConnected && state.inRoom) {
+        socket.emit('table_chat', payload);
+      } else {
+        handleIncomingTableChat(payload);
+      }
+    }
+
+    function handleIncomingTableChat(data) {
+      const { senderName, senderSeat, message } = data;
+      recordMove(senderName, 'Chat', `"${message}"`, senderSeat);
+
+      if (senderSeat !== null && senderSeat !== undefined) {
+        showSpeechBubbleOverSeat(senderSeat, message);
+      } else {
+        showToast(`${senderName}: "${message}"`);
+      }
+    }
+
+    function showSpeechBubbleOverSeat(seatIdx, message) {
+      const seatEl = (seatIdx === state.activeSeatIndex)
+        ? document.getElementById('activePlayerHandRow')
+        : document.querySelector(`[data-opp-seat="${seatIdx}"]`);
+      if (!seatEl) {
+        showToast(`"${message}"`);
+        return;
+      }
+
+      const existing = seatEl.querySelector('.speech-bubble-pop');
+      if (existing) existing.remove();
+
+      const bubble = document.createElement('div');
+      bubble.className = 'speech-bubble-pop speech-bubble-tail absolute -top-11 left-1/2 -translate-x-1/2 z-50 px-3 py-1.5 rounded-xl bg-charcoal-800 border border-rose-500/50 text-white font-medium text-xs shadow-2xl whitespace-nowrap pointer-events-none';
+      bubble.textContent = message;
+      seatEl.style.position = 'relative';
+      seatEl.appendChild(bubble);
+
+      setTimeout(() => { if (bubble.parentNode) bubble.remove(); }, 4200);
     }
 
     function initSocket() {
@@ -1909,7 +2236,7 @@
         socket = io({
           transports: ['websocket', 'polling'],
           reconnection: true,
-          reconnectionAttempts: 15,
+          reconnectionAttempts: 20,
           reconnectionDelay: 1000
         });
 
@@ -1917,20 +2244,24 @@
           isSocketConnected = true;
           updateSyncIndicator(true);
           console.log('[NOIR Socket] Connected to server, ID:', socket.id);
-          // If already in a room, re-join/sync
+          const myId = getStoredMyId();
           if (state.inRoom && state.roomCode) {
-            const myId = getStoredMyId();
-            const me = state.players[state.activeSeatIndex] || {
-              id: myId,
-              name: (document.getElementById('inputPlayerName')?.value || 'Alex').trim(),
-              avatar: state.selectedAvatar || '01',
-              chips: 2500
-            };
-            if (state.hostId === myId) {
-              socket.emit('create_room', { roomCode: state.roomCode, state: getSanitizedState() });
-            } else {
-              socket.emit('join_room', { roomCode: state.roomCode, player: me });
-            }
+            socket.emit('reconnect_session', { roomCode: state.roomCode, playerId: myId }, (res) => {
+              if (res && res.ok && res.state) {
+                applyRemoteState(res.state);
+                showToast('Reconnected to table');
+              } else if (state.hostId === myId) {
+                socket.emit('create_room', { roomCode: state.roomCode, state: getSanitizedState() });
+              } else {
+                const me = state.players[state.activeSeatIndex] || {
+                  id: myId,
+                  name: (document.getElementById('inputPlayerName')?.value || 'Alex').trim(),
+                  avatar: state.selectedAvatar || '01',
+                  chips: 2500
+                };
+                socket.emit('join_room', { roomCode: state.roomCode, player: me });
+              }
+            });
           }
         });
 
@@ -1949,11 +2280,26 @@
           if (fx) emitTableFx(fx);
         });
 
+        socket.on('player_action', (data) => {
+          if (state.isHost && data && data.action) {
+            executeTableAction(data.action, data.payload);
+          }
+        });
+
+        socket.on('table_chat', (data) => {
+          if (data) handleIncomingTableChat(data);
+        });
+
         socket.on('player_connected', (data) => {
           if (data && data.player && data.player.name) {
             pulseMultiplayerSyncDot();
             showToast(`${data.player.name} joined room`);
           }
+        });
+
+        socket.on('player_reconnected', () => {
+          pulseMultiplayerSyncDot();
+          showToast('Player reconnected to room');
         });
 
         socket.on('player_disconnected', () => {
@@ -2072,13 +2418,19 @@
       const existingIdx = (roomData.players || []).findIndex(p => p.id === myId || p.name.toLowerCase() === myName.toLowerCase());
 
       if (existingIdx === -1 && currentCount >= maxAllowed) {
-        showToast(`Room ${cleanCode} is full (${maxAllowed}/${maxAllowed})`);
+        const wantsSpectate = confirm(`Room ${cleanCode} is full (${maxAllowed}/${maxAllowed} players).\n\nWould you like to enter as a Spectator?`);
+        if (wantsSpectate) {
+          joinAsSpectator(roomData, cleanCode, myId, myName, myAvatar);
+        } else {
+          showToast(`Room ${cleanCode} is full (${maxAllowed}/${maxAllowed})`);
+        }
         return;
       }
 
       state.roomCode = cleanCode;
       state.myPlayerId = myId;
       state.inRoom = true;
+      state.isSpectator = false;
       state.inWaitingRoom = Boolean(roomData.inWaitingRoom);
       state.gameMode = roomData.gameMode || 'blackjack';
       state.hostId = roomData.hostId || (roomData.players[0] && roomData.players[0].id);
@@ -2116,6 +2468,38 @@
       broadcastRoomState();
       renderAll();
       showToast(`Joined Room ${cleanCode}`);
+    }
+
+    function joinAsSpectator(roomData, cleanCode, myId, myName, myAvatar) {
+      state.roomCode = cleanCode;
+      state.myPlayerId = myId;
+      state.inRoom = true;
+      state.isSpectator = true;
+      state.inWaitingRoom = false;
+      state.gameMode = roomData.gameMode || 'blackjack';
+      state.hostId = roomData.hostId || (roomData.players && roomData.players[0] && roomData.players[0].id);
+      state.maxSeats = roomData.maxSeats || 6;
+      state.players = roomData.players || [];
+      state.bj = roomData.bj || state.bj;
+      state.holdem = roomData.holdem || state.holdem;
+      state.bluff = roomData.bluff || state.bluff;
+      state.activeSeatIndex = -1;
+
+      if (socket && isSocketConnected) {
+        socket.emit('join_room', {
+          roomCode: cleanCode,
+          player: { id: myId, name: myName, avatar: myAvatar },
+          asSpectator: true
+        }, (res) => {
+          if (res && res.ok && res.state) {
+            applyRemoteState(res.state);
+          }
+        });
+      }
+
+      resetAnimationTracking(true);
+      renderAll();
+      showToast(`Entered Room ${cleanCode} as Spectator`);
     }
 
     function joinWithRoomCode(code) {
@@ -2248,6 +2632,33 @@
       if (seatIdx !== null && state.players[seatIdx]) {
         state.players[seatIdx].lastMoveBadge = shortTag;
       }
+      if (!Array.isArray(state.handHistory)) state.handHistory = [];
+      state.handHistory.unshift({
+        id: Date.now() + secureRandomInt(9999),
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+        actor: actorName,
+        tag: shortTag,
+        text: fullMessage,
+        seat: seatIdx
+      });
+      if (state.handHistory.length > 35) state.handHistory.pop();
+      renderHandHistory();
+    }
+
+    function renderHandHistory() {
+      const container = document.getElementById('handHistoryContainer');
+      if (!container) return;
+      if (!state.handHistory || state.handHistory.length === 0) {
+        container.innerHTML = '<div class="text-zinc-500 italic text-center py-2">No moves recorded yet</div>';
+        return;
+      }
+      container.innerHTML = state.handHistory.slice(0, 20).map(item => `
+        <div class="flex items-start gap-2 py-1 px-1.5 rounded-lg bg-black/40 border border-white/5 text-[11px]">
+          <span class="text-[9px] font-mono text-zinc-500 whitespace-nowrap mt-0.5">${item.time}</span>
+          <span class="text-[9px] font-bold px-1 rounded bg-rose-900/40 text-rose-300 font-mono shrink-0">${item.tag}</span>
+          <span class="text-zinc-300 truncate">${item.text}</span>
+        </div>
+      `).join('');
     }
 
     function switchGameMode(newMode) {
@@ -2343,6 +2754,7 @@
       }
 
       if (state.bj.turnSeat >= state.players.length) {
+        clearTurnCountdown();
         runAutomatedDealerBlackjack();
         return;
       }
@@ -2354,21 +2766,26 @@
           : `${activeP.name} is deciding...`;
       renderAll();
 
-      if (state.autoPlayFriends && state.bj.turnSeat !== state.activeSeatIndex) {
-        const botThinkTime = 2200 + secureRandomInt(600);
+      const delays = getPacingDelays();
+      if (activeP.isBot || (state.autoPlayFriends && state.bj.turnSeat !== state.activeSeatIndex)) {
+        clearTurnCountdown();
+        const botThinkTime = delays.botDelay + secureRandomInt(delays.isFast ? 200 : 600);
         window.__aiTurnTimer = setTimeout(() => {
           const score = calcBlackjackScore(activeP.cards).total;
-          if (score < 16) {
+          if (score < 17) {
             bjHit(state.bj.turnSeat);
           } else {
             bjStand(state.bj.turnSeat);
           }
         }, botThinkTime);
+      } else {
+        startTurnCountdown(state.bj.turnSeat);
       }
     }
 
     function bjHit(seatIdx) {
       if (state.bj.phase !== 'playing' || seatIdx !== state.bj.turnSeat) return;
+      clearTurnCountdown();
       const p = state.players[seatIdx];
       p.cards.push(state.bj.deck.pop());
       const total = calcBlackjackScore(p.cards).total;
@@ -2403,6 +2820,7 @@
 
     function bjStand(seatIdx) {
       if (state.bj.phase !== 'playing' || seatIdx !== state.bj.turnSeat) return;
+      clearTurnCountdown();
       const p = state.players[seatIdx];
       const total = calcBlackjackScore(p.cards).total;
       p.bjStatus = 'STAND';
@@ -2415,6 +2833,7 @@
 
     function bjDoubleDown(seatIdx) {
       if (state.bj.phase !== 'playing' || seatIdx !== state.bj.turnSeat) return;
+      clearTurnCountdown();
       const p = state.players[seatIdx];
       if (p.cards.length !== 2 || p.chips < p.bjBet) return;
       p.chips -= p.bjBet;
@@ -2431,6 +2850,7 @@
 
     function bjSplitPair(seatIdx) {
       if (state.bj.phase !== 'playing' || seatIdx !== state.bj.turnSeat) return;
+      clearTurnCountdown();
       const p = state.players[seatIdx];
       if (p.cards.length !== 2 || p.cards[0].rank !== p.cards[1].rank) return;
       p.cards = [p.cards[0], state.bj.deck.pop()];
@@ -2446,12 +2866,15 @@
     }
 
     function runAutomatedDealerBlackjack() {
+      clearTurnCountdown();
       state.bj.phase = 'dealer';
       state.bj.dealerHoleHidden = false;
       const initialScore = calcBlackjackScore(state.bj.dealerCards).total;
       state.bannerText = `Dealer reveals hole card (${initialScore})`;
       broadcastRoomState();
       renderAll();
+
+      const delays = getPacingDelays();
 
       function stepDealer() {
         const curScore = calcBlackjackScore(state.bj.dealerCards).total;
@@ -2468,8 +2891,8 @@
             }
             broadcastRoomState();
             renderAll();
-            setTimeout(stepDealer, 1400);
-          }, 1100);
+            setTimeout(stepDealer, delays.dealerStep);
+          }, delays.dealerStep);
           return;
         }
 
@@ -2517,7 +2940,7 @@
         renderAll();
       }
 
-      setTimeout(stepDealer, 1300);
+      setTimeout(stepDealer, delays.dealerStep);
     }
 
     // =========================================================================
@@ -2629,6 +3052,7 @@
       clearTimeout(window.__aiTurnTimer);
       const activePlayers = state.players.filter(p => !p.pokerFolded);
       if (activePlayers.length === 1) {
+        clearTurnCountdown();
         const winner = activePlayers[0];
         const winIdx = state.players.indexOf(winner);
         triggerSyncedFx({
@@ -2647,6 +3071,7 @@
       );
 
       if (allMatched) {
+        clearTurnCountdown();
         advanceHoldemStreet();
         return;
       }
@@ -2671,8 +3096,10 @@
           : `${curr.name} is thinking...`;
       renderAll();
 
-      if (state.autoPlayFriends && state.holdem.turnSeat !== state.activeSeatIndex && state.holdem.phase !== 'showdown') {
-        const botThinkMs = 2400 + secureRandomInt(800);
+      const delays = getPacingDelays();
+      if (curr.isBot || (state.autoPlayFriends && state.holdem.turnSeat !== state.activeSeatIndex && state.holdem.phase !== 'showdown')) {
+        clearTurnCountdown();
+        const botThinkMs = delays.botDelay + secureRandomInt(delays.isFast ? 200 : 800);
         window.__aiTurnTimer = setTimeout(() => {
           const ev = evaluate7CardPoker([...curr.cards, ...state.holdem.community]);
           if (toCall > 250 && ev.score < 1000000 && Math.random() < 0.55) {
@@ -2683,10 +3110,13 @@
             pokerActionCheckCall(state.holdem.turnSeat);
           }
         }, botThinkMs);
+      } else {
+        startTurnCountdown(state.holdem.turnSeat);
       }
     }
 
     function advanceHoldemStreet() {
+      clearTurnCountdown();
       state.holdem.actedThisStreet = {};
       state.holdem.currentBet = 0;
       for (const p of state.players) {
@@ -2694,6 +3124,7 @@
         if (!p.pokerFolded) p.lastMoveBadge = '';
       }
 
+      const delays = getPacingDelays();
       if (state.holdem.phase === 'preflop') {
         state.holdem.phase = 'flop';
         state.bannerText = 'Dealing the Flop (3 community cards)...';
@@ -2707,7 +3138,7 @@
         setTimeout(() => {
           state.holdem.turnSeat = (state.holdem.dealerIdx + 1) % state.players.length;
           checkHoldemProgression();
-        }, 1500);
+        }, delays.streetPause);
         return;
       } else if (state.holdem.phase === 'flop') {
         state.holdem.phase = 'turn';
@@ -2718,7 +3149,7 @@
         setTimeout(() => {
           state.holdem.turnSeat = (state.holdem.dealerIdx + 1) % state.players.length;
           checkHoldemProgression();
-        }, 1400);
+        }, delays.streetPause);
         return;
       } else if (state.holdem.phase === 'turn') {
         state.holdem.phase = 'river';
@@ -2729,7 +3160,7 @@
         setTimeout(() => {
           state.holdem.turnSeat = (state.holdem.dealerIdx + 1) % state.players.length;
           checkHoldemProgression();
-        }, 1400);
+        }, delays.streetPause);
         return;
       } else {
         resolveHoldemShowdown();
@@ -2738,6 +3169,7 @@
     }
 
     function resolveHoldemShowdown() {
+      clearTurnCountdown();
       state.holdem.phase = 'showdown';
       let bestScore = -1;
       let winners = [];
@@ -2777,6 +3209,7 @@
 
     function pokerActionFold(seatIdx) {
       if (state.holdem.phase === 'showdown' || seatIdx !== state.holdem.turnSeat) return;
+      clearTurnCountdown();
       const p = state.players[seatIdx];
       p.pokerFolded = true;
       state.holdem.actedThisStreet[p.id] = true;
@@ -2794,6 +3227,7 @@
 
     function pokerActionCheckCall(seatIdx) {
       if (state.holdem.phase === 'showdown' || seatIdx !== state.holdem.turnSeat) return;
+      clearTurnCountdown();
       const p = state.players[seatIdx];
       const needed = Math.min(p.chips, Math.max(0, state.holdem.currentBet - p.pokerBet));
       p.chips -= needed;
@@ -2820,6 +3254,7 @@
 
     function pokerActionRaise(seatIdx, targetTotalBet) {
       if (state.holdem.phase === 'showdown' || seatIdx !== state.holdem.turnSeat) return;
+      clearTurnCountdown();
       const p = state.players[seatIdx];
       const desired = Math.max(state.holdem.currentBet + 50, targetTotalBet);
       const added = Math.min(p.chips, Math.max(0, desired - p.pokerBet));
@@ -2894,6 +3329,7 @@
 
     function bluffPlaySelectedCards(seatIdx, cardUids, chosenRank) {
       if (state.bluff.phase !== 'playing' || seatIdx !== state.bluff.turnSeat) return;
+      clearTurnCountdown();
       const p = state.players[seatIdx];
       if (!cardUids || cardUids.length < 1 || cardUids.length > 4) {
         showToast('Tap 1 to 4 cards first');
@@ -2939,6 +3375,7 @@
 
     function bluffPassTurn(seatIdx) {
       if (state.bluff.phase !== 'playing' || seatIdx !== state.bluff.turnSeat) return;
+      clearTurnCountdown();
       if (!state.bluff.declaredRank) {
         showToast('Select cards to start the pile');
         return;
@@ -2971,6 +3408,7 @@
 
     function bluffCallChallenge(challengerSeatIdx) {
       if (state.bluff.phase !== 'playing' || !state.bluff.lastPlay) return;
+      clearTurnCountdown();
       clearTimeout(window.__aiTurnTimer);
       const last = state.bluff.lastPlay;
       if (last.seatIndex === challengerSeatIdx) {
@@ -3053,16 +3491,23 @@
         if (checkBluffWinner()) return;
         broadcastRoomState();
         scheduleAiBluffTurn();
-      }, 2400);
+      }, getPacingDelays().bluffInspect);
     }
 
     function scheduleAiBluffTurn() {
       clearTimeout(window.__aiTurnTimer);
       renderAll();
-      if (state.bluff.phase !== 'playing') return;
+      if (state.bluff.phase !== 'playing') {
+        clearTurnCountdown();
+        return;
+      }
 
-      if (state.autoPlayFriends && state.bluff.turnSeat !== state.activeSeatIndex) {
-        const botBluffDelay = 2200 + secureRandomInt(1000);
+      const activeP = state.players[state.bluff.turnSeat];
+      const delays = getPacingDelays();
+
+      if (activeP && (activeP.isBot || (state.autoPlayFriends && state.bluff.turnSeat !== state.activeSeatIndex))) {
+        clearTurnCountdown();
+        const botBluffDelay = delays.botDelay + secureRandomInt(delays.isFast ? 200 : 800);
         window.__aiTurnTimer = setTimeout(() => {
           const aiIdx = state.bluff.turnSeat;
           const ai = state.players[aiIdx];
@@ -3094,6 +3539,8 @@
             }
           }
         }, botBluffDelay);
+      } else {
+        startTurnCountdown(state.bluff.turnSeat);
       }
     }
 
@@ -3394,18 +3841,24 @@
           const timerBarHTML = isTurn
             ? `<div class="absolute top-0 left-0 right-0 h-1 bg-white/5 overflow-hidden rounded-t-2xl"><div class="turn-timer-bar w-full" style="--turn-ms:2800ms;"></div></div>`
             : '';
+          const turnTimerBadge = `<span id="turnTimerBadge_${idx}" class="hidden px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-400 font-mono text-[9px] font-bold border border-rose-500/30">25s</span>`;
+          const reconnectBadge = p.isDisconnected
+            ? `<span class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[9px] font-bold">RECONNECTING</span>`
+            : '';
 
           return `
             <div data-opp-seat="${idx}" class="rounded-2xl px-3 py-2.5 ${ringClass} flex flex-col justify-between transition relative overflow-hidden">
               ${timerBarHTML}
               <div class="flex items-center justify-between gap-1">
-                <div class="flex items-center gap-2 min-w-0">
+                <div class="flex items-center gap-1.5 min-w-0">
                   <div class="relative shrink-0">
                     <span class="w-6 h-6 rounded-full bg-charcoal-800 border border-white/15 flex items-center justify-center text-[10px] font-bold text-zinc-200 font-mono">${initials}</span>
                     <span class="w-1.5 h-1.5 rounded-full ${isTurn ? 'bg-rose-500' : 'bg-emerald-400'} absolute -bottom-0.5 -right-0.5 ring-1 ring-black"></span>
                   </div>
                   <span class="text-xs font-bold text-white truncate">${p.name}</span>
                   ${rolePill}
+                  ${turnTimerBadge}
+                  ${reconnectBadge}
                 </div>
                 <span class="text-[11px] font-mono text-zinc-400 shrink-0">${state.gameMode === 'bluff' ? p.cards.length + 'c' : '$' + p.chips}</span>
               </div>
@@ -3420,14 +3873,20 @@
         })
         .join('');
 
+      const isSpectator = Boolean(state.isSpectator);
+      const specBadge = document.getElementById('headerSpectatorBadge');
+      const specBanner = document.getElementById('spectatorDockBanner');
+      if (specBadge) specBadge.classList.toggle('hidden', !isSpectator);
+      if (specBanner) specBanner.classList.toggle('hidden', !isSpectator);
+
       // Toggle Center Game Modes
       document.getElementById('centerBlackjack').classList.toggle('hidden', state.gameMode !== 'blackjack');
       document.getElementById('centerHoldem').classList.toggle('hidden', state.gameMode !== 'holdem');
       document.getElementById('centerBluff').classList.toggle('hidden', state.gameMode !== 'bluff');
 
-      document.getElementById('controlsBlackjack').classList.toggle('hidden', state.gameMode !== 'blackjack');
-      document.getElementById('controlsHoldem').classList.toggle('hidden', state.gameMode !== 'holdem');
-      document.getElementById('controlsBluff').classList.toggle('hidden', state.gameMode !== 'bluff');
+      document.getElementById('controlsBlackjack').classList.toggle('hidden', isSpectator || state.gameMode !== 'blackjack');
+      document.getElementById('controlsHoldem').classList.toggle('hidden', isSpectator || state.gameMode !== 'holdem');
+      document.getElementById('controlsBluff').classList.toggle('hidden', isSpectator || state.gameMode !== 'bluff');
 
       // Update Bottom Active Player Identity
       document.getElementById('activePlayerAvatar').textContent = getPlayerInitials(me.name);
@@ -3489,8 +3948,9 @@
         : '<div class="text-xs text-zinc-500 my-auto py-4">Cards will be dealt here</div>';
 
       const isBetting = state.bj.phase === 'betting';
-      document.getElementById('bjBettingPanel').classList.toggle('hidden', !isBetting);
-      document.getElementById('bjActionPanel').classList.toggle('hidden', isBetting);
+      const isSpec = Boolean(state.isSpectator);
+      document.getElementById('bjBettingPanel').classList.toggle('hidden', isSpec || !isBetting);
+      document.getElementById('bjActionPanel').classList.toggle('hidden', isSpec || isBetting);
       document.getElementById('bjCurrentBetInput').textContent = me.bjBet || 100;
 
       const canSplit = me.cards.length === 2 && me.cards[0].rank === me.cards[1].rank;
@@ -3737,6 +4197,7 @@
 
       function leaveCurrentRoom() {
         clearTimeout(window.__aiTurnTimer);
+        clearTurnCountdown();
         if (typeof socket !== 'undefined' && socket && isSocketConnected && state.inRoom) {
           try {
             socket.emit('leave_room', { roomCode: state.roomCode, playerId: state.myPlayerId });
@@ -3744,6 +4205,7 @@
         }
         state.inRoom = false;
         state.inWaitingRoom = false;
+        state.isSpectator = false;
         const drawer = document.getElementById('tableToolsDrawer');
         if (drawer) drawer.classList.add('hidden');
         renderAll();
@@ -3956,20 +4418,16 @@
       });
       document.getElementById('btnBjDeal').addEventListener('click', dealBlackjackRound);
       document.getElementById('btnBjHit').addEventListener('click', () => {
-        state.bj.turnSeat = state.activeSeatIndex;
-        bjHit(state.activeSeatIndex);
+        dispatchTableAction('bj_hit', { seatIdx: state.activeSeatIndex });
       });
       document.getElementById('btnBjStand').addEventListener('click', () => {
-        state.bj.turnSeat = state.activeSeatIndex;
-        bjStand(state.activeSeatIndex);
+        dispatchTableAction('bj_stand', { seatIdx: state.activeSeatIndex });
       });
       document.getElementById('btnBjDouble').addEventListener('click', () => {
-        state.bj.turnSeat = state.activeSeatIndex;
-        bjDoubleDown(state.activeSeatIndex);
+        dispatchTableAction('bj_double', { seatIdx: state.activeSeatIndex });
       });
       document.getElementById('btnBjSplit').addEventListener('click', () => {
-        state.bj.turnSeat = state.activeSeatIndex;
-        bjSplitPair(state.activeSeatIndex);
+        dispatchTableAction('bj_split', { seatIdx: state.activeSeatIndex });
       });
 
       // 2. TEXAS HOLD'EM EVENT LISTENERS
@@ -3991,17 +4449,14 @@
         });
       });
       document.getElementById('btnPokerFold').addEventListener('click', () => {
-        state.holdem.turnSeat = state.activeSeatIndex;
-        pokerActionFold(state.activeSeatIndex);
+        dispatchTableAction('poker_fold', { seatIdx: state.activeSeatIndex });
       });
       document.getElementById('btnPokerCheckCall').addEventListener('click', () => {
-        state.holdem.turnSeat = state.activeSeatIndex;
-        pokerActionCheckCall(state.activeSeatIndex);
+        dispatchTableAction('poker_check_call', { seatIdx: state.activeSeatIndex });
       });
       document.getElementById('btnPokerRaise').addEventListener('click', () => {
-        state.holdem.turnSeat = state.activeSeatIndex;
         const val = parseInt(raiseSlider.value, 10) || state.holdem.currentBet + 100;
-        pokerActionRaise(state.activeSeatIndex, val);
+        dispatchTableAction('poker_raise', { seatIdx: state.activeSeatIndex, amount: val });
       });
       document.getElementById('btnPokerNewHand').addEventListener('click', startHoldemHand);
 
@@ -4012,17 +4467,73 @@
         if (uids.length === 0 && me.cards.length > 0) {
           uids = [me.cards[0].uid];
         }
-        state.bluff.turnSeat = state.activeSeatIndex;
-        bluffPlaySelectedCards(state.activeSeatIndex, uids, state.bluff.chosenRankInput);
+        dispatchTableAction('bluff_play', {
+          seatIdx: state.activeSeatIndex,
+          uids,
+          declaredRank: state.bluff.chosenRankInput
+        });
       });
       document.getElementById('btnBluffPass').addEventListener('click', () => {
-        state.bluff.turnSeat = state.activeSeatIndex;
-        bluffPassTurn(state.activeSeatIndex);
+        dispatchTableAction('bluff_pass', { seatIdx: state.activeSeatIndex });
       });
       document.getElementById('btnBluffChallenge').addEventListener('click', () => {
-        bluffCallChallenge(state.activeSeatIndex);
+        dispatchTableAction('bluff_challenge', { seatIdx: state.activeSeatIndex });
       });
       document.getElementById('btnBluffNewGame').addEventListener('click', startBluffGame);
+
+      // 4. DRAWER CONTROLS: PACING, CHAT, HISTORY
+      function updatePacingButtonsUI() {
+        const btnCinematic = document.getElementById('btnPacingCinematic');
+        const btnFast = document.getElementById('btnPacingFast');
+        if (!btnCinematic || !btnFast) return;
+        if (state.gamePacing === 'fast') {
+          btnFast.className = 'py-2 px-3 rounded-lg text-xs font-semibold transition bg-rose-600 text-white shadow-md';
+          btnCinematic.className = 'py-2 px-3 rounded-lg text-xs font-semibold transition text-zinc-400 hover:text-white';
+        } else {
+          btnCinematic.className = 'py-2 px-3 rounded-lg text-xs font-semibold transition bg-rose-600 text-white shadow-md';
+          btnFast.className = 'py-2 px-3 rounded-lg text-xs font-semibold transition text-zinc-400 hover:text-white';
+        }
+      }
+
+      document.getElementById('btnPacingCinematic')?.addEventListener('click', () => {
+        state.gamePacing = 'cinematic';
+        updatePacingButtonsUI();
+        broadcastRoomState();
+        showToast('Pacing set to Cinematic (~2.4s)');
+      });
+      document.getElementById('btnPacingFast')?.addEventListener('click', () => {
+        state.gamePacing = 'fast';
+        updatePacingButtonsUI();
+        broadcastRoomState();
+        showToast('Pacing set to Turbo Fast (~850ms)');
+      });
+
+      const chatInput = document.getElementById('inputTableChat');
+      const sendChat = () => {
+        if (!chatInput) return;
+        const txt = chatInput.value.trim();
+        if (txt) {
+          sendTableChatMessage(txt);
+          chatInput.value = '';
+        }
+      };
+      document.getElementById('btnSendTableChat')?.addEventListener('click', sendChat);
+      chatInput?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          sendChat();
+        }
+      });
+      document.querySelectorAll('.chat-preset-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const shout = btn.getAttribute('data-chat-preset') || btn.getAttribute('data-preset-shout');
+          if (shout) sendTableChatMessage(shout);
+        });
+      });
+      document.getElementById('btnClearHistory')?.addEventListener('click', () => {
+        state.handHistory = [];
+        renderHandHistory();
+      });
 
       // URL Query Room Auto-Join
       try {
