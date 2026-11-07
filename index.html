@@ -1118,7 +1118,7 @@
           </div>
 
           <!-- Essential Poker Actions -->
-          <div class="grid grid-cols-3 gap-2 sm:gap-3">
+          <div id="holdemActionButtonsGrid" class="grid grid-cols-3 gap-2 sm:gap-3">
             <button id="btnPokerFold" type="button" class="py-3.5 rounded-2xl bg-white/5 hover:bg-white/10 text-zinc-300 font-bold text-xs uppercase tracking-wider transition">
               Fold Hand
             </button>
@@ -1144,7 +1144,7 @@
           </div>
 
           <!-- Bluff Action Buttons -->
-          <div class="grid grid-cols-3 sm:grid-cols-4 gap-2">
+          <div id="bluffActionGrid" class="grid grid-cols-3 sm:grid-cols-4 gap-2">
             <button id="btnBluffPlayCards" type="button" class="col-span-1 sm:col-span-2 py-3.5 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs uppercase tracking-wider transition shadow-lg shadow-rose-900/25">
               Play Selected Cards
             </button>
@@ -2205,51 +2205,47 @@
     }
 
     function executeTableAction(action, payload = {}) {
-      const sIdx = payload.seatIdx !== undefined ? payload.seatIdx : state.activeSeatIndex;
+      let sIdx = payload.seatIdx;
+      if (sIdx === undefined && payload.playerId) {
+        sIdx = state.players.findIndex(p => p.id === payload.playerId);
+      }
+      if (sIdx === undefined || sIdx < 0) sIdx = state.activeSeatIndex;
+
       switch (action) {
         case 'bj_deal':
           dealBlackjackRound();
           break;
         case 'bj_hit':
-          state.bj.turnSeat = sIdx;
           bjHit(sIdx);
           break;
         case 'bj_stand':
-          state.bj.turnSeat = sIdx;
           bjStand(sIdx);
           break;
         case 'bj_double':
-          state.bj.turnSeat = sIdx;
           bjDoubleDown(sIdx);
           break;
         case 'bj_split':
-          state.bj.turnSeat = sIdx;
           bjSplitPair(sIdx);
           break;
         case 'poker_new_hand':
           startHoldemHand();
           break;
         case 'poker_fold':
-          state.holdem.turnSeat = sIdx;
           pokerActionFold(sIdx);
           break;
         case 'poker_check_call':
-          state.holdem.turnSeat = sIdx;
           pokerActionCheckCall(sIdx);
           break;
         case 'poker_raise':
-          state.holdem.turnSeat = sIdx;
           pokerActionRaise(sIdx, payload.amount);
           break;
         case 'bluff_new_game':
           startBluffGame();
           break;
         case 'bluff_play':
-          state.bluff.turnSeat = sIdx;
           bluffPlaySelectedCards(sIdx, payload.uids, payload.declaredRank);
           break;
         case 'bluff_pass':
-          state.bluff.turnSeat = sIdx;
           bluffPassTurn(sIdx);
           break;
         case 'bluff_challenge':
@@ -2899,10 +2895,13 @@
       for (const p of state.players) {
         p.cards = [];
         p.bjStatus = '';
-        p.lastMoveBadge = '$' + (p.bjBet || 100);
+        if (p.chips < 25) {
+          p.chips = 1000;
+        }
         if (!p.bjBet || p.bjBet > p.chips) {
           p.bjBet = Math.min(100, Math.max(25, p.chips));
         }
+        p.lastMoveBadge = '$' + (p.bjBet || 100);
       }
       state.bannerText = 'Choose your bet and tap Deal Hand';
       renderAll();
@@ -3041,7 +3040,9 @@
       if (state.bj.phase !== 'playing' || seatIdx !== state.bj.turnSeat) return;
       clearTurnCountdown();
       const p = state.players[seatIdx];
-      if (p.cards.length !== 2 || p.cards[0].rank !== p.cards[1].rank) return;
+      if (p.cards.length !== 2 || p.cards[0].rank !== p.cards[1].rank || p.chips < p.bjBet) return;
+      p.chips -= p.bjBet;
+      triggerSyncedFx({ kind: 'chip_to_pot', seatIdx });
       p.cards = [p.cards[0], state.bj.deck.pop()];
       showToast('Pair split');
       const total = calcBlackjackScore(p.cards).total;
@@ -3086,7 +3087,7 @@
         }
 
         // Dealer has 17+ or busted - calculate outcomes
-        const dScore = curScore;
+        const dScore = isNaN(curScore) ? 0 : curScore;
         const dBust = dScore > 21;
 
         for (const p of state.players) {
@@ -3116,14 +3117,15 @@
         }
 
         const me = state.players[state.activeSeatIndex] || state.players[0];
+        const status = (me && me.bjStatus) || 'ROUND END';
         state.bj.phase = 'betting';
-        state.bannerText = `${me.bjStatus} — Dealer ${dBust ? 'busted (' + dScore + ')' : 'has ' + dScore}`;
-        if (me.bjStatus.startsWith('WIN')) {
+        state.bannerText = `${status} — Dealer ${dBust ? 'busted (' + dScore + ')' : 'has ' + dScore}`;
+        if (status.startsWith('WIN')) {
           triggerSyncedFx({ kind: 'pot_to_winner', seatIdx: state.activeSeatIndex });
         }
         triggerSyncedFx({
           kind: 'outcome_pulse',
-          result: me.bjStatus.startsWith('WIN') ? 'win' : me.bjStatus === 'LOSE' ? 'lose' : 'push'
+          result: status.startsWith('WIN') ? 'win' : status === 'LOSE' ? 'lose' : 'push'
         });
         broadcastRoomState();
         renderAll();
@@ -3136,14 +3138,20 @@
     // 6. ENGINE B: TEXAS HOLD'EM POKER
     // =========================================================================
     function evaluate7CardPoker(cards) {
-      if (!cards || cards.length < 2) return { score: 0, label: '' };
-      const vals = cards.map(c => RANK_VALUE[c.rank]).sort((a, b) => b - a);
+      if (!Array.isArray(cards) || cards.length < 2) return { score: 0, label: '' };
+      const validCards = cards.filter(c => c && c.rank && !c.hidden);
+      if (validCards.length < 2) return { score: 0, label: '' };
+      const vals = validCards.map(c => RANK_VALUE[c.rank]).filter(v => v !== undefined).sort((a, b) => b - a);
+      if (vals.length === 0) return { score: 0, label: '' };
       const counts = {};
       const suitCards = { S: [], H: [], D: [], C: [] };
-      for (const c of cards) {
+      for (const c of validCards) {
         const v = RANK_VALUE[c.rank];
+        if (v === undefined) continue;
         counts[v] = (counts[v] || 0) + 1;
-        suitCards[c.suit].push(v);
+        if (suitCards[c.suit]) {
+          suitCards[c.suit].push(v);
+        }
       }
 
       function findStraightHigh(numList) {
@@ -3163,7 +3171,7 @@
 
       let flushSuit = null;
       for (const s of ['S', 'H', 'D', 'C']) {
-        if (suitCards[s].length >= 5) {
+        if (suitCards[s] && suitCards[s].length >= 5) {
           flushSuit = s;
           break;
         }
@@ -3183,6 +3191,7 @@
         .map(([val, cnt]) => ({ val: parseInt(val, 10), cnt }))
         .sort((a, b) => b.cnt - a.cnt || b.val - a.val);
 
+      if (!groups || groups.length === 0) return { score: vals[0] || 0, label: 'High Card' };
       if (groups[0].cnt === 4) return { score: 7000000 + groups[0].val * 100, label: 'Four of a Kind' };
       if (groups[0].cnt === 3 && groups[1] && groups[1].cnt >= 2) {
         return { score: 6000000 + groups[0].val * 100 + groups[1].val, label: 'Full House' };
@@ -3251,6 +3260,7 @@
         winner.chips += state.holdem.pot;
         state.holdem.phase = 'showdown';
         state.bannerText = `${winner.name} wins $${state.holdem.pot}`;
+        broadcastRoomState();
         renderAll();
         return;
       }
@@ -3452,8 +3462,10 @@
       state.holdem.pot += added;
       if (p.pokerBet > state.holdem.currentBet) {
         state.holdem.currentBet = p.pokerBet;
+        state.holdem.actedThisStreet = { [p.id]: true };
+      } else {
+        state.holdem.actedThisStreet[p.id] = true;
       }
-      state.holdem.actedThisStreet[p.id] = true;
       triggerSyncedFx({
         kind: 'chip_to_pot',
         seatIdx
@@ -3509,6 +3521,7 @@
           p.chips += 300;
           state.bannerText = `${p.name} won Bluff (+$300)`;
           triggerSyncedFx({ kind: 'outcome_pulse', result: 'win' });
+          broadcastRoomState();
           renderAll();
           return true;
         }
@@ -3586,9 +3599,11 @@
         for (const pl of state.players) pl.lastMoveBadge = '';
         state.bluff.turnSeat = leaderIdx;
         recordMove(p.name, 'Pass', `Pile cleared — ${state.players[leaderIdx].name} leads next`, seatIdx);
+        if (checkBluffWinner()) return;
       } else {
         state.bluff.turnSeat = (state.bluff.turnSeat + 1) % state.players.length;
         recordMove(p.name, 'Pass', `${p.name} passed`, seatIdx);
+        if (checkBluffWinner()) return;
       }
 
       broadcastRoomState();
@@ -4161,7 +4176,7 @@
       document.getElementById('bjCurrentBetInput').textContent = me.bjBet || 100;
 
       const isMyTurn = state.bj.phase === 'playing' && state.bj.turnSeat === state.activeSeatIndex;
-      const canSplit = isMyTurn && me.cards.length === 2 && me.cards[0].rank === me.cards[1].rank;
+      const canSplit = isMyTurn && me.cards.length === 2 && me.cards[0].rank === me.cards[1].rank && me.chips >= me.bjBet;
       const canDouble = isMyTurn && me.cards.length === 2 && me.chips >= me.bjBet;
       document.getElementById('btnBjHit').disabled = !isMyTurn;
       document.getElementById('btnBjStand').disabled = !isMyTurn;
@@ -4238,6 +4253,7 @@
       });
 
       document.getElementById('holdemRaiseRow').classList.toggle('hidden', isShowdown);
+      document.getElementById('holdemActionButtonsGrid').classList.toggle('hidden', isShowdown);
       document.getElementById('btnPokerNewHand').classList.toggle('hidden', !isShowdown);
 
       const slider = document.getElementById('holdemRaiseSlider');
@@ -4376,6 +4392,7 @@
       btnPlay.disabled = !isMyBluffTurn;
       document.getElementById('btnBluffPass').disabled = !isMyBluffTurn || !state.bluff.lastPlay;
       document.getElementById('btnBluffChallenge').disabled = !isMyBluffTurn || !state.bluff.lastPlay;
+      document.getElementById('bluffActionGrid').classList.toggle('hidden', state.bluff.phase === 'gameover');
       document.getElementById('btnBluffNewGame').classList.toggle('hidden', state.bluff.phase !== 'gameover');
     }
 
@@ -4468,6 +4485,11 @@
       document.getElementById('btnCloseCreateModal').addEventListener('click', () => {
         document.getElementById('createRoomModal').classList.add('hidden');
       });
+      document.getElementById('createRoomModal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('createRoomModal')) {
+          document.getElementById('createRoomModal').classList.add('hidden');
+        }
+      });
       document.querySelectorAll('.modal-game-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           modalChosenGame = btn.getAttribute('data-modal-game');
@@ -4500,6 +4522,11 @@
       document.getElementById('btnCloseProfileModal').addEventListener('click', () => {
         document.getElementById('profileModal').classList.add('hidden');
       });
+      document.getElementById('profileModal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('profileModal')) {
+          document.getElementById('profileModal').classList.add('hidden');
+        }
+      });
       document.querySelectorAll('.avatar-option').forEach(btn => {
         btn.addEventListener('click', () => {
           state.selectedAvatar = btn.getAttribute('data-avatar');
@@ -4510,13 +4537,14 @@
         });
       });
       document.getElementById('btnSaveProfile').addEventListener('click', () => {
-        const newName = (document.getElementById('inputPlayerName').value || 'Alex').trim();
+        const newName = (document.getElementById('inputPlayerName')?.value || 'Alex').trim();
         if (state.players[state.activeSeatIndex]) {
           state.players[state.activeSeatIndex].name = newName;
           state.players[state.activeSeatIndex].avatar = state.selectedAvatar;
         }
         document.getElementById('profileModal').classList.add('hidden');
         showToast('Profile updated');
+        broadcastRoomState();
         renderAll();
       });
 
@@ -4527,6 +4555,11 @@
       document.getElementById('btnCloseRulesModal').addEventListener('click', () => {
         document.getElementById('rulesModal').classList.add('hidden');
       });
+      document.getElementById('rulesModal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('rulesModal')) {
+          document.getElementById('rulesModal').classList.add('hidden');
+        }
+      });
 
       // Table Menu Drawer
       document.getElementById('btnNavMenu').addEventListener('click', () => {
@@ -4534,6 +4567,11 @@
       });
       document.getElementById('btnCloseDrawer').addEventListener('click', () => {
         document.getElementById('tableToolsDrawer').classList.add('hidden');
+      });
+      document.getElementById('tableToolsDrawer').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('tableToolsDrawer')) {
+          document.getElementById('tableToolsDrawer').classList.add('hidden');
+        }
       });
 
       // Waiting Room Actions
@@ -4553,6 +4591,11 @@
       });
       document.getElementById('btnCloseShareModal').addEventListener('click', () => {
         document.getElementById('shareModal').classList.add('hidden');
+      });
+      document.getElementById('shareModal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('shareModal')) {
+          document.getElementById('shareModal').classList.add('hidden');
+        }
       });
       document.getElementById('btnCopyInviteLink').addEventListener('click', copyRoomInvite);
       document.getElementById('btnNativeShare').addEventListener('click', () => {
