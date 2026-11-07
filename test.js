@@ -5,6 +5,16 @@ async function runTests() {
   const SERVER_URL = 'http://localhost:3000';
   const ROOM_CODE = 'ROOM_' + Date.now().toString(36).toUpperCase();
 
+  // 0. UptimeRobot / Health Check Endpoint Test
+  const healthRes = await fetch(`${SERVER_URL}/health`);
+  const healthJson = await healthRes.json();
+  if (healthRes.status === 200 && healthJson.status === 'ok') {
+    console.log('[0/5] UptimeRobot /health check OK:', healthJson);
+  } else {
+    console.error('[FAIL] Health check failed:', healthRes.status, healthJson);
+    process.exit(1);
+  }
+
   // 1. Host Connects & Creates Room
   const hostSocket = io(SERVER_URL, { transports: ['websocket'] });
   await new Promise(r => hostSocket.on('connect', r));

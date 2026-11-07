@@ -19,6 +19,33 @@ const MIME_TYPES = {
 
 const server = http.createServer((req, res) => {
   let reqPath = decodeURI(req.url.split('?')[0]);
+
+  // Dedicated UptimeRobot / Health Check Endpoint
+  if (reqPath === '/health' || reqPath === '/ping') {
+    const healthData = JSON.stringify({
+      status: 'ok',
+      service: 'noir-card-lounge',
+      uptime: Math.floor(process.uptime()),
+      activeRooms: rooms.size,
+      connectedClients: io.engine ? io.engine.clientsCount : 0,
+      timestamp: new Date().toISOString()
+    });
+
+    res.writeHead(200, {
+      'Content-Type': 'application/json',
+      'Content-Length': Buffer.byteLength(healthData),
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Access-Control-Allow-Origin': '*'
+    });
+
+    if (req.method === 'HEAD') {
+      res.end();
+    } else {
+      res.end(healthData);
+    }
+    return;
+  }
+
   if (reqPath === '/' || reqPath === '') reqPath = '/index.html';
 
   const safePath = path.normalize(reqPath).replace(/^(\.\.[\/\\])+/, '');
@@ -458,6 +485,29 @@ setInterval(() => {
     }
   }
 }, 30 * 60 * 1000);
+
+// Render / Cloud Keep-Alive Service
+// If RENDER_EXTERNAL_URL or KEEP_ALIVE_URL is provided, auto-ping /health every 10 minutes
+const keepAliveUrl = process.env.RENDER_EXTERNAL_URL || process.env.KEEP_ALIVE_URL;
+if (keepAliveUrl) {
+  const target = keepAliveUrl.replace(/\/+$/, '') + '/health';
+  const PING_INTERVAL = 10 * 60 * 1000; // 10 minutes (Render spins down after 15m)
+  console.log(`[Keep-Alive] Initializing auto self-ping service targeting ${target} every 10m`);
+
+  setInterval(() => {
+    try {
+      const u = new URL(target);
+      const client = u.protocol === 'https:' ? require('https') : require('http');
+      client.get(target, (res) => {
+        console.log(`[Keep-Alive] Pinged ${target} - Status: ${res.statusCode}`);
+      }).on('error', (err) => {
+        console.warn(`[Keep-Alive] Ping warning:`, err.message);
+      });
+    } catch (e) {
+      console.warn(`[Keep-Alive] URL error:`, e.message);
+    }
+  }, PING_INTERVAL);
+}
 
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`NOIR Live Production Server with Anti-Cheat & Socket.IO running at http://localhost:${PORT}`);
