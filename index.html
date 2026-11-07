@@ -133,11 +133,11 @@
 
     /* Community Card Slot Footprints */
     .community-card-slot {
-      width: 58px;
-      height: 84px;
+      width: 62px;
+      height: 88px;
       border-radius: 9px;
-      border: 1.5px dashed rgba(255, 255, 255, 0.12);
-      background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.03) 0%, rgba(0, 0, 0, 0.28) 100%);
+      border: 1.5px dashed rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.02);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -150,26 +150,23 @@
     }
     @media (min-width: 640px) {
       .community-card-slot {
-        width: 70px;
-        height: 100px;
-        border-radius: 11px;
+        width: 72px;
+        height: 102px;
+        border-radius: 10px;
       }
     }
 
-    /* Realistic Luxury Playing Cards */
+    /* Authentic Luxury Casino Playing Cards */
     .playing-card {
-      width: 58px;
-      height: 84px;
+      width: 62px;
+      height: 88px;
       border-radius: 9px;
-      background: linear-gradient(145deg, #ffffff 0%, #fbfbfc 100%);
-      border: 1px solid rgba(0, 0, 0, 0.12);
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.55), 0 1px 3px rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgba(255, 255, 255, 0.85);
+      background: #ffffff;
+      border: 1px solid rgba(0, 0, 0, 0.16);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.35);
       transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.24s ease, border-color 0.2s ease;
       position: relative;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 5px 6px;
+      overflow: hidden;
       cursor: pointer;
       flex-shrink: 0;
       transform-style: preserve-3d;
@@ -179,10 +176,9 @@
     }
     @media (min-width: 640px) {
       .playing-card {
-        width: 70px;
-        height: 100px;
-        padding: 6px 7px;
-        border-radius: 11px;
+        width: 72px;
+        height: 102px;
+        border-radius: 10px;
       }
     }
     .playing-card:hover {
@@ -193,18 +189,16 @@
       pointer-events: none;
     }
     .playing-card.card-sm {
-      width: 28px;
-      height: 40px;
-      padding: 2px 3px;
+      width: 32px;
+      height: 46px;
       border-radius: 5px;
       font-size: 0.6rem;
       box-shadow: 0 3px 8px rgba(0, 0, 0, 0.55);
     }
     @media (min-width: 640px) {
       .playing-card.card-sm {
-        width: 32px;
-        height: 46px;
-        padding: 3px 4px;
+        width: 36px;
+        height: 52px;
         border-radius: 6px;
         font-size: 0.65rem;
       }
@@ -216,6 +210,90 @@
       box-shadow: 0 20px 36px -4px rgba(225, 29, 72, 0.45), 0 0 0 2px #e11d48;
       z-index: 25;
     }
+
+    /* Fixed Corner Anchoring */
+    .card-corner-tl {
+      position: absolute;
+      top: 4px;
+      left: 5px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      line-height: 1;
+      pointer-events: none;
+      z-index: 2;
+    }
+    .card-corner-br {
+      position: absolute;
+      bottom: 4px;
+      right: 5px;
+      transform: rotate(180deg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      line-height: 1;
+      pointer-events: none;
+      z-index: 2;
+    }
+    @media (min-width: 640px) {
+      .card-corner-tl {
+        top: 5px;
+        left: 6px;
+      }
+      .card-corner-br {
+        bottom: 5px;
+        right: 6px;
+      }
+    }
+    .card-corner-rank {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      font-weight: 800;
+      font-size: 11px;
+      letter-spacing: -0.04em;
+      line-height: 1;
+    }
+    @media (min-width: 640px) {
+      .card-corner-rank {
+        font-size: 13px;
+      }
+    }
+    .card-corner-suit {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1.5px;
+    }
+    .card-center {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Small card corner adjustments */
+    .card-sm .card-corner-tl {
+      top: 2px;
+      left: 3px;
+    }
+    .card-sm .card-corner-br {
+      display: none;
+    }
+    .card-sm .card-corner-rank {
+      font-size: 9px;
+      font-weight: 800;
+    }
+    .card-sm .card-corner-suit {
+      margin-top: 0.5px;
+    }
+    .card-sm .card-center {
+      inset: auto 2px 2px auto;
+      right: 3px;
+      bottom: 2px;
+    }
+
     .playing-card.card-back {
       background: #090a10;
       border: 1px solid rgba(255, 255, 255, 0.18);
@@ -258,6 +336,8 @@
     .playing-card.card-sm.card-back::after {
       width: 14px;
       height: 14px;
+      font-size: 7px;
+    }
       font-size: 7px;
     }
 
@@ -473,11 +553,11 @@
         </button>
 
         <!-- Room Header Badge (Visible in waiting room or at table) -->
-        <div id="roomHeaderBadge" class="hidden items-center gap-2 bg-charcoal-900 border border-white/10 rounded-full px-3 py-1 text-xs">
+        <div id="roomHeaderBadge" class="hidden items-center gap-2 bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs">
           <span id="multiplayerSyncDot" class="w-2 h-2 rounded-full bg-emerald-400 live-sync-dot" title="Live Sync Active"></span>
-          <span class="text-zinc-400 font-mono text-[11px]">ROOM</span>
+          <span class="text-zinc-500 font-mono text-[11px]">ROOM</span>
           <span id="headerRoomCode" class="font-mono font-bold text-white tracking-wider">CLUB42</span>
-          <span id="headerSpectatorBadge" class="hidden px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 font-mono text-[10px] font-bold">SPECTATING</span>
+          <span id="headerSpectatorBadge" class="hidden px-2 py-0.5 rounded bg-amber-500/15 border border-amber-500/30 text-amber-300 font-mono text-[10px] font-bold">SPECTATING</span>
           <button id="btnHeaderCopyCode" type="button" class="ml-1 text-[11px] font-semibold text-rose-400 hover:text-rose-300 transition flex items-center gap-1">
             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
@@ -488,14 +568,14 @@
       </div>
 
       <!-- Center Game Selector Tabs (Visible during table game play) -->
-      <div id="gameSelectorPills" class="hidden bg-charcoal-900 p-1 rounded-full border border-white/10 items-center gap-1">
-        <button id="tabGameBlackjack" type="button" data-game="blackjack" class="game-tab-btn px-3 py-1 rounded-full text-xs font-semibold transition">
+      <div id="gameSelectorPills" class="hidden bg-zinc-900 p-1 rounded-lg border border-zinc-800 items-center gap-1">
+        <button id="tabGameBlackjack" type="button" data-game="blackjack" class="game-tab-btn px-3 py-1 rounded-md text-xs font-semibold transition">
           Blackjack
         </button>
-        <button id="tabGameHoldem" type="button" data-game="holdem" class="game-tab-btn px-3 py-1 rounded-full text-xs font-semibold transition">
+        <button id="tabGameHoldem" type="button" data-game="holdem" class="game-tab-btn px-3 py-1 rounded-md text-xs font-semibold transition">
           Texas Hold'em
         </button>
-        <button id="tabGameBluff" type="button" data-game="bluff" class="game-tab-btn px-3 py-1 rounded-full text-xs font-semibold transition">
+        <button id="tabGameBluff" type="button" data-game="bluff" class="game-tab-btn px-3 py-1 rounded-md text-xs font-semibold transition">
           Bluff
         </button>
       </div>
@@ -694,32 +774,38 @@
               <!-- Cards Group -->
               <div class="relative flex items-center justify-center -space-x-5 transition-transform duration-300 group-hover:scale-105">
                 <!-- Card 1: Ace of Spades -->
-                <div class="w-18 h-26 sm:w-20 sm:h-28 rounded-lg bg-white border border-zinc-300 text-zinc-950 p-2 flex flex-col justify-between shadow-2xl -rotate-6">
-                  <div class="flex items-center justify-between leading-none font-bold font-mono text-xs">
-                    <span>A</span>
-                    <span class="text-[10px]">♠</span>
+                <div class="playing-card text-[#0a0a0f] shadow-2xl -rotate-6">
+                  <div class="card-corner-tl">
+                    <span class="card-corner-rank">A</span>
+                    <span class="card-corner-suit"><svg class="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-current" viewBox="0 0 24 24"><path d="M12 2C10.5 4.5 5 11 5 15C5 18 7.5 20 10 20C11.2 20 12 19.3 12 18.5C12 19.3 12.8 20 14 20C16.5 20 19 18 19 15C19 11 13.5 4.5 12 2ZM10.5 19L9.5 22H14.5L13.5 19H10.5Z"/></svg></span>
                   </div>
-                  <div class="text-center my-auto">
-                    <svg class="w-7 h-7 mx-auto fill-current" viewBox="0 0 24 24"><path d="M12 2C7 8 4 11.5 4 14.5C4 17.5 6.5 19.5 9 19.5C10.5 19.5 11.5 18.8 12 18C12.5 18.8 13.5 19.5 15 19.5C17.5 19.5 20 17.5 20 14.5C20 11.5 17 8 12 2ZM10.5 18.5L9 22H15L13.5 18.5H10.5Z"/></svg>
+                  <div class="card-center">
+                    <div class="relative flex items-center justify-center">
+                      <div class="absolute -inset-1.5 rounded-full border border-current opacity-15"></div>
+                      <svg class="w-7 h-7 sm:w-9 sm:h-9 fill-current" viewBox="0 0 24 24"><path d="M12 2C10.5 4.5 5 11 5 15C5 18 7.5 20 10 20C11.2 20 12 19.3 12 18.5C12 19.3 12.8 20 14 20C16.5 20 19 18 19 15C19 11 13.5 4.5 12 2ZM10.5 19L9.5 22H14.5L13.5 19H10.5Z"/></svg>
+                    </div>
                   </div>
-                  <div class="flex items-center justify-between leading-none font-bold font-mono text-xs rotate-180">
-                    <span>A</span>
-                    <span class="text-[10px]">♠</span>
+                  <div class="card-corner-br">
+                    <span class="card-corner-rank">A</span>
+                    <span class="card-corner-suit"><svg class="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-current" viewBox="0 0 24 24"><path d="M12 2C10.5 4.5 5 11 5 15C5 18 7.5 20 10 20C11.2 20 12 19.3 12 18.5C12 19.3 12.8 20 14 20C16.5 20 19 18 19 15C19 11 13.5 4.5 12 2ZM10.5 19L9.5 22H14.5L13.5 19H10.5Z"/></svg></span>
                   </div>
                 </div>
 
                 <!-- Card 2: King of Hearts -->
-                <div class="w-18 h-26 sm:w-20 sm:h-28 rounded-lg bg-white border border-zinc-300 text-rose-600 p-2 flex flex-col justify-between shadow-2xl rotate-6">
-                  <div class="flex items-center justify-between leading-none font-bold font-mono text-xs">
-                    <span>K</span>
-                    <span class="text-[10px]">♥</span>
+                <div class="playing-card text-rose-600 shadow-2xl rotate-6">
+                  <div class="card-corner-tl">
+                    <span class="card-corner-rank">K</span>
+                    <span class="card-corner-suit"><svg class="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-current" viewBox="0 0 24 24"><path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.27 2 8.5C2 5.41 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.08C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.41 22 8.5C22 12.27 18.6 15.36 13.45 20.03L12 21.35Z"/></svg></span>
                   </div>
-                  <div class="text-center my-auto">
-                    <svg class="w-7 h-7 mx-auto fill-current" viewBox="0 0 24 24"><path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.27 2 8.5C2 5.41 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.08C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.41 22 8.5C22 12.27 18.6 15.36 13.45 20.03L12 21.35Z"/></svg>
+                  <div class="card-center">
+                    <div class="flex flex-col items-center justify-center opacity-90">
+                      <svg class="w-5 h-5 sm:w-6 sm:h-6 fill-current mb-0.5" viewBox="0 0 24 24"><path d="M5 16L3 5L8.5 10L12 4L15.5 10L21 5L19 16H5M5 18H19C19.55 18 20 18.45 20 19C20 19.55 19.55 20 19 20H5C4.45 20 4 19.55 4 19C4 18.45 4.45 18 5 18Z"/></svg>
+                      <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.27 2 8.5C2 5.41 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.08C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.41 22 8.5C22 12.27 18.6 15.36 13.45 20.03L12 21.35Z"/></svg>
+                    </div>
                   </div>
-                  <div class="flex items-center justify-between leading-none font-bold font-mono text-xs rotate-180">
-                    <span>K</span>
-                    <span class="text-[10px]">♥</span>
+                  <div class="card-corner-br">
+                    <span class="card-corner-rank">K</span>
+                    <span class="card-corner-suit"><svg class="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-current" viewBox="0 0 24 24"><path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.27 2 8.5C2 5.41 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.08C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.41 22 8.5C22 12.27 18.6 15.36 13.45 20.03L12 21.35Z"/></svg></span>
                   </div>
                 </div>
               </div>
@@ -761,47 +847,53 @@
               <!-- Cards Group -->
               <div class="relative flex items-center justify-center -space-x-3 transition-transform duration-300 group-hover:scale-105">
                 <!-- Flop 1: 10 Spades -->
-                <div class="w-14 h-22 sm:w-16 sm:h-24 rounded-lg bg-white border border-zinc-300 text-zinc-950 p-1.5 flex flex-col justify-between shadow-2xl -rotate-3">
-                  <div class="flex items-center justify-between leading-none font-bold font-mono text-[10px]">
-                    <span>10</span>
-                    <span class="text-[9px]">♠</span>
+                <div class="playing-card text-[#0a0a0f] shadow-2xl -rotate-3">
+                  <div class="card-corner-tl">
+                    <span class="card-corner-rank">10</span>
+                    <span class="card-corner-suit"><svg class="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-current" viewBox="0 0 24 24"><path d="M12 2C10.5 4.5 5 11 5 15C5 18 7.5 20 10 20C11.2 20 12 19.3 12 18.5C12 19.3 12.8 20 14 20C16.5 20 19 18 19 15C19 11 13.5 4.5 12 2ZM10.5 19L9.5 22H14.5L13.5 19H10.5Z"/></svg></span>
                   </div>
-                  <div class="text-center my-auto">
-                    <svg class="w-5 h-5 mx-auto fill-current" viewBox="0 0 24 24"><path d="M12 2C7 8 4 11.5 4 14.5C4 17.5 6.5 19.5 9 19.5C10.5 19.5 11.5 18.8 12 18C12.5 18.8 13.5 19.5 15 19.5C17.5 19.5 20 17.5 20 14.5C20 11.5 17 8 12 2ZM10.5 18.5L9 22H15L13.5 18.5H10.5Z"/></svg>
+                  <div class="card-center">
+                    <svg class="w-6 h-6 sm:w-7 sm:h-7 fill-current" viewBox="0 0 24 24"><path d="M12 2C10.5 4.5 5 11 5 15C5 18 7.5 20 10 20C11.2 20 12 19.3 12 18.5C12 19.3 12.8 20 14 20C16.5 20 19 18 19 15C19 11 13.5 4.5 12 2ZM10.5 19L9.5 22H14.5L13.5 19H10.5Z"/></svg>
                   </div>
-                  <div class="flex items-center justify-between leading-none font-bold font-mono text-[10px] rotate-180">
-                    <span>10</span>
-                    <span class="text-[9px]">♠</span>
+                  <div class="card-corner-br">
+                    <span class="card-corner-rank">10</span>
+                    <span class="card-corner-suit"><svg class="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-current" viewBox="0 0 24 24"><path d="M12 2C10.5 4.5 5 11 5 15C5 18 7.5 20 10 20C11.2 20 12 19.3 12 18.5C12 19.3 12.8 20 14 20C16.5 20 19 18 19 15C19 11 13.5 4.5 12 2ZM10.5 19L9.5 22H14.5L13.5 19H10.5Z"/></svg></span>
                   </div>
                 </div>
 
                 <!-- Flop 2: Jack Hearts -->
-                <div class="w-14 h-22 sm:w-16 sm:h-24 rounded-lg bg-white border border-zinc-300 text-rose-600 p-1.5 flex flex-col justify-between shadow-2xl z-10">
-                  <div class="flex items-center justify-between leading-none font-bold font-mono text-[10px]">
-                    <span>J</span>
-                    <span class="text-[9px]">♥</span>
+                <div class="playing-card text-rose-600 shadow-2xl z-10">
+                  <div class="card-corner-tl">
+                    <span class="card-corner-rank">J</span>
+                    <span class="card-corner-suit"><svg class="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-current" viewBox="0 0 24 24"><path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.27 2 8.5C2 5.41 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.08C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.41 22 8.5C22 12.27 18.6 15.36 13.45 20.03L12 21.35Z"/></svg></span>
                   </div>
-                  <div class="text-center my-auto">
-                    <svg class="w-5 h-5 mx-auto fill-current" viewBox="0 0 24 24"><path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.27 2 8.5C2 5.41 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.08C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.41 22 8.5C22 12.27 18.6 15.36 13.45 20.03L12 21.35Z"/></svg>
+                  <div class="card-center">
+                    <div class="flex flex-col items-center justify-center opacity-90">
+                      <svg class="w-5 h-5 sm:w-6 sm:h-6 fill-current mb-0.5" viewBox="0 0 24 24"><path d="M12 2L15 7H9L12 2M6 8H18L19 14H5L6 8M7 16H17V18H7V16Z"/></svg>
+                      <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.27 2 8.5C2 5.41 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.08C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.41 22 8.5C22 12.27 18.6 15.36 13.45 20.03L12 21.35Z"/></svg>
+                    </div>
                   </div>
-                  <div class="flex items-center justify-between leading-none font-bold font-mono text-[10px] rotate-180">
-                    <span>J</span>
-                    <span class="text-[9px]">♥</span>
+                  <div class="card-corner-br">
+                    <span class="card-corner-rank">J</span>
+                    <span class="card-corner-suit"><svg class="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-current" viewBox="0 0 24 24"><path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.27 2 8.5C2 5.41 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.08C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.41 22 8.5C22 12.27 18.6 15.36 13.45 20.03L12 21.35Z"/></svg></span>
                   </div>
                 </div>
 
                 <!-- Flop 3: Queen Diamonds -->
-                <div class="w-14 h-22 sm:w-16 sm:h-24 rounded-lg bg-white border border-zinc-300 text-rose-600 p-1.5 flex flex-col justify-between shadow-2xl rotate-3">
-                  <div class="flex items-center justify-between leading-none font-bold font-mono text-[10px]">
-                    <span>Q</span>
-                    <span class="text-[9px]">♦</span>
+                <div class="playing-card text-rose-600 shadow-2xl rotate-3">
+                  <div class="card-corner-tl">
+                    <span class="card-corner-rank">Q</span>
+                    <span class="card-corner-suit"><svg class="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-current" viewBox="0 0 24 24"><path d="M12 2.5L19 12L12 21.5L5 12Z"/></svg></span>
                   </div>
-                  <div class="text-center my-auto">
-                    <svg class="w-5 h-5 mx-auto fill-current" viewBox="0 0 24 24"><path d="M12 2L20 12L12 22L4 12L12 2Z"/></svg>
+                  <div class="card-center">
+                    <div class="flex flex-col items-center justify-center opacity-90">
+                      <svg class="w-5 h-5 sm:w-6 sm:h-6 fill-current mb-0.5" viewBox="0 0 24 24"><path d="M12 3L14.5 8.5L20 8L17 13L21 17H3L7 13L4 8L9.5 8.5L12 3M6 19H18V21H6V19Z"/></svg>
+                      <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 2.5L19 12L12 21.5L5 12Z"/></svg>
+                    </div>
                   </div>
-                  <div class="flex items-center justify-between leading-none font-bold font-mono text-[10px] rotate-180">
-                    <span>Q</span>
-                    <span class="text-[9px]">♦</span>
+                  <div class="card-corner-br">
+                    <span class="card-corner-rank">Q</span>
+                    <span class="card-corner-suit"><svg class="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-current" viewBox="0 0 24 24"><path d="M12 2.5L19 12L12 21.5L5 12Z"/></svg></span>
                   </div>
                 </div>
               </div>
@@ -843,19 +935,11 @@
               <!-- Cards Group -->
               <div class="relative flex items-center justify-center -space-x-4 transition-transform duration-300 group-hover:scale-105">
                 <!-- Card 1 -->
-                <div class="w-14 h-22 sm:w-16 sm:h-24 rounded-lg bg-zinc-900 border border-zinc-700 p-1 shadow-2xl -rotate-8 relative overflow-hidden flex items-center justify-center">
-                  <span class="text-xs font-mono font-bold text-zinc-500">NOIR</span>
-                </div>
-
+                <div class="playing-card card-back shadow-2xl -rotate-8"></div>
                 <!-- Card 2 -->
-                <div class="w-14 h-22 sm:w-16 sm:h-24 rounded-lg bg-zinc-900 border border-zinc-700 p-1 shadow-2xl z-10 relative overflow-hidden flex items-center justify-center">
-                  <span class="text-xs font-mono font-bold text-zinc-500">NOIR</span>
-                </div>
-
+                <div class="playing-card card-back shadow-2xl z-10"></div>
                 <!-- Card 3 -->
-                <div class="w-14 h-22 sm:w-16 sm:h-24 rounded-lg bg-zinc-900 border border-zinc-700 p-1 shadow-2xl rotate-8 relative overflow-hidden flex items-center justify-center">
-                  <span class="text-xs font-mono font-bold text-zinc-500">NOIR</span>
-                </div>
+                <div class="playing-card card-back shadow-2xl rotate-8"></div>
               </div>
 
               <!-- Sleek Monospace Label -->
@@ -976,7 +1060,7 @@
           <div class="flex items-center justify-between">
             <h3 class="text-sm font-bold text-white flex items-center gap-2">
               <span>Connected Players</span>
-              <span class="px-2 py-0.5 rounded-full bg-white/10 text-xs text-zinc-300 font-mono">
+              <span class="px-2 py-0.5 rounded bg-zinc-800 border border-zinc-700 text-xs text-zinc-300 font-mono">
                 <span id="waitingPlayerCount">1</span> / <span id="waitingMaxPlayers">4</span>
               </span>
             </h3>
@@ -1064,8 +1148,8 @@
         <!-- 2. MIDDLE TABLE FELT: POT / COMMUNITY CARDS / BLUFF PILE & CONTEXT PILL -->
         <div class="my-auto flex flex-col items-center justify-center text-center z-10 w-full py-2">
           
-          <!-- Modern Spotlight Action Pill -->
-          <div id="liveMoveSpotlight" class="mb-3 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-charcoal-900/90 border border-white/10 shadow-lg max-w-full transition-transform duration-200">
+          <!-- Modern Action Banner -->
+          <div id="liveMoveSpotlight" class="mb-3 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 shadow-lg max-w-full transition-transform duration-200">
             <span id="spotlightTurnDot" class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
             <span id="tableActionBanner" class="text-zinc-200 text-xs sm:text-sm font-semibold truncate">
               Place your bet to begin
@@ -1083,8 +1167,8 @@
                 </span>
                 <span class="tracking-wide">POT $<span id="holdemPotAmount" class="text-rose-300">0</span></span>
               </div>
-              <span id="holdemStreetBadge" class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-white/10 text-zinc-300 font-bold tracking-wider">PRE-FLOP</span>
-              <div id="holdemCallPill" class="px-3 py-1 rounded-full bg-charcoal-900/90 border border-white/10 text-xs text-zinc-400 shadow-md">
+              <span id="holdemStreetBadge" class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-zinc-800 border border-zinc-700 text-zinc-300 font-bold tracking-wider">PRE-FLOP</span>
+              <div id="holdemCallPill" class="px-3 py-1 rounded-lg bg-zinc-900 border border-zinc-800 text-xs text-zinc-400 shadow-md">
                 To Call: <span id="holdemCurrentBet" class="text-white font-mono font-bold">$0</span>
               </div>
             </div>
@@ -1094,10 +1178,10 @@
           <!-- Bluff Center Felt: Played Pile + Declared Rank -->
           <div id="centerBluff" class="hidden flex flex-col items-center w-full space-y-2.5">
             <div class="flex items-center gap-2.5">
-              <div class="px-3.5 py-1 rounded-full bg-rose-600/20 border border-rose-500/30 text-xs font-semibold text-white">
+              <div class="px-3.5 py-1 rounded-lg bg-rose-600/10 border border-rose-500/30 text-xs font-semibold text-white">
                 Declared Rank: <span id="bluffDeclaredRankBadge" class="text-rose-400 font-bold ml-1 font-mono">Any</span>
               </div>
-              <div class="px-3 py-1 rounded-full bg-charcoal-900 border border-white/10 text-xs text-zinc-300">
+              <div class="px-3 py-1 rounded-lg bg-zinc-900 border border-zinc-800 text-xs text-zinc-300">
                 <span id="bluffPileCount" class="font-mono font-bold text-white">0</span> cards in pile
               </div>
             </div>
@@ -1125,7 +1209,7 @@
               </div>
               <div class="flex items-center gap-2">
                 <div id="activeHandEvalBadge" class="text-[11px] font-medium text-zinc-400">Ready</div>
-                <div id="dockTurnTimerPill" class="hidden items-center gap-1.5 px-2 py-0.5 rounded-full bg-rose-950/80 border border-rose-500/40 text-[10px] font-mono font-bold text-rose-300">
+                <div id="dockTurnTimerPill" class="hidden items-center gap-1.5 px-2 py-0.5 rounded bg-rose-950/80 border border-rose-500/40 text-[10px] font-mono font-bold text-rose-300">
                   <span class="w-1.5 h-1.5 rounded-full bg-rose-400 animate-ping"></span>
                   <span id="dockTurnTimerVal">25s</span>
                 </div>
@@ -1133,8 +1217,8 @@
             </div>
           </div>
 
-          <!-- Bankroll Pill -->
-          <div id="activeBankrollPill" class="flex items-center gap-2 px-3 py-1 rounded-full bg-charcoal-900 border border-white/10 text-xs sm:text-sm font-bold text-white shadow-md">
+          <!-- Bankroll Button/Badge -->
+          <div id="activeBankrollPill" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs sm:text-sm font-bold text-white shadow-md">
             <span class="noir-chip-mini"></span>
             <span class="font-mono">$<span id="activePlayerChips">2,500</span></span>
           </div>
@@ -1460,7 +1544,7 @@
   </div>
 
   <!-- SHORT CONTEXTUAL NOTIFICATION TOAST -->
-  <div id="toastBanner" class="fixed top-20 left-1/2 -translate-x-1/2 z-50 hidden px-5 py-2.5 rounded-full noir-glass border-rose-500/40 text-white text-xs font-semibold shadow-2xl whitespace-nowrap">
+  <div id="toastBanner" class="fixed top-20 left-1/2 -translate-x-1/2 z-50 hidden px-4 py-2.5 rounded-lg bg-zinc-900 border border-zinc-700 text-white text-xs font-semibold shadow-2xl whitespace-nowrap">
     Notification
   </div>
 
@@ -1484,23 +1568,23 @@
     // 2. PLAYING CARDS & VECTOR GRAPHICS
     // =========================================================================
     const SUIT_SVG = {
-      S: '<svg class="w-4 h-4 sm:w-5 sm:h-5 inline-block fill-current" viewBox="0 0 24 24"><path d="M12 2C7 8 4 11.5 4 14.5C4 17.5 6.5 19.5 9 19.5C10.5 19.5 11.5 18.8 12 18C12.5 18.8 13.5 19.5 15 19.5C17.5 19.5 20 17.5 20 14.5C20 11.5 17 8 12 2ZM10.5 18.5L9 22H15L13.5 18.5H10.5Z"/></svg>',
-      H: '<svg class="w-4 h-4 sm:w-5 sm:h-5 inline-block fill-current" viewBox="0 0 24 24"><path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.27 2 8.5C2 5.41 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.08C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.41 22 8.5C22 12.27 18.6 15.36 13.45 20.03L12 21.35Z"/></svg>',
-      D: '<svg class="w-4 h-4 sm:w-5 sm:h-5 inline-block fill-current" viewBox="0 0 24 24"><path d="M12 2L20 12L12 22L4 12L12 2Z"/></svg>',
-      C: '<svg class="w-4 h-4 sm:w-5 sm:h-5 inline-block fill-current" viewBox="0 0 24 24"><path d="M12 3C9.8 3 8 4.8 8 7C8 8.5 8.8 9.8 10 10.5C7.2 10.8 5 13.1 5 16C5 18.8 7.2 21 10 21C11.1 21 12.1 20.6 12.9 20H11.1L10 22H14L12.9 20C13.7 20.6 14.7 21 15.8 21C18.6 21 20.8 18.8 20.8 16C20.8 13.1 18.6 10.8 15.8 10.5C17 9.8 17.8 8.5 17.8 7C17.8 4.8 16 3 13.8 3H12Z"/></svg>'
+      S: '<svg class="w-5 h-5 sm:w-6 sm:h-6 fill-current" viewBox="0 0 24 24"><path d="M12 2C10.5 4.5 5 11 5 15C5 18 7.5 20 10 20C11.2 20 12 19.3 12 18.5C12 19.3 12.8 20 14 20C16.5 20 19 18 19 15C19 11 13.5 4.5 12 2ZM10.5 19L9.5 22H14.5L13.5 19H10.5Z"/></svg>',
+      H: '<svg class="w-5 h-5 sm:w-6 sm:h-6 fill-current" viewBox="0 0 24 24"><path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.27 2 8.5C2 5.41 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.08C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.41 22 8.5C22 12.27 18.6 15.36 13.45 20.03L12 21.35Z"/></svg>',
+      D: '<svg class="w-5 h-5 sm:w-6 sm:h-6 fill-current" viewBox="0 0 24 24"><path d="M12 2.5L19 12L12 21.5L5 12Z"/></svg>',
+      C: '<svg class="w-5 h-5 sm:w-6 sm:h-6 fill-current" viewBox="0 0 24 24"><path d="M12 3C9.8 3 8 4.8 8 7C8 8.4 8.7 9.6 9.8 10.3C7.5 10.7 5.8 12.7 5.8 15.1C5.8 17.8 8 20 10.7 20C11.3 20 11.9 19.9 12.4 19.6C12.3 20.2 12 21.1 10.5 22H13.5C12 21.1 11.7 20.2 11.6 19.6C12.1 19.9 12.7 20 13.3 20C16 20 18.2 17.8 18.2 15.1C18.2 12.7 16.5 10.7 14.2 10.3C15.3 9.6 16 8.4 16 7C16 4.8 14.2 3 12 3Z"/></svg>'
     };
     const SUIT_SVG_MINI = {
-      S: '<svg class="w-2.5 h-2.5 inline-block fill-current" viewBox="0 0 24 24"><path d="M12 2C7 8 4 11.5 4 14.5C4 17.5 6.5 19.5 9 19.5C10.5 19.5 11.5 18.8 12 18C12.5 18.8 13.5 19.5 15 19.5C17.5 19.5 20 17.5 20 14.5C20 11.5 17 8 12 2ZM10.5 18.5L9 22H15L13.5 18.5H10.5Z"/></svg>',
-      H: '<svg class="w-2.5 h-2.5 inline-block fill-current" viewBox="0 0 24 24"><path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.27 2 8.5C2 5.41 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.08C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.41 22 8.5C22 12.27 18.6 15.36 13.45 20.03L12 21.35Z"/></svg>',
-      D: '<svg class="w-2.5 h-2.5 inline-block fill-current" viewBox="0 0 24 24"><path d="M12 2L20 12L12 22L4 12L12 2Z"/></svg>',
-      C: '<svg class="w-2.5 h-2.5 inline-block fill-current" viewBox="0 0 24 24"><path d="M12 3C9.8 3 8 4.8 8 7C8 8.5 8.8 9.8 10 10.5C7.2 10.8 5 13.1 5 16C5 18.8 7.2 21 10 21C11.1 21 12.1 20.6 12.9 20H11.1L10 22H14L12.9 20C13.7 20.6 14.7 21 15.8 21C18.6 21 20.8 18.8 20.8 16C20.8 13.1 18.6 10.8 15.8 10.5C17 9.8 17.8 8.5 17.8 7C17.8 4.8 16 3 13.8 3H12Z"/></svg>'
+      S: '<svg class="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-current" viewBox="0 0 24 24"><path d="M12 2C10.5 4.5 5 11 5 15C5 18 7.5 20 10 20C11.2 20 12 19.3 12 18.5C12 19.3 12.8 20 14 20C16.5 20 19 18 19 15C19 11 13.5 4.5 12 2ZM10.5 19L9.5 22H14.5L13.5 19H10.5Z"/></svg>',
+      H: '<svg class="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-current" viewBox="0 0 24 24"><path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.27 2 8.5C2 5.41 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.08C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.41 22 8.5C22 12.27 18.6 15.36 13.45 20.03L12 21.35Z"/></svg>',
+      D: '<svg class="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-current" viewBox="0 0 24 24"><path d="M12 2.5L19 12L12 21.5L5 12Z"/></svg>',
+      C: '<svg class="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-current" viewBox="0 0 24 24"><path d="M12 3C9.8 3 8 4.8 8 7C8 8.4 8.7 9.6 9.8 10.3C7.5 10.7 5.8 12.7 5.8 15.1C5.8 17.8 8 20 10.7 20C11.3 20 11.9 19.9 12.4 19.6C12.3 20.2 12 21.1 10.5 22H13.5C12 21.1 11.7 20.2 11.6 19.6C12.1 19.9 12.7 20 13.3 20C16 20 18.2 17.8 18.2 15.1C18.2 12.7 16.5 10.7 14.2 10.3C15.3 9.6 16 8.4 16 7C16 4.8 14.2 3 12 3Z"/></svg>'
     };
 
     const SUITS = [
-      { id: 'S', label: 'S', color: 'text-zinc-900' },
+      { id: 'S', label: 'S', color: 'text-[#0a0a0f]' },
       { id: 'H', label: 'H', color: 'text-rose-600' },
       { id: 'D', label: 'D', color: 'text-rose-600' },
-      { id: 'C', label: 'C', color: 'text-zinc-900' }
+      { id: 'C', label: 'C', color: 'text-[#0a0a0f]' }
     ];
     const RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
     const RANK_VALUE = {
@@ -1617,14 +1701,45 @@
       return deck;
     }
 
+    function popCardFromDeck(deck, fallbackDecks = 4) {
+      if (!Array.isArray(deck) || deck.length === 0) {
+        const fresh = buildDeck(fallbackDecks);
+        if (Array.isArray(deck)) deck.push(...fresh);
+        else return fresh.pop();
+      }
+      return deck.pop() || buildDeck(1)[0];
+    }
+
     const ROYAL_FACE_ART = {
-      K: '<svg class="w-6 h-6 sm:w-7 sm:h-7 mx-auto fill-current opacity-85" viewBox="0 0 24 24"><path d="M5 16L3 5L8.5 10L12 4L15.5 10L21 5L19 16H5M5 18H19C19.55 18 20 18.45 20 19C20 19.55 19.55 20 19 20H5C4.45 20 4 19.55 4 19C4 18.45 4.45 18 5 18Z"/></svg>',
-      Q: '<svg class="w-6 h-6 sm:w-7 sm:h-7 mx-auto fill-current opacity-85" viewBox="0 0 24 24"><path d="M12 3L14.5 8.5L20 8L17 13L21 17H3L7 13L4 8L9.5 8.5L12 3M6 19H18V21H6V19Z"/></svg>',
-      J: '<svg class="w-6 h-6 sm:w-7 sm:h-7 mx-auto fill-current opacity-85" viewBox="0 0 24 24"><path d="M12 2C8.5 2 6 5 6 9V12C6 13.5 7 14.5 8 15V17L12 21L16 17V15C17 14.5 18 13.5 18 12V9C18 5 15.5 2 12 2M10 8H14V10H10V8M9 11H15V13H9V11Z"/></svg>'
+      K: (suitIcon) => `
+        <div class="flex flex-col items-center justify-center opacity-90">
+          <svg class="w-5 h-5 sm:w-6 sm:h-6 fill-current mb-0.5" viewBox="0 0 24 24"><path d="M5 16L3 5L8.5 10L12 4L15.5 10L21 5L19 16H5M5 18H19C19.55 18 20 18.45 20 19C20 19.55 19.55 20 19 20H5C4.45 20 4 19.55 4 19C4 18.45 4.45 18 5 18Z"/></svg>
+          <div class="scale-75">${suitIcon}</div>
+        </div>
+      `,
+      Q: (suitIcon) => `
+        <div class="flex flex-col items-center justify-center opacity-90">
+          <svg class="w-5 h-5 sm:w-6 sm:h-6 fill-current mb-0.5" viewBox="0 0 24 24"><path d="M12 3L14.5 8.5L20 8L17 13L21 17H3L7 13L4 8L9.5 8.5L12 3M6 19H18V21H6V19Z"/></svg>
+          <div class="scale-75">${suitIcon}</div>
+        </div>
+      `,
+      J: (suitIcon) => `
+        <div class="flex flex-col items-center justify-center opacity-90">
+          <svg class="w-5 h-5 sm:w-6 sm:h-6 fill-current mb-0.5" viewBox="0 0 24 24"><path d="M12 2L15 7H9L12 2M6 8H18L19 14H5L6 8M7 16H17V18H7V16Z"/></svg>
+          <div class="scale-75">${suitIcon}</div>
+        </div>
+      `
     };
 
     function renderCardHTML(card, opts = {}) {
-      const isFaceDown = !card || Boolean(opts.faceDown || card.hidden || !card.rank || !card.suit);
+      const isFaceDown = Boolean(
+        opts.faceDown ||
+        !card ||
+        card.hidden ||
+        card.faceDown ||
+        !card.rank ||
+        !card.suit
+      );
       const animKey = opts.animKey || (card && card.uid) || '';
       const zone = opts.zone || 'table';
       const originSeat = opts.originSeat !== undefined ? String(opts.originSeat) : '';
@@ -1639,54 +1754,62 @@
         const smClass = opts.small ? 'card-sm' : '';
         return `<div class="playing-card card-back ${smClass}" ${styleAttr} ${dataAttrs}></div>`;
       }
+
+      const rank = String(card.rank || 'A').toUpperCase();
+      const rawSuit = String(card.suit || 'S').toUpperCase().charAt(0);
+      const suit = ['S', 'H', 'D', 'C'].includes(rawSuit) ? rawSuit : 'S';
+      const isRed = (suit === 'H' || suit === 'D');
+      const colorClass = isRed ? 'text-rose-600' : 'text-[#0a0a0f]';
       const selClass = opts.selected ? 'selected' : '';
       const clickAttr = opts.selectable ? `data-card-uid="${card.uid}"` : '';
-      const svgIcon = SUIT_SVG[card.suit] || '';
-      const miniSvg = SUIT_SVG_MINI[card.suit] || '';
+      const svgIcon = SUIT_SVG[suit] || SUIT_SVG.S;
+      const miniSvg = SUIT_SVG_MINI[suit] || SUIT_SVG_MINI.S;
 
       if (opts.small) {
         return `
-          <div class="playing-card card-sm ${card.color}" ${styleAttr} ${dataAttrs}>
-            <div class="font-black text-[9px] sm:text-[10px] leading-none text-left">${card.rank}</div>
-            <div class="text-center my-auto flex items-center justify-center">${miniSvg}</div>
+          <div class="playing-card card-sm ${colorClass}" ${styleAttr} ${dataAttrs}>
+            <div class="card-corner-tl">
+              <span class="card-corner-rank">${rank}</span>
+              <span class="card-corner-suit">${miniSvg}</span>
+            </div>
+            <div class="card-center">
+              <div class="scale-90">${svgIcon}</div>
+            </div>
           </div>
         `;
       }
 
       let centerArtHTML = '';
-      if (card.rank === 'A') {
+      if (rank === 'A') {
         centerArtHTML = `
-          <div class="relative flex items-center justify-center pointer-events-none">
-            <div class="absolute inset-0 -m-1.5 rounded-full border border-current opacity-20 scale-125"></div>
-            <div class="scale-125 sm:scale-150 transform transition-transform">${svgIcon}</div>
+          <div class="relative flex items-center justify-center">
+            <div class="absolute -inset-1.5 rounded-full border border-current opacity-15"></div>
+            <div class="scale-125 sm:scale-150 transform">${svgIcon}</div>
           </div>
         `;
-      } else if (ROYAL_FACE_ART[card.rank]) {
-        centerArtHTML = `
-          <div class="relative flex items-center justify-center flex-col pointer-events-none">
-            ${ROYAL_FACE_ART[card.rank]}
-            <span class="text-[8px] font-bold font-mono uppercase tracking-widest opacity-60 mt-0.5">${card.rank === 'K' ? 'KING' : card.rank === 'Q' ? 'QUEEN' : 'JACK'}</span>
-          </div>
-        `;
+      } else if (ROYAL_FACE_ART[rank]) {
+        centerArtHTML = ROYAL_FACE_ART[rank](svgIcon);
       } else {
-        centerArtHTML = `<div class="text-center my-auto flex items-center justify-center transform scale-110 sm:scale-125">${svgIcon}</div>`;
+        centerArtHTML = `<div class="scale-110 sm:scale-125">${svgIcon}</div>`;
       }
 
       return `
-        <div class="playing-card ${selClass} ${card.color}" ${styleAttr} ${dataAttrs} ${clickAttr}>
+        <div class="playing-card ${selClass} ${colorClass}" ${styleAttr} ${dataAttrs} ${clickAttr}>
           <!-- Top-Left Corner Index -->
-          <div class="flex flex-col items-center self-start leading-none pointer-events-none">
-            <span class="font-black text-xs sm:text-sm tracking-tight">${card.rank}</span>
-            <span class="mt-0.5">${miniSvg}</span>
+          <div class="card-corner-tl">
+            <span class="card-corner-rank">${rank}</span>
+            <span class="card-corner-suit">${miniSvg}</span>
           </div>
-          <!-- Center Art (Ace / Royal Court / Number Pip) -->
-          <div class="text-center my-auto flex items-center justify-center pointer-events-none relative">
+
+          <!-- Center Face / Art -->
+          <div class="card-center">
             ${centerArtHTML}
           </div>
+
           <!-- Bottom-Right Inverted Corner Index -->
-          <div class="flex flex-col items-center self-end leading-none rotate-180 pointer-events-none">
-            <span class="font-black text-xs sm:text-sm tracking-tight">${card.rank}</span>
-            <span class="mt-0.5">${miniSvg}</span>
+          <div class="card-corner-br">
+            <span class="card-corner-rank">${rank}</span>
+            <span class="card-corner-suit">${miniSvg}</span>
           </div>
         </div>
       `;
@@ -3071,13 +3194,13 @@
       }
       state.bj.phase = 'playing';
       state.bj.dealerHoleHidden = true;
-      state.bj.dealerCards = [state.bj.deck.pop(), state.bj.deck.pop()];
+      state.bj.dealerCards = [popCardFromDeck(state.bj.deck), popCardFromDeck(state.bj.deck)];
 
       for (const p of state.players) {
         const bet = Math.min(p.chips, Math.max(25, p.bjBet || 100));
         p.bjBet = bet;
         p.chips -= bet;
-        p.cards = [state.bj.deck.pop(), state.bj.deck.pop()];
+        p.cards = [popCardFromDeck(state.bj.deck), popCardFromDeck(state.bj.deck)];
         const sc = calcBlackjackScore(p.cards).total;
         p.bjStatus = sc === 21 ? 'BLACKJACK' : 'PLAYING';
         p.lastMoveBadge = sc === 21 ? '21' : String(sc);
@@ -3132,7 +3255,7 @@
       if (state.bj.phase !== 'playing' || seatIdx !== state.bj.turnSeat) return;
       clearTurnCountdown();
       const p = state.players[seatIdx];
-      p.cards.push(state.bj.deck.pop());
+      p.cards.push(popCardFromDeck(state.bj.deck));
       const total = calcBlackjackScore(p.cards).total;
       if (total > 21) {
         p.bjStatus = 'BUST';
@@ -3183,7 +3306,7 @@
       if (p.cards.length !== 2 || p.chips < p.bjBet) return;
       p.chips -= p.bjBet;
       p.bjBet *= 2;
-      p.cards.push(state.bj.deck.pop());
+      p.cards.push(popCardFromDeck(state.bj.deck));
       const total = calcBlackjackScore(p.cards).total;
       p.bjStatus = total > 21 ? 'BUST' : 'DOUBLED';
       recordMove(p.name, total > 21 ? 'BUST' : `2x (${total})`, `${p.name} doubled to ${total}`, seatIdx);
@@ -3200,7 +3323,7 @@
       if (p.cards.length !== 2 || p.cards[0].rank !== p.cards[1].rank || p.chips < p.bjBet) return;
       p.chips -= p.bjBet;
       triggerSyncedFx({ kind: 'chip_to_pot', seatIdx });
-      p.cards = [p.cards[0], state.bj.deck.pop()];
+      p.cards = [p.cards[0], popCardFromDeck(state.bj.deck)];
       showToast('Pair split');
       const total = calcBlackjackScore(p.cards).total;
       if (total === 21) {
@@ -3229,7 +3352,7 @@
           state.bannerText = `Dealer takes a card (${curScore} < 17)...`;
           renderAll();
           setTimeout(() => {
-            state.bj.dealerCards.push(state.bj.deck.pop());
+            state.bj.dealerCards.push(popCardFromDeck(state.bj.deck));
             const newScore = calcBlackjackScore(state.bj.dealerCards).total;
             if (newScore > 21) {
               state.bannerText = `Dealer hits (${newScore}) — BUST!`;
@@ -3381,7 +3504,7 @@
       for (let i = 0; i < n; i++) {
         const p = state.players[i];
         if (p.chips < 100) p.chips = 1000;
-        p.cards = [state.holdem.deck.pop(), state.holdem.deck.pop()];
+        p.cards = [popCardFromDeck(state.holdem.deck), popCardFromDeck(state.holdem.deck)];
         p.pokerBet = 0;
         p.pokerFolded = false;
         p.pokerRole = i === state.holdem.dealerIdx ? 'BTN' : i === sbIdx ? 'SB' : i === bbIdx ? 'BB' : '';
@@ -3485,9 +3608,9 @@
         state.holdem.phase = 'flop';
         state.bannerText = 'Dealing the Flop (3 community cards)...';
         state.holdem.community.push(
-          state.holdem.deck.pop(),
-          state.holdem.deck.pop(),
-          state.holdem.deck.pop()
+          popCardFromDeck(state.holdem.deck),
+          popCardFromDeck(state.holdem.deck),
+          popCardFromDeck(state.holdem.deck)
         );
         broadcastRoomState();
         renderAll();
@@ -3499,7 +3622,7 @@
       } else if (state.holdem.phase === 'flop') {
         state.holdem.phase = 'turn';
         state.bannerText = 'Dealing the Turn card...';
-        state.holdem.community.push(state.holdem.deck.pop());
+        state.holdem.community.push(popCardFromDeck(state.holdem.deck));
         broadcastRoomState();
         renderAll();
         setTimeout(() => {
@@ -3510,7 +3633,7 @@
       } else if (state.holdem.phase === 'turn') {
         state.holdem.phase = 'river';
         state.bannerText = 'Dealing the final River card...';
-        state.holdem.community.push(state.holdem.deck.pop());
+        state.holdem.community.push(popCardFromDeck(state.holdem.deck));
         broadcastRoomState();
         renderAll();
         setTimeout(() => {
@@ -4080,9 +4203,9 @@
       document.querySelectorAll('.game-tab-btn').forEach(btn => {
         const g = btn.getAttribute('data-game');
         if (g === state.gameMode) {
-          btn.className = 'game-tab-btn px-3 py-1 rounded-full text-xs font-bold bg-rose-600 text-white transition';
+          btn.className = 'game-tab-btn px-3 py-1 rounded-md text-xs font-bold bg-rose-600 text-white transition';
         } else {
-          btn.className = 'game-tab-btn px-3 py-1 rounded-full text-xs font-medium text-zinc-400 hover:text-white transition';
+          btn.className = 'game-tab-btn px-3 py-1 rounded-md text-xs font-medium text-zinc-400 hover:text-white transition';
         }
       });
 
@@ -4158,7 +4281,7 @@
           if (state.gameMode === 'blackjack') {
             const sc = p.cards.length ? calcBlackjackScore(p.cards).total : '';
             const label = isTurn ? 'Thinking...' : (p.bjStatus && p.bjStatus !== 'PLAYING' ? p.bjStatus : (sc ? `${sc}` : `$${p.bjBet}`));
-            subBadge = `<span class="px-2 py-0.5 rounded-full bg-white/10 text-[10px] font-mono font-bold ${isTurn ? 'text-rose-400' : 'text-zinc-300'}">${label}</span>`;
+            subBadge = `<span class="px-1.5 py-0.5 rounded bg-zinc-800 border border-zinc-700 text-[10px] font-mono font-bold ${isTurn ? 'text-rose-400' : 'text-zinc-300'}">${label}</span>`;
             miniCardsHTML = p.cards
               .map((c, cIdx) =>
                 renderCardHTML(c, {
@@ -4173,7 +4296,7 @@
           } else if (state.gameMode === 'holdem') {
             const showFace = state.holdem.phase === 'showdown' && !p.pokerFolded;
             const actionTxt = p.pokerFolded ? 'Folded' : isTurn ? 'Thinking' : (p.lastMoveBadge || (p.pokerBet ? `$${p.pokerBet}` : 'Wait'));
-            subBadge = `<span class="px-2 py-0.5 rounded-full bg-white/10 text-[10px] font-mono font-bold ${p.pokerFolded ? 'text-zinc-500' : 'text-rose-400'}">${actionTxt}</span>`;
+            subBadge = `<span class="px-1.5 py-0.5 rounded bg-zinc-800 border border-zinc-700 text-[10px] font-mono font-bold ${p.pokerFolded ? 'text-zinc-500' : 'text-rose-400'}">${actionTxt}</span>`;
             miniCardsHTML = p.pokerFolded
               ? ''
               : p.cards
@@ -4189,7 +4312,7 @@
                   .join('');
           } else {
             const moveTxt = isTurn ? 'Thinking' : (p.lastMoveBadge || `${p.cards.length}c`);
-            subBadge = `<span class="px-2 py-0.5 rounded-full bg-white/10 text-[10px] font-mono font-bold text-rose-400">${moveTxt}</span>`;
+            subBadge = `<span class="px-1.5 py-0.5 rounded bg-zinc-800 border border-zinc-700 text-[10px] font-mono font-bold text-rose-400">${moveTxt}</span>`;
             const previewSlice = p.cards.slice(0, 3);
             miniCardsHTML = previewSlice
               .map((c, k) =>
