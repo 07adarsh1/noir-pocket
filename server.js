@@ -305,6 +305,13 @@ io.on('connection', (socket) => {
         };
         rooms.set(code, roomEntry);
       } else {
+        // Enforce Host Authority: Only the room host is permitted to overwrite authoritative state
+        const isHost = (socket.id === roomEntry.hostSocketId) ||
+                       (state.hostId && socket.data.playerId === state.hostId);
+        if (!isHost) {
+          // Reject state sync from non-host guests so they cannot overwrite unmasked cards with masked cards
+          return;
+        }
         roomEntry.state = state;
         roomEntry.updatedAt = Date.now();
         // Update host socket id if sender is room host

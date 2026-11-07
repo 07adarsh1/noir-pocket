@@ -93,29 +93,13 @@
       box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.65);
     }
     .noir-glass-card {
-      background: rgba(18, 19, 28, 0.6);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.07);
-      transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+      background: #090a10;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: border-color 0.15s ease, background-color 0.15s ease;
     }
     .noir-glass-card:hover {
-      background: rgba(24, 25, 38, 0.75);
-      border-color: rgba(255, 255, 255, 0.14);
-      transform: translateY(-2px);
-      box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(225, 29, 72, 0.15);
-    }
-    .noir-card-bj:hover {
-      border-color: rgba(225, 29, 72, 0.4) !important;
-      box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.8), 0 0 32px -4px rgba(225, 29, 72, 0.22) !important;
-    }
-    .noir-card-poker:hover {
-      border-color: rgba(245, 158, 11, 0.4) !important;
-      box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.8), 0 0 32px -4px rgba(245, 158, 11, 0.22) !important;
-    }
-    .noir-card-bluff:hover {
-      border-color: rgba(168, 85, 247, 0.4) !important;
-      box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.8), 0 0 32px -4px rgba(168, 85, 247, 0.22) !important;
+      background: #0d0f17;
+      border-color: rgba(255, 255, 255, 0.18);
     }
 
     /* Premium Luxury Casino Felt / Table Arena */
@@ -474,7 +458,7 @@
       <!-- Brand Logo & Back to Lobby -->
       <div class="flex items-center gap-3">
         <button id="btnNavLogo" type="button" class="flex items-center gap-2.5 text-left group">
-          <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-burgundy-600 to-burgundy-900 border border-burgundy-500/40 flex items-center justify-center shadow-lg shadow-burgundy-900/30 group-hover:scale-105 transition">
+          <div class="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-700 flex items-center justify-center group-hover:border-zinc-500 transition">
             <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 2L4 12L12 22L20 12L12 2Z"/>
             </svg>
@@ -482,7 +466,7 @@
           <div>
             <div class="flex items-center gap-1.5">
               <span class="text-sm font-extrabold tracking-widest uppercase text-white font-mono">NOIR</span>
-              <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-white/5 text-zinc-400 border border-white/5">CLUB</span>
+              <span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-zinc-900 text-zinc-400 border border-zinc-800">CLUB</span>
             </div>
             <div class="text-[10px] text-zinc-400 hidden sm:block">Private Multiplayer Card Gaming</div>
           </div>
@@ -518,14 +502,14 @@
 
       <!-- Right Header Actions: User Balance, Rules, Menu -->
       <div class="flex items-center gap-2">
-        <!-- User Balance Pill -->
-        <button id="btnUserChipsPill" type="button" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-charcoal-900 hover:bg-charcoal-800 border border-white/10 text-xs font-medium transition" title="Click to view profile or top up">
+        <!-- User Balance Button -->
+        <button id="btnUserChipsPill" type="button" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-xs font-medium transition" title="Click to view profile or top up">
           <span class="noir-chip-mini"></span>
           <span class="font-mono font-bold text-white">$<span id="navUserChipsVal">2,500</span></span>
         </button>
 
         <!-- Rules Button -->
-        <button id="btnNavRules" type="button" class="p-2 sm:px-3 sm:py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-zinc-300 hover:text-white transition flex items-center gap-1.5" title="Rules & How to Play">
+        <button id="btnNavRules" type="button" class="p-2 sm:px-3 sm:py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-xs font-medium text-zinc-300 hover:text-white transition flex items-center gap-1.5" title="Rules & How to Play">
           <svg class="w-4 h-4 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
@@ -533,7 +517,7 @@
         </button>
 
         <!-- Table Settings / Menu Drawer Button -->
-        <button id="btnNavMenu" type="button" class="p-2 sm:px-3 sm:py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-zinc-300 hover:text-white transition flex items-center gap-1.5">
+        <button id="btnNavMenu" type="button" class="p-2 sm:px-3 sm:py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-xs font-medium text-zinc-300 hover:text-white transition flex items-center gap-1.5">
           <svg class="w-4 h-4 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
           </svg>
@@ -663,65 +647,54 @@
     <section id="lobbyView" class="w-full max-w-5xl mx-auto space-y-10 py-6 sm:py-10">
       
       <!-- Minimalist Architectural Hero Header -->
-      <div class="text-center space-y-4 max-w-3xl mx-auto">
-        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/[0.03] border border-white/10 text-zinc-400 text-[10px] font-mono tracking-widest uppercase shadow-sm">
-          <span class="w-1.5 h-1.5 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.9)] animate-pulse"></span>
-          <span>HIGH-STAKES CARD SALON // ZERO LATENCY MULTIPLAYER</span>
-        </div>
-
-        <h1 class="text-4xl sm:text-6xl font-black tracking-tight text-white font-sans leading-[1.08]">
-          The private table.<br class="hidden sm:inline" />
-          <span class="text-transparent bg-clip-text bg-gradient-to-r from-zinc-100 via-zinc-300 to-rose-400 font-serif italic font-normal">Pure cards, zero distractions.</span>
+      <div class="text-center space-y-3 max-w-2xl mx-auto pt-2">
+        <h1 class="text-4xl sm:text-6xl font-light tracking-tight text-white font-serif">
+          The private table.
         </h1>
-
-        <p class="text-sm sm:text-base text-zinc-400 max-w-xl mx-auto font-normal leading-relaxed">
-          Host private rooms for Blackjack, Texas Hold'em, and Bluff. No accounts, no token shops—just cards, chips, and peer-to-peer competition.
+        <p class="text-xs sm:text-sm text-zinc-400 font-mono tracking-widest uppercase">
+          Blackjack &bull; Texas Hold'em &bull; Bluff
         </p>
+        <p class="text-xs sm:text-sm text-zinc-400 max-w-md mx-auto leading-relaxed pt-1">
+          Zero sign-ups. Zero latency. Instant private tables with real-time multiplayer card action.
+        </p>
+      </div>
 
-        <!-- Command Bar: Host Table or Join with Code -->
-        <div class="pt-2 max-w-xl mx-auto">
-          <div class="noir-glass rounded-2xl p-2 sm:p-2.5 border border-white/10 shadow-2xl flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-            
-            <button id="btnOpenCreateModal" type="button" class="group relative flex-1 py-3 px-5 rounded-xl bg-gradient-to-r from-rose-600 via-rose-700 to-burgundy-900 hover:from-rose-500 hover:to-rose-700 text-white font-bold text-xs uppercase tracking-wider transition shadow-lg shadow-rose-950/60 flex items-center justify-center gap-2 overflow-hidden">
-              <span class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></span>
-              <svg class="w-4 h-4 text-rose-200 transition-transform group-hover:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
-              </svg>
-              <span>Host a Table</span>
+      <!-- Command Bar: Host Table or Join with Code -->
+      <div class="max-w-xl mx-auto">
+        <div class="bg-zinc-950/90 border border-zinc-800 rounded-xl p-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+          
+          <button id="btnOpenCreateModal" type="button" class="flex-1 py-3 px-5 rounded-lg bg-white hover:bg-zinc-200 text-zinc-950 font-bold text-xs uppercase tracking-wider transition flex items-center justify-center gap-2">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+            </svg>
+            <span>Host a Table</span>
+          </button>
+
+          <div class="hidden sm:block h-6 w-px bg-zinc-800 my-auto"></div>
+
+          <div class="flex items-center gap-2 flex-1">
+            <input id="inputJoinCode" type="text" maxlength="8" placeholder="ROOM CODE" class="w-full px-3.5 py-3 rounded-lg bg-zinc-900 border border-zinc-800 font-mono uppercase text-xs sm:text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-zinc-500 transition tracking-widest text-center sm:text-left" />
+            <button id="btnJoinRoom" type="button" class="py-3 px-5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs uppercase tracking-wider transition shrink-0 border border-zinc-700/60">
+              Join
             </button>
-
-            <div class="hidden sm:block h-6 w-px bg-white/10 my-auto"></div>
-
-            <div class="flex items-center gap-1.5 flex-1">
-              <div class="relative flex-1">
-                <input id="inputJoinCode" type="text" maxlength="8" placeholder="ROOM CODE" class="w-full pl-3.5 pr-2 py-3 rounded-xl bg-charcoal-950/80 border border-white/10 font-mono uppercase text-xs sm:text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-rose-500/60 focus:ring-1 focus:ring-rose-500/40 transition tracking-widest text-center sm:text-left" />
-              </div>
-              <button id="btnJoinRoom" type="button" class="py-3 px-4 rounded-xl bg-white/[0.07] hover:bg-white/[0.14] text-white font-bold text-xs uppercase tracking-wider transition shrink-0 border border-white/5 hover:border-white/20">
-                Join
-              </button>
-            </div>
-
           </div>
-        </div>
 
+        </div>
       </div>
 
       <!-- 3 EDITORIAL GAME CARDS -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
         
         <!-- Game 1: Blackjack -->
-        <div class="noir-glass-card noir-card-bj rounded-3xl p-6 flex flex-col justify-between group relative overflow-hidden">
-          <div class="absolute -right-10 -top-10 w-40 h-40 bg-rose-600/10 rounded-full blur-3xl group-hover:bg-rose-600/20 transition duration-500 pointer-events-none"></div>
-          
+        <div class="bg-[#090a10] border border-zinc-800 hover:border-zinc-700 rounded-xl p-6 flex flex-col justify-between group transition">
           <div class="space-y-5">
             <!-- Stage: Authentic Cards in Tilt Presentation -->
-            <div class="h-44 rounded-2xl bg-gradient-to-b from-charcoal-900/90 to-charcoal-950/90 border border-white/5 flex items-center justify-center relative overflow-hidden group-hover:border-rose-500/20 transition">
-              <div class="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-rose-950/20 to-transparent pointer-events-none"></div>
+            <div class="h-40 rounded-lg bg-[#050507] border border-zinc-800/80 flex items-center justify-center relative overflow-hidden">
               
               <!-- Cards Group -->
               <div class="relative flex items-center justify-center -space-x-5 transition-transform duration-300 group-hover:scale-105">
                 <!-- Card 1: Ace of Spades -->
-                <div class="w-18 h-26 sm:w-20 sm:h-28 rounded-xl bg-gradient-to-b from-white via-zinc-50 to-zinc-200 border border-black/20 text-zinc-950 p-2 flex flex-col justify-between shadow-[0_12px_24px_rgba(0,0,0,0.8)] -rotate-6 transition-transform">
+                <div class="w-18 h-26 sm:w-20 sm:h-28 rounded-lg bg-white border border-zinc-300 text-zinc-950 p-2 flex flex-col justify-between shadow-2xl -rotate-6">
                   <div class="flex items-center justify-between leading-none font-bold font-mono text-xs">
                     <span>A</span>
                     <span class="text-[10px]">♠</span>
@@ -736,7 +709,7 @@
                 </div>
 
                 <!-- Card 2: King of Hearts -->
-                <div class="w-18 h-26 sm:w-20 sm:h-28 rounded-xl bg-gradient-to-b from-white via-zinc-50 to-zinc-200 border border-black/20 text-rose-600 p-2 flex flex-col justify-between shadow-[0_16px_32px_rgba(0,0,0,0.9)] rotate-6 transition-transform">
+                <div class="w-18 h-26 sm:w-20 sm:h-28 rounded-lg bg-white border border-zinc-300 text-rose-600 p-2 flex flex-col justify-between shadow-2xl rotate-6">
                   <div class="flex items-center justify-between leading-none font-bold font-mono text-xs">
                     <span>K</span>
                     <span class="text-[10px]">♥</span>
@@ -751,10 +724,10 @@
                 </div>
               </div>
 
-              <!-- Sleek Pill Tag -->
-              <div class="absolute bottom-3 inset-x-3 flex items-center justify-between text-[10px] font-mono">
-                <span class="px-2 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-300 font-bold tracking-wider">NATURAL 21</span>
-                <span class="text-zinc-500">PAYS 3:2</span>
+              <!-- Sleek Monospace Label -->
+              <div class="absolute bottom-2.5 inset-x-3 flex items-center justify-between text-[10px] font-mono text-zinc-500">
+                <span>NATURAL 21</span>
+                <span>PAYS 3:2</span>
               </div>
             </div>
 
@@ -762,10 +735,10 @@
             <div class="space-y-2">
               <div class="flex items-center justify-between">
                 <div>
-                  <h3 class="text-lg font-bold text-white tracking-wide">Blackjack</h3>
+                  <h3 class="text-base font-bold text-white tracking-wide">Blackjack</h3>
                   <div class="text-[11px] font-mono text-zinc-500">VS CASINO SHOE</div>
                 </div>
-                <span class="px-2.5 py-0.5 rounded-full bg-white/[0.06] border border-white/10 text-[10px] font-mono font-medium text-zinc-300">1–6 SEATS</span>
+                <span class="text-[11px] font-mono text-zinc-400">1–6 SEATS</span>
               </div>
               <p class="text-xs text-zinc-400 leading-relaxed">
                 Classic casino 21 with live card shoe distribution. Split pairs, double down on power counts, and stand on 17.
@@ -773,25 +746,22 @@
             </div>
           </div>
 
-          <button type="button" data-lobby-quick-game="blackjack" class="mt-5 w-full py-3 rounded-xl bg-white/[0.07] hover:bg-rose-600 text-white font-bold text-xs uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-1.5 group/btn border border-white/5 hover:border-transparent shadow-sm">
+          <button type="button" data-lobby-quick-game="blackjack" class="mt-5 w-full py-3 rounded-lg bg-zinc-900 hover:bg-white hover:text-black text-white font-bold text-xs uppercase tracking-wider transition border border-zinc-800 flex items-center justify-center gap-1.5 group/btn">
             <span>Play Blackjack</span>
             <svg class="w-3.5 h-3.5 transition-transform group-hover/btn:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
           </button>
         </div>
 
         <!-- Game 2: Texas Hold'em -->
-        <div class="noir-glass-card noir-card-poker rounded-3xl p-6 flex flex-col justify-between group relative overflow-hidden">
-          <div class="absolute -right-10 -top-10 w-40 h-40 bg-amber-600/10 rounded-full blur-3xl group-hover:bg-amber-600/20 transition duration-500 pointer-events-none"></div>
-          
+        <div class="bg-[#090a10] border border-zinc-800 hover:border-zinc-700 rounded-xl p-6 flex flex-col justify-between group transition">
           <div class="space-y-5">
             <!-- Stage: Authentic Flop Cards Spread -->
-            <div class="h-44 rounded-2xl bg-gradient-to-b from-charcoal-900/90 to-charcoal-950/90 border border-white/5 flex items-center justify-center relative overflow-hidden group-hover:border-amber-500/20 transition">
-              <div class="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-amber-950/20 to-transparent pointer-events-none"></div>
+            <div class="h-40 rounded-lg bg-[#050507] border border-zinc-800/80 flex items-center justify-center relative overflow-hidden">
               
               <!-- Cards Group -->
               <div class="relative flex items-center justify-center -space-x-3 transition-transform duration-300 group-hover:scale-105">
                 <!-- Flop 1: 10 Spades -->
-                <div class="w-14 h-22 sm:w-16 sm:h-24 rounded-lg bg-gradient-to-b from-white via-zinc-50 to-zinc-200 border border-black/20 text-zinc-950 p-1.5 flex flex-col justify-between shadow-[0_10px_20px_rgba(0,0,0,0.7)] -rotate-3">
+                <div class="w-14 h-22 sm:w-16 sm:h-24 rounded-lg bg-white border border-zinc-300 text-zinc-950 p-1.5 flex flex-col justify-between shadow-2xl -rotate-3">
                   <div class="flex items-center justify-between leading-none font-bold font-mono text-[10px]">
                     <span>10</span>
                     <span class="text-[9px]">♠</span>
@@ -806,7 +776,7 @@
                 </div>
 
                 <!-- Flop 2: Jack Hearts -->
-                <div class="w-14 h-22 sm:w-16 sm:h-24 rounded-lg bg-gradient-to-b from-white via-zinc-50 to-zinc-200 border border-black/20 text-rose-600 p-1.5 flex flex-col justify-between shadow-[0_12px_24px_rgba(0,0,0,0.8)] z-10">
+                <div class="w-14 h-22 sm:w-16 sm:h-24 rounded-lg bg-white border border-zinc-300 text-rose-600 p-1.5 flex flex-col justify-between shadow-2xl z-10">
                   <div class="flex items-center justify-between leading-none font-bold font-mono text-[10px]">
                     <span>J</span>
                     <span class="text-[9px]">♥</span>
@@ -821,7 +791,7 @@
                 </div>
 
                 <!-- Flop 3: Queen Diamonds -->
-                <div class="w-14 h-22 sm:w-16 sm:h-24 rounded-lg bg-gradient-to-b from-white via-zinc-50 to-zinc-200 border border-black/20 text-rose-600 p-1.5 flex flex-col justify-between shadow-[0_14px_28px_rgba(0,0,0,0.8)] rotate-3">
+                <div class="w-14 h-22 sm:w-16 sm:h-24 rounded-lg bg-white border border-zinc-300 text-rose-600 p-1.5 flex flex-col justify-between shadow-2xl rotate-3">
                   <div class="flex items-center justify-between leading-none font-bold font-mono text-[10px]">
                     <span>Q</span>
                     <span class="text-[9px]">♦</span>
@@ -836,10 +806,10 @@
                 </div>
               </div>
 
-              <!-- Sleek Pill Tag -->
-              <div class="absolute bottom-3 inset-x-3 flex items-center justify-between text-[10px] font-mono">
-                <span class="px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 font-bold tracking-wider">POT $750</span>
-                <span class="text-zinc-500">NO-LIMIT</span>
+              <!-- Sleek Monospace Label -->
+              <div class="absolute bottom-2.5 inset-x-3 flex items-center justify-between text-[10px] font-mono text-zinc-500">
+                <span>COMMUNITY FLOP</span>
+                <span>NO-LIMIT</span>
               </div>
             </div>
 
@@ -847,10 +817,10 @@
             <div class="space-y-2">
               <div class="flex items-center justify-between">
                 <div>
-                  <h3 class="text-lg font-bold text-white tracking-wide">Texas Hold'em</h3>
+                  <h3 class="text-base font-bold text-white tracking-wide">Texas Hold'em</h3>
                   <div class="text-[11px] font-mono text-zinc-500">POKER ROOM</div>
                 </div>
-                <span class="px-2.5 py-0.5 rounded-full bg-white/[0.06] border border-white/10 text-[10px] font-mono font-medium text-zinc-300">2–6 SEATS</span>
+                <span class="text-[11px] font-mono text-zinc-400">2–6 SEATS</span>
               </div>
               <p class="text-xs text-zinc-400 leading-relaxed">
                 Full 4-street poker. Pre-Flop, Flop, Turn & River with pot raise slider, fast check/fold, and showdown reveals.
@@ -858,49 +828,40 @@
             </div>
           </div>
 
-          <button type="button" data-lobby-quick-game="holdem" class="mt-5 w-full py-3 rounded-xl bg-white/[0.07] hover:bg-amber-600 text-white font-bold text-xs uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-1.5 group/btn border border-white/5 hover:border-transparent shadow-sm">
+          <button type="button" data-lobby-quick-game="holdem" class="mt-5 w-full py-3 rounded-lg bg-zinc-900 hover:bg-white hover:text-black text-white font-bold text-xs uppercase tracking-wider transition border border-zinc-800 flex items-center justify-center gap-1.5 group/btn">
             <span>Play Hold'em</span>
             <svg class="w-3.5 h-3.5 transition-transform group-hover/btn:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
           </button>
         </div>
 
         <!-- Game 3: Bluff -->
-        <div class="noir-glass-card noir-card-bluff rounded-3xl p-6 flex flex-col justify-between group relative overflow-hidden">
-          <div class="absolute -right-10 -top-10 w-40 h-40 bg-purple-600/10 rounded-full blur-3xl group-hover:bg-purple-600/20 transition duration-500 pointer-events-none"></div>
-          
+        <div class="bg-[#090a10] border border-zinc-800 hover:border-zinc-700 rounded-xl p-6 flex flex-col justify-between group transition">
           <div class="space-y-5">
-            <!-- Stage: Authentic Face-Down Fanned Cards with Crimson N Seal -->
-            <div class="h-44 rounded-2xl bg-gradient-to-b from-charcoal-900/90 to-charcoal-950/90 border border-white/5 flex items-center justify-center relative overflow-hidden group-hover:border-purple-500/20 transition">
-              <div class="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-purple-950/20 to-transparent pointer-events-none"></div>
+            <!-- Stage: Authentic Face-Down Fanned Cards -->
+            <div class="h-40 rounded-lg bg-[#050507] border border-zinc-800/80 flex items-center justify-center relative overflow-hidden">
               
               <!-- Cards Group -->
               <div class="relative flex items-center justify-center -space-x-4 transition-transform duration-300 group-hover:scale-105">
                 <!-- Card 1 -->
-                <div class="w-14 h-22 sm:w-16 sm:h-24 rounded-lg bg-[#090a10] border border-white/20 p-1 shadow-[0_10px_20px_rgba(0,0,0,0.7)] -rotate-8 relative overflow-hidden">
-                  <div class="absolute inset-1 rounded border border-rose-500/30 bg-radial-gradient flex items-center justify-center">
-                    <span class="w-5 h-5 rounded bg-black border border-rose-500/50 flex items-center justify-center text-[9px] font-mono font-black text-rose-400">N</span>
-                  </div>
+                <div class="w-14 h-22 sm:w-16 sm:h-24 rounded-lg bg-zinc-900 border border-zinc-700 p-1 shadow-2xl -rotate-8 relative overflow-hidden flex items-center justify-center">
+                  <span class="text-xs font-mono font-bold text-zinc-500">NOIR</span>
                 </div>
 
                 <!-- Card 2 -->
-                <div class="w-14 h-22 sm:w-16 sm:h-24 rounded-lg bg-[#090a10] border border-white/20 p-1 shadow-[0_14px_28px_rgba(0,0,0,0.85)] z-10 relative overflow-hidden">
-                  <div class="absolute inset-1 rounded border border-rose-500/30 bg-radial-gradient flex items-center justify-center">
-                    <span class="w-5 h-5 rounded bg-black border border-rose-500/50 flex items-center justify-center text-[9px] font-mono font-black text-rose-400">N</span>
-                  </div>
+                <div class="w-14 h-22 sm:w-16 sm:h-24 rounded-lg bg-zinc-900 border border-zinc-700 p-1 shadow-2xl z-10 relative overflow-hidden flex items-center justify-center">
+                  <span class="text-xs font-mono font-bold text-zinc-500">NOIR</span>
                 </div>
 
                 <!-- Card 3 -->
-                <div class="w-14 h-22 sm:w-16 sm:h-24 rounded-lg bg-[#090a10] border border-white/20 p-1 shadow-[0_12px_24px_rgba(0,0,0,0.7)] rotate-8 relative overflow-hidden">
-                  <div class="absolute inset-1 rounded border border-rose-500/30 bg-radial-gradient flex items-center justify-center">
-                    <span class="w-5 h-5 rounded bg-black border border-rose-500/50 flex items-center justify-center text-[9px] font-mono font-black text-rose-400">N</span>
-                  </div>
+                <div class="w-14 h-22 sm:w-16 sm:h-24 rounded-lg bg-zinc-900 border border-zinc-700 p-1 shadow-2xl rotate-8 relative overflow-hidden flex items-center justify-center">
+                  <span class="text-xs font-mono font-bold text-zinc-500">NOIR</span>
                 </div>
               </div>
 
-              <!-- Sleek Pill Tag -->
-              <div class="absolute bottom-3 inset-x-3 flex items-center justify-between text-[10px] font-mono">
-                <span class="px-2 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-300 font-bold tracking-wider">CLAIM: 3 KINGS</span>
-                <span class="text-zinc-500">DECEPTION</span>
+              <!-- Sleek Monospace Label -->
+              <div class="absolute bottom-2.5 inset-x-3 flex items-center justify-between text-[10px] font-mono text-zinc-500">
+                <span>CLAIM: 3 KINGS</span>
+                <span>DECEPTION</span>
               </div>
             </div>
 
@@ -908,10 +869,10 @@
             <div class="space-y-2">
               <div class="flex items-center justify-between">
                 <div>
-                  <h3 class="text-lg font-bold text-white tracking-wide">Bluff</h3>
+                  <h3 class="text-base font-bold text-white tracking-wide">Bluff</h3>
                   <div class="text-[11px] font-mono text-zinc-500">MIND GAMES</div>
                 </div>
-                <span class="px-2.5 py-0.5 rounded-full bg-white/[0.06] border border-white/10 text-[10px] font-mono font-medium text-zinc-300">3–6 SEATS</span>
+                <span class="text-[11px] font-mono text-zinc-400">3–6 SEATS</span>
               </div>
               <p class="text-xs text-zinc-400 leading-relaxed">
                 Play cards face-down under a declared rank. Call someone out when they bluff—or take the entire accumulated pile.
@@ -919,7 +880,7 @@
             </div>
           </div>
 
-          <button type="button" data-lobby-quick-game="bluff" class="mt-5 w-full py-3 rounded-xl bg-white/[0.07] hover:bg-purple-600 text-white font-bold text-xs uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-1.5 group/btn border border-white/5 hover:border-transparent shadow-sm">
+          <button type="button" data-lobby-quick-game="bluff" class="mt-5 w-full py-3 rounded-lg bg-zinc-900 hover:bg-white hover:text-black text-white font-bold text-xs uppercase tracking-wider transition border border-zinc-800 flex items-center justify-center gap-1.5 group/btn">
             <span>Play Bluff</span>
             <svg class="w-3.5 h-3.5 transition-transform group-hover/btn:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
           </button>
@@ -927,49 +888,37 @@
 
       </div>
 
-      <!-- Minimalist Architecture Specs (Bento Strip) -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-        <div class="p-4 rounded-2xl bg-charcoal-950/60 border border-white/5 flex items-start gap-3">
-          <div class="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0 text-rose-400">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-          </div>
-          <div>
-            <div class="text-xs font-bold text-white tracking-wide">Zero Friction</div>
-            <div class="text-[11px] text-zinc-400 leading-relaxed mt-0.5">Instant room generation with single-click invite links. No accounts, signups, or tracking.</div>
-          </div>
+      <!-- Minimalist Architecture Specs -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-6 border-t border-zinc-800/60">
+        <div class="space-y-1">
+          <div class="text-[10px] font-mono text-zinc-500 tracking-wider">01 // ROOMS</div>
+          <div class="text-xs font-semibold text-white">Instant Access</div>
+          <div class="text-xs text-zinc-400 leading-relaxed">Direct room generation with shareable links. No accounts, signups, or tracking.</div>
         </div>
 
-        <div class="p-4 rounded-2xl bg-charcoal-950/60 border border-white/5 flex items-start gap-3">
-          <div class="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0 text-emerald-400">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-          </div>
-          <div>
-            <div class="text-xs font-bold text-white tracking-wide">Anti-Cheat Masking</div>
-            <div class="text-[11px] text-zinc-400 leading-relaxed mt-0.5">Authoritative server filters opponent hole cards over the socket until reveal or showdown.</div>
-          </div>
+        <div class="space-y-1">
+          <div class="text-[10px] font-mono text-zinc-500 tracking-wider">02 // PROTOCOL</div>
+          <div class="text-xs font-semibold text-white">Authoritative Masking</div>
+          <div class="text-xs text-zinc-400 leading-relaxed">Server-side filtering protects hidden cards across sockets until legal showdown.</div>
         </div>
 
-        <div class="p-4 rounded-2xl bg-charcoal-950/60 border border-white/5 flex items-start gap-3">
-          <div class="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0 text-amber-400">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-          </div>
-          <div>
-            <div class="text-xs font-bold text-white tracking-wide">60FPS Tactile Feel</div>
-            <div class="text-[11px] text-zinc-400 leading-relaxed mt-0.5">Smooth card trajectory physics, realistic chip tosses, 3D shadows, and cinematic pacing.</div>
-          </div>
+        <div class="space-y-1">
+          <div class="text-[10px] font-mono text-zinc-500 tracking-wider">03 // ENGINE</div>
+          <div class="text-xs font-semibold text-white">Zero Latency</div>
+          <div class="text-xs text-zinc-400 leading-relaxed">Direct WebSocket relay with smooth 60fps animations and crisp tactile sound fx.</div>
         </div>
       </div>
 
       <!-- User Profile Dock: Sleek & Understated -->
-      <div class="max-w-md mx-auto pt-2 flex items-center justify-between px-4 py-2.5 rounded-full bg-charcoal-900/80 border border-white/10 text-xs text-zinc-400 backdrop-blur-md shadow-lg">
+      <div class="max-w-md mx-auto pt-2 flex items-center justify-between px-4 py-2.5 rounded-lg bg-zinc-950 border border-zinc-800 text-xs text-zinc-400">
         <div class="flex items-center gap-3">
-          <span id="lobbyPlayerAvatar" class="w-7 h-7 rounded-full bg-gradient-to-br from-rose-600 to-rose-800 text-white font-mono font-bold text-xs flex items-center justify-center shadow-md shadow-rose-950/50">AL</span>
+          <span id="lobbyPlayerAvatar" class="w-7 h-7 rounded bg-zinc-900 border border-zinc-700 text-white font-mono font-bold text-xs flex items-center justify-center">AL</span>
           <div class="flex items-center gap-2">
-            <span class="text-white font-semibold" id="lobbyPlayerNameDisplay">Alex</span>
+            <span class="text-white font-medium" id="lobbyPlayerNameDisplay">Alex</span>
             <span class="text-[10px] text-zinc-500 font-mono">• Bankroll $<span id="lobbyChipsDisplay">2,500</span></span>
           </div>
         </div>
-        <button id="btnOpenProfileModal" type="button" class="px-3 py-1 rounded-full bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white font-medium text-[11px] transition border border-white/5">
+        <button id="btnOpenProfileModal" type="button" class="px-3 py-1 rounded bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white font-mono text-[11px] transition border border-zinc-800">
           Edit Profile
         </button>
       </div>
@@ -1050,7 +999,7 @@
 
         <!-- Bottom Room Actions: Start Game (Host) / Waiting Banner (Guest) / Leave -->
         <div class="space-y-3 pt-2">
-          <button id="btnWaitingStartGame" type="button" class="w-full py-4 rounded-2xl bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-500 hover:to-rose-600 disabled:opacity-40 text-white font-bold text-base tracking-wide shadow-xl shadow-rose-900/40 transition">
+          <button id="btnWaitingStartGame" type="button" class="w-full py-4 rounded-xl bg-white hover:bg-zinc-200 disabled:opacity-40 text-zinc-950 font-bold text-sm tracking-wide transition">
             Start Game Now
           </button>
           
@@ -1122,7 +1071,7 @@
           <!-- Hold'em Center Felt: Pot + 5 Community Slots -->
           <div id="centerHoldem" class="hidden flex flex-col items-center w-full space-y-3">
             <div class="flex items-center gap-2.5">
-              <div id="holdemPotPill" class="px-4 py-1.5 rounded-full bg-gradient-to-r from-rose-950/80 via-rose-900/40 to-charcoal-900 border border-rose-500/40 text-xs sm:text-sm font-mono font-bold text-white shadow-xl shadow-rose-950/50 flex items-center gap-2 transition-transform duration-200">
+              <div id="holdemPotPill" class="px-4 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs sm:text-sm font-mono font-bold text-white flex items-center gap-2 transition-transform duration-200">
                 <span class="flex items-center -space-x-1.5">
                   <span class="w-3.5 h-3.5 rounded-full bg-rose-500 border border-rose-200 ring-1 ring-black/40 shadow-sm"></span>
                   <span class="w-3.5 h-3.5 rounded-full bg-amber-400 border border-amber-100 ring-1 ring-black/40 shadow-sm"></span>
@@ -1228,7 +1177,7 @@
                 <button id="btnBjClearBet" type="button" class="px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-medium text-zinc-400">Reset</button>
               </div>
             </div>
-            <button id="btnBjDeal" type="button" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-500 hover:to-rose-600 text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-rose-900/30 transition">
+            <button id="btnBjDeal" type="button" class="w-full py-3.5 rounded-xl bg-white hover:bg-zinc-200 text-zinc-950 font-bold text-xs uppercase tracking-wider transition">
               Deal Hand
             </button>
           </div>
@@ -1373,7 +1322,7 @@
           </div>
         </div>
 
-        <button id="btnConfirmCreateRoom" type="button" class="w-full py-4 rounded-2xl bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-500 hover:to-rose-600 text-white font-bold text-sm tracking-wide shadow-xl shadow-rose-900/40 transition">
+        <button id="btnConfirmCreateRoom" type="button" class="w-full py-4 rounded-xl bg-white hover:bg-zinc-200 text-zinc-950 font-bold text-sm tracking-wide transition">
           Launch Room &amp; Invite Friends
         </button>
       </div>
@@ -1662,7 +1611,7 @@
     };
 
     function renderCardHTML(card, opts = {}) {
-      const isFaceDown = !card || Boolean(opts.faceDown || card.hidden || !card.rank);
+      const isFaceDown = !card || Boolean(opts.faceDown || card.hidden || !card.rank || !card.suit);
       const animKey = opts.animKey || (card && card.uid) || '';
       const zone = opts.zone || 'table';
       const originSeat = opts.originSeat !== undefined ? String(opts.originSeat) : '';
@@ -2647,8 +2596,8 @@
       try {
         const payload = getSanitizedState();
 
-        // 1. Remote WebSocket sync
-        if (socket && isSocketConnected && state.inRoom) {
+        // 1. Remote WebSocket sync (Only the host client sends authoritative room state)
+        if (isHostUser() && socket && isSocketConnected && state.inRoom) {
           socket.emit('sync_state', {
             roomCode: state.roomCode,
             state: payload
@@ -3031,7 +2980,7 @@
         total -= 10;
         aces--;
       }
-      return { total, isSoft: aces > 0 };
+      return { total: isNaN(total) ? 0 : total, isSoft: aces > 0 };
     }
 
     function setupBlackjackBetting() {
@@ -3968,7 +3917,7 @@
             <div class="flex items-center justify-between p-3.5 rounded-2xl bg-charcoal-900 border border-white/5 shadow-md">
               <div class="flex items-center gap-3 min-w-0">
                 <div class="relative shrink-0">
-                  <span class="w-10 h-10 rounded-full ${isMe ? 'bg-gradient-to-br from-rose-600 to-rose-700 text-white' : 'bg-charcoal-800 text-zinc-200'} border border-white/15 flex items-center justify-center text-xs font-bold font-mono">${initials}</span>
+                  <span class="w-10 h-10 rounded-lg ${isMe ? 'bg-zinc-100 text-zinc-950 font-bold' : 'bg-zinc-800 text-zinc-300'} border border-white/10 flex items-center justify-center text-xs font-bold font-mono">${initials}</span>
                   <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 absolute -bottom-0.5 -right-0.5 ring-2 ring-charcoal-950"></span>
                 </div>
                 <div class="truncate">
@@ -4291,12 +4240,14 @@
       }
 
       const dScoreEl = document.getElementById('bjDealerScoreBadge');
-      if (state.bj.dealerCards.length === 0) {
+      if (!state.bj.dealerCards || state.bj.dealerCards.length === 0) {
         dScoreEl.textContent = '--';
       } else if (state.bj.dealerHoleHidden) {
-        dScoreEl.textContent = calcBlackjackScore([state.bj.dealerCards[0]]).total;
+        const upScore = calcBlackjackScore([state.bj.dealerCards[0]]).total;
+        dScoreEl.textContent = isNaN(upScore) ? '?' : String(upScore);
       } else {
-        dScoreEl.textContent = calcBlackjackScore(state.bj.dealerCards).total;
+        const fullScore = calcBlackjackScore(state.bj.dealerCards).total;
+        dScoreEl.textContent = isNaN(fullScore) ? '0' : String(fullScore);
       }
 
       const myScore = me.cards.length ? calcBlackjackScore(me.cards).total : 0;
