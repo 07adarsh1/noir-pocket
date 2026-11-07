@@ -1,0 +1,3891 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>NOIR — Premium Multiplayer Card Lounge</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    if (typeof tailwind !== "undefined") {
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+              mono: ['JetBrains Mono', 'monospace']
+            },
+            colors: {
+              obsidian: '#050507',
+              charcoal: {
+                950: '#070709',
+                900: '#0c0d12',
+                800: '#13141c',
+                700: '#1b1c27',
+                600: '#262837'
+              },
+              burgundy: {
+                950: '#2b0610',
+                900: '#4c0519',
+                800: '#881337',
+                700: '#be123c',
+                600: '#e11d48',
+                500: '#f43f5e'
+              },
+              gold: {
+                500: '#f59e0b',
+                400: '#fbbf24'
+              }
+            }
+          }
+        }
+      };
+    }
+  </script>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    html, body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background-color: #050507;
+      color: #f4f4f5;
+      min-height: 100dvh;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+
+    /* Ambient Background Gradients */
+    .bg-noir-radial {
+      background: radial-gradient(circle at 50% 0%, rgba(136, 19, 55, 0.12) 0%, rgba(5, 5, 7, 0) 65%),
+                  radial-gradient(circle at 80% 80%, rgba(30, 27, 75, 0.1) 0%, rgba(5, 5, 7, 0) 50%),
+                  #050507;
+    }
+
+    /* Glass Surfaces & Panels */
+    .noir-glass {
+      background: rgba(14, 15, 22, 0.75);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.65);
+    }
+    .noir-glass-card {
+      background: rgba(18, 19, 28, 0.6);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .noir-glass-card:hover {
+      background: rgba(24, 25, 38, 0.75);
+      border-color: rgba(255, 255, 255, 0.14);
+      transform: translateY(-2px);
+      box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(225, 29, 72, 0.15);
+    }
+
+    /* Premium Poker Felt / Table Surface */
+    .noir-table {
+      background: radial-gradient(ellipse at 50% 45%, #14151e 0%, #0c0d12 75%, #07070a 100%);
+      border: 1.5px solid rgba(255, 255, 255, 0.09);
+      box-shadow: inset 0 0 80px rgba(0, 0, 0, 0.9), 0 24px 60px -12px rgba(0, 0, 0, 0.85);
+      perspective: 1100px;
+      position: relative;
+    }
+    .noir-table::before {
+      content: "";
+      position: absolute;
+      inset: 12px;
+      border: 1px dashed rgba(255, 255, 255, 0.05);
+      border-radius: inherit;
+      pointer-events: none;
+    }
+
+    /* Realistic Luxury Playing Cards */
+    .playing-card {
+      width: 58px;
+      height: 82px;
+      border-radius: 8px;
+      background-color: #ffffff;
+      border: 1px solid #d4d4d8;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55), 0 1px 3px rgba(0, 0, 0, 0.3);
+      transition: transform 0.26s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.26s ease, border-color 0.2s ease;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 5px 6px;
+      cursor: pointer;
+      flex-shrink: 0;
+      transform-style: preserve-3d;
+      will-change: transform, opacity;
+      transform: rotateZ(var(--rest-rot, 0deg));
+    }
+    @media (min-width: 640px) {
+      .playing-card {
+        width: 68px;
+        height: 96px;
+        padding: 6px 7px;
+        border-radius: 10px;
+      }
+    }
+    .playing-card.is-animating {
+      transition: none !important;
+      pointer-events: none;
+    }
+    .playing-card.card-sm {
+      width: 26px;
+      height: 38px;
+      padding: 2px 3px;
+      border-radius: 5px;
+      font-size: 0.6rem;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.55);
+    }
+    @media (min-width: 640px) {
+      .playing-card.card-sm {
+        width: 32px;
+        height: 46px;
+        padding: 3px 4px;
+        border-radius: 6px;
+        font-size: 0.65rem;
+      }
+    }
+    .playing-card.selected {
+      transform: translate3d(0, -16px, 14px) scale(1.05) rotateZ(0deg) !important;
+      background-color: #ffffff;
+      border-color: #e11d48;
+      box-shadow: 0 18px 32px -4px rgba(225, 29, 72, 0.45), 0 0 0 2px #e11d48;
+      z-index: 25;
+    }
+    .playing-card.card-back {
+      background: radial-gradient(circle at 50% 50%, #1e1f2b 0%, #101117 100%);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+    .playing-card.card-back::after {
+      content: "";
+      position: absolute;
+      inset: 3px;
+      border: 1px solid rgba(225, 29, 72, 0.4);
+      border-radius: 6px;
+      background: repeating-linear-gradient(45deg, rgba(225, 29, 72, 0.04), rgba(225, 29, 72, 0.04) 3px, transparent 3px, transparent 6px);
+    }
+
+    /* 3D Card Deck Shoe Origin */
+    .deck-shoe-stack {
+      width: 32px;
+      height: 46px;
+      border-radius: 6px;
+      background-color: #12131a;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: -2px 2px 0 #070709, -4px 4px 0 #13141c, -4px 4px 12px rgba(0, 0, 0, 0.85);
+      position: absolute;
+      top: 14px;
+      right: 16px;
+      z-index: 20;
+      pointer-events: none;
+    }
+    .deck-shoe-stack::after {
+      content: "";
+      position: absolute;
+      inset: 3px;
+      border: 1px solid rgba(225, 29, 72, 0.4);
+      border-radius: 4px;
+    }
+
+    /* Casino Chips */
+    .noir-chip-token {
+      width: 26px;
+      height: 26px;
+      border-radius: 9999px;
+      background: radial-gradient(circle, #e11d48 0%, #9f1239 100%);
+      border: 2px dashed rgba(255, 255, 255, 0.85);
+      box-shadow: inset 0 0 0 2px #070709, 0 3px 0 #4c0519, 0 8px 16px rgba(0, 0, 0, 0.75);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      font-weight: 800;
+      color: #ffffff;
+      pointer-events: none;
+      will-change: transform, opacity;
+    }
+    .noir-chip-mini {
+      width: 14px;
+      height: 14px;
+      border-radius: 9999px;
+      background: radial-gradient(circle, #e11d48 0%, #9f1239 100%);
+      border: 1.5px dashed rgba(255, 255, 255, 0.85);
+      box-shadow: inset 0 0 0 1px #070709, 0 2px 4px rgba(0, 0, 0, 0.6);
+      display: inline-block;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+
+    /* Flip phase during 3D card turn */
+    .playing-card.flip-back-phase {
+      background: radial-gradient(circle at 50% 50%, #1e1f2b 0%, #101117 100%) !important;
+      border-color: rgba(255, 255, 255, 0.22) !important;
+    }
+    .playing-card.flip-back-phase > * {
+      opacity: 0 !important;
+    }
+    .playing-card.flip-back-phase::after {
+      content: "";
+      position: absolute;
+      inset: 3px;
+      border: 1px solid rgba(225, 29, 72, 0.4);
+      border-radius: 6px;
+    }
+
+    /* Subtle Table Lighting Animations */
+    @keyframes outcomeWinPulse {
+      0% { transform: scale(0.99); box-shadow: 0 0 0 0 rgba(225, 29, 72, 0); }
+      50% { transform: scale(1.01); box-shadow: 0 0 32px 4px rgba(225, 29, 72, 0.35), inset 0 0 24px rgba(225, 29, 72, 0.15); }
+      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(225, 29, 72, 0); }
+    }
+    .anim-outcome-win {
+      animation: outcomeWinPulse 980ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes tableAmbientWin {
+      0% { border-color: rgba(255, 255, 255, 0.09); }
+      50% { border-color: rgba(225, 29, 72, 0.5); box-shadow: inset 0 0 90px rgba(225, 29, 72, 0.2), 0 24px 60px -12px rgba(0, 0, 0, 0.85); }
+      100% { border-color: rgba(255, 255, 255, 0.09); }
+    }
+    .table-win-lighting {
+      animation: tableAmbientWin 1100ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes outcomeLossSettle {
+      0% { opacity: 1; transform: translateY(0); }
+      45% { opacity: 0.8; transform: translateY(3px); filter: brightness(0.85); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    .anim-outcome-shake {
+      animation: outcomeLossSettle 650ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes floatUp {
+      0% { opacity: 0; transform: translateY(8px) scale(0.92); }
+      20% { opacity: 1; transform: translateY(0) scale(1); }
+      80% { opacity: 1; transform: translateY(-20px) scale(1); }
+      100% { opacity: 0; transform: translateY(-34px) scale(0.92); }
+    }
+    .floating-reaction {
+      animation: floatUp 1.8s ease-out forwards;
+      pointer-events: none;
+    }
+
+    .seat-active-turn {
+      background: rgba(225, 29, 72, 0.12) !important;
+      border: 1.5px solid #e11d48 !important;
+      box-shadow: 0 0 24px rgba(225, 29, 72, 0.3);
+      transform: translateY(-2px);
+    }
+    .user-dock-active-turn {
+      border-color: rgba(225, 29, 72, 0.5) !important;
+      box-shadow: 0 -6px 32px rgba(225, 29, 72, 0.18), 0 16px 40px rgba(0, 0, 0, 0.7);
+    }
+
+    @keyframes turnTimerDrain {
+      0% { transform: scaleX(1); opacity: 0.95; }
+      100% { transform: scaleX(0); opacity: 0.3; }
+    }
+    .turn-timer-bar {
+      height: 2.5px;
+      background: linear-gradient(90deg, #f43f5e, #be123c);
+      transform-origin: left center;
+      animation: turnTimerDrain var(--turn-ms, 15000ms) linear forwards;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+    .live-sync-dot {
+      animation: pulseDot 2.2s ease-in-out infinite;
+    }
+
+    /* Scrollbars */
+    .custom-scrollbar::-webkit-scrollbar {
+      height: 4px;
+      width: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    /* Range slider */
+    input[type="range"] {
+      accent-color: #e11d48;
+    }
+
+    /* Hover Micro-interactions */
+    button:not(:disabled):active {
+      transform: scale(0.97);
+    }
+  </style>
+</head>
+<body class="bg-noir-radial text-zinc-100 selection:bg-rose-600 selection:text-white min-h-[100dvh] flex flex-col justify-between">
+
+  <!-- UNCLIPPED ANIMATION FLIGHT OVERLAY LAYER -->
+  <div id="fxOverlayStage" class="fixed inset-0 pointer-events-none z-50 overflow-visible" style="position:fixed;inset:0;pointer-events:none;overflow:visible;"></div>
+
+  <!-- TOP GLOBAL NAVIGATION -->
+  <header class="w-full border-b border-white/5 bg-charcoal-950/80 backdrop-blur-xl sticky top-0 z-40 transition-all">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+      
+      <!-- Brand Logo & Back to Lobby -->
+      <div class="flex items-center gap-3">
+        <button id="btnNavLogo" type="button" class="flex items-center gap-2.5 text-left group">
+          <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-burgundy-600 to-burgundy-900 border border-burgundy-500/40 flex items-center justify-center shadow-lg shadow-burgundy-900/30 group-hover:scale-105 transition">
+            <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2L4 12L12 22L20 12L12 2Z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-sm font-extrabold tracking-widest uppercase text-white font-mono">NOIR</span>
+              <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-white/5 text-zinc-400 border border-white/5">CLUB</span>
+            </div>
+            <div class="text-[10px] text-zinc-400 hidden sm:block">Private Multiplayer Card Gaming</div>
+          </div>
+        </button>
+
+        <!-- Room Header Badge (Visible in waiting room or at table) -->
+        <div id="roomHeaderBadge" class="hidden items-center gap-2 bg-charcoal-900 border border-white/10 rounded-full px-3 py-1 text-xs">
+          <span id="multiplayerSyncDot" class="w-2 h-2 rounded-full bg-emerald-400 live-sync-dot" title="Live Sync Active"></span>
+          <span class="text-zinc-400 font-mono text-[11px]">ROOM</span>
+          <span id="headerRoomCode" class="font-mono font-bold text-white tracking-wider">CLUB42</span>
+          <button id="btnHeaderCopyCode" type="button" class="ml-1 text-[11px] font-semibold text-rose-400 hover:text-rose-300 transition flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+            </svg>
+            <span>Copy</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Center Game Selector Tabs (Visible during table game play) -->
+      <div id="gameSelectorPills" class="hidden bg-charcoal-900 p-1 rounded-full border border-white/10 items-center gap-1">
+        <button id="tabGameBlackjack" type="button" data-game="blackjack" class="game-tab-btn px-3 py-1 rounded-full text-xs font-semibold transition">
+          Blackjack
+        </button>
+        <button id="tabGameHoldem" type="button" data-game="holdem" class="game-tab-btn px-3 py-1 rounded-full text-xs font-semibold transition">
+          Texas Hold'em
+        </button>
+        <button id="tabGameBluff" type="button" data-game="bluff" class="game-tab-btn px-3 py-1 rounded-full text-xs font-semibold transition">
+          Bluff
+        </button>
+      </div>
+
+      <!-- Right Header Actions: User Balance, Rules, Menu -->
+      <div class="flex items-center gap-2">
+        <!-- User Balance Pill -->
+        <button id="btnUserChipsPill" type="button" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-charcoal-900 hover:bg-charcoal-800 border border-white/10 text-xs font-medium transition" title="Click to view profile or top up">
+          <span class="noir-chip-mini"></span>
+          <span class="font-mono font-bold text-white">$<span id="navUserChipsVal">2,500</span></span>
+        </button>
+
+        <!-- Rules Button -->
+        <button id="btnNavRules" type="button" class="p-2 sm:px-3 sm:py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-zinc-300 hover:text-white transition flex items-center gap-1.5" title="Rules & How to Play">
+          <svg class="w-4 h-4 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span class="hidden sm:inline">Rules</span>
+        </button>
+
+        <!-- Table Settings / Menu Drawer Button -->
+        <button id="btnNavMenu" type="button" class="p-2 sm:px-3 sm:py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-zinc-300 hover:text-white transition flex items-center gap-1.5">
+          <svg class="w-4 h-4 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+          </svg>
+          <span class="hidden sm:inline">Menu</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- TABLE TOOLS & SETTINGS DRAWER -->
+  <div id="tableToolsDrawer" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex justify-end">
+    <div class="w-full max-w-sm h-full bg-charcoal-950 border-l border-white/10 p-5 flex flex-col justify-between overflow-y-auto custom-scrollbar shadow-2xl">
+      <div class="space-y-6">
+        <div class="flex items-center justify-between pb-4 border-b border-white/10">
+          <div>
+            <h3 class="text-base font-bold text-white">Table Controls</h3>
+            <p class="text-xs text-zinc-400">Manage settings, seats & bots</p>
+          </div>
+          <button id="btnCloseDrawer" type="button" class="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white transition">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Seat Switcher (Pass & Play / Multi-Seat Viewing) -->
+        <div id="drawerSeatSection" class="space-y-2">
+          <label class="text-xs font-semibold text-zinc-300 block">Switch Active Perspective</label>
+          <div id="phoneSeatSwitcher" class="grid grid-cols-2 gap-2"></div>
+        </div>
+
+        <!-- Bot & Auto-Play Options -->
+        <div class="space-y-3 pt-4 border-t border-white/10">
+          <label class="flex items-center justify-between gap-3 text-xs text-zinc-300 cursor-pointer p-3 rounded-xl bg-charcoal-900 border border-white/5">
+            <div>
+              <div class="font-semibold text-white">Auto-Play Other Seats</div>
+              <div class="text-[11px] text-zinc-400">Bots and unassigned seats make rapid smart moves</div>
+            </div>
+            <input id="chkAutoFriends" type="checkbox" checked class="w-4 h-4 rounded bg-black border-white/20 text-rose-600 focus:ring-0" />
+          </label>
+
+          <button id="btnTopUpChips" type="button" class="w-full py-2.5 px-4 rounded-xl bg-charcoal-900 hover:bg-charcoal-800 border border-white/10 text-xs font-semibold text-white flex items-center justify-between transition">
+            <span>Add Bankroll Chips</span>
+            <span class="text-rose-400 font-mono font-bold">+$1,000</span>
+          </button>
+
+          <button id="btnDownloadHtml" type="button" class="w-full py-2.5 px-4 rounded-xl bg-charcoal-900 hover:bg-charcoal-800 border border-white/10 text-xs font-semibold text-zinc-300 hover:text-white flex items-center justify-between transition">
+            <span>Download Standalone HTML</span>
+            <svg class="w-4 h-4 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Quick Chat Reactions -->
+        <div class="space-y-2 pt-4 border-t border-white/10">
+          <label class="text-xs font-semibold text-zinc-300 block">Table Shout &amp; Reactions</label>
+          <div class="grid grid-cols-3 gap-1.5">
+            <button type="button" data-react="ALL IN" class="react-btn py-2 rounded-lg bg-white/5 hover:bg-rose-600/20 hover:text-rose-300 text-xs font-semibold text-zinc-300 transition">ALL IN</button>
+            <button type="button" data-react="BLUFFING" class="react-btn py-2 rounded-lg bg-white/5 hover:bg-rose-600/20 hover:text-rose-300 text-xs font-semibold text-zinc-300 transition">BLUFF</button>
+            <button type="button" data-react="NICE HAND" class="react-btn py-2 rounded-lg bg-white/5 hover:bg-rose-600/20 hover:text-rose-300 text-xs font-semibold text-zinc-300 transition">NICE</button>
+            <button type="button" data-react="FOLD" class="react-btn py-2 rounded-lg bg-white/5 hover:bg-rose-600/20 hover:text-rose-300 text-xs font-semibold text-zinc-300 transition">FOLD</button>
+            <button type="button" data-react="GG" class="react-btn py-2 rounded-lg bg-white/5 hover:bg-rose-600/20 hover:text-rose-300 text-xs font-semibold text-zinc-300 transition">GG</button>
+            <button type="button" data-react="CHECK" class="react-btn py-2 rounded-lg bg-white/5 hover:bg-rose-600/20 hover:text-rose-300 text-xs font-semibold text-zinc-300 transition">CHECK</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Leave Room / Lobby Button -->
+      <div class="pt-6 border-t border-white/10 space-y-2">
+        <button id="btnLeaveRoom" type="button" class="w-full py-3 rounded-xl bg-rose-600/15 hover:bg-rose-600/25 border border-rose-500/30 text-rose-300 text-xs font-bold uppercase tracking-wider transition">
+          Exit to Main Lobby
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN VIEWPORT CONTAINER -->
+  <main class="flex-1 w-full flex flex-col justify-center items-center p-3 sm:p-6 md:p-8">
+
+    <!-- =========================================================================
+         SCREEN 1: SLEEK, MINIMAL MAIN LOBBY
+         ========================================================================= -->
+    <section id="lobbyView" class="w-full max-w-5xl mx-auto space-y-8 py-4 sm:py-8">
+      
+      <!-- Minimalist Hero Header -->
+      <div class="text-center space-y-3">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-600/10 border border-rose-500/20 text-rose-400 text-xs font-semibold tracking-wider uppercase">
+          <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+          Pure Minimalist Card Gaming
+        </div>
+        <h1 class="text-3xl sm:text-5xl font-black tracking-tight text-white font-sans">
+          Welcome to <span class="text-transparent bg-clip-text bg-gradient-to-r from-white via-zinc-200 to-rose-400 font-mono">NOIR</span>
+        </h1>
+        <p class="text-sm sm:text-base text-zinc-400 max-w-xl mx-auto font-normal">
+          Select a game below to launch a private multiplayer room or jump straight into high-stakes action.
+        </p>
+      </div>
+
+      <!-- Quick Room Creation & Joining Bar -->
+      <div class="max-w-2xl mx-auto noir-glass rounded-2xl p-3 sm:p-4 shadow-xl">
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+          <button id="btnOpenCreateModal" type="button" class="flex-1 py-3 px-5 rounded-xl bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-500 hover:to-rose-600 text-white font-bold text-sm tracking-wide shadow-lg shadow-rose-900/40 transition flex items-center justify-center gap-2">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+            </svg>
+            <span>Create Private Room</span>
+          </button>
+          
+          <div class="h-px sm:h-8 w-full sm:w-px bg-white/10"></div>
+
+          <div class="flex items-center gap-2 flex-1">
+            <div class="relative flex-1">
+              <input id="inputJoinCode" type="text" maxlength="8" placeholder="ENTER CODE" class="w-full pl-3.5 pr-2 py-3 rounded-xl bg-charcoal-900 border border-white/10 font-mono uppercase text-xs sm:text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-rose-500 transition tracking-widest" />
+            </div>
+            <button id="btnJoinRoom" type="button" class="py-3 px-5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-semibold text-xs sm:text-sm transition shrink-0">
+              Join Room
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3 ATTRACTIVE GAME CARDS -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 pt-2">
+        
+        <!-- Game 1: Blackjack -->
+        <div class="noir-glass-card rounded-3xl p-6 flex flex-col justify-between group relative overflow-hidden">
+          <div class="absolute -right-8 -top-8 w-32 h-32 bg-rose-600/10 rounded-full blur-2xl group-hover:bg-rose-600/20 transition"></div>
+          <div>
+            <!-- Visual Mockup Preview -->
+            <div class="h-36 rounded-2xl bg-gradient-to-b from-charcoal-900 to-charcoal-950 border border-white/5 p-4 flex items-center justify-center relative mb-5 overflow-hidden">
+              <div class="flex items-center -space-x-5 group-hover:scale-105 transition-transform duration-300">
+                <!-- Card 1: Ace of Spades -->
+                <div class="w-16 h-24 rounded-lg bg-white border border-zinc-300 text-zinc-950 p-1.5 flex flex-col justify-between shadow-xl -rotate-6">
+                  <div class="text-xs font-extrabold leading-none">A</div>
+                  <div class="text-center">
+                    <svg class="w-5 h-5 mx-auto fill-current" viewBox="0 0 24 24"><path d="M12 2C7 8 4 11.5 4 14.5C4 17.5 6.5 19.5 9 19.5C10.5 19.5 11.5 18.8 12 18C12.5 18.8 13.5 19.5 15 19.5C17.5 19.5 20 17.5 20 14.5C20 11.5 17 8 12 2ZM10.5 18.5L9 22H15L13.5 18.5H10.5Z"/></svg>
+                  </div>
+                  <div class="text-xs font-extrabold leading-none text-right">A</div>
+                </div>
+                <!-- Card 2: Jack of Hearts -->
+                <div class="w-16 h-24 rounded-lg bg-white border border-zinc-300 text-rose-600 p-1.5 flex flex-col justify-between shadow-xl rotate-6">
+                  <div class="text-xs font-extrabold leading-none">J</div>
+                  <div class="text-center">
+                    <svg class="w-5 h-5 mx-auto fill-current" viewBox="0 0 24 24"><path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.27 2 8.5C2 5.41 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.08C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.41 22 8.5C22 12.27 18.6 15.36 13.45 20.03L12 21.35Z"/></svg>
+                  </div>
+                  <div class="text-xs font-extrabold leading-none text-right">J</div>
+                </div>
+              </div>
+              <span class="absolute bottom-2.5 right-3 px-2 py-0.5 rounded-full bg-rose-600/25 border border-rose-500/40 text-[10px] font-mono font-bold text-rose-300">
+                21 BLACKJACK
+              </span>
+            </div>
+
+            <div class="space-y-1 mb-4">
+              <div class="flex items-center justify-between">
+                <h3 class="text-lg font-bold text-white">Blackjack</h3>
+                <span class="text-[11px] font-medium text-zinc-400">1–6 Players</span>
+              </div>
+              <p class="text-xs text-zinc-400 leading-relaxed">
+                Classic casino 21 vs the dealer. Double down on power hands, split pairs, and chase natural 3:2 payouts.
+              </p>
+            </div>
+          </div>
+
+          <button type="button" data-lobby-quick-game="blackjack" class="w-full py-3 rounded-xl bg-white/10 hover:bg-rose-600 text-white font-bold text-xs uppercase tracking-wider transition duration-200">
+            Play Blackjack
+          </button>
+        </div>
+
+        <!-- Game 2: Texas Hold'em -->
+        <div class="noir-glass-card rounded-3xl p-6 flex flex-col justify-between group relative overflow-hidden">
+          <div class="absolute -right-8 -top-8 w-32 h-32 bg-amber-600/10 rounded-full blur-2xl group-hover:bg-amber-600/20 transition"></div>
+          <div>
+            <!-- Visual Mockup Preview -->
+            <div class="h-36 rounded-2xl bg-gradient-to-b from-charcoal-900 to-charcoal-950 border border-white/5 p-4 flex items-center justify-center relative mb-5 overflow-hidden">
+              <div class="flex items-center -space-x-3 group-hover:scale-105 transition-transform duration-300">
+                <!-- Flop Preview -->
+                <div class="w-12 h-18 rounded-md bg-white border border-zinc-300 text-zinc-950 p-1 flex flex-col justify-between shadow-md">
+                  <span class="text-[10px] font-bold">A</span>
+                  <span class="text-[9px] text-center font-bold">♠</span>
+                </div>
+                <div class="w-12 h-18 rounded-md bg-white border border-zinc-300 text-rose-600 p-1 flex flex-col justify-between shadow-md">
+                  <span class="text-[10px] font-bold">K</span>
+                  <span class="text-[9px] text-center font-bold">♥</span>
+                </div>
+                <div class="w-12 h-18 rounded-md bg-white border border-zinc-300 text-rose-600 p-1 flex flex-col justify-between shadow-md">
+                  <span class="text-[10px] font-bold">Q</span>
+                  <span class="text-[9px] text-center font-bold">♦</span>
+                </div>
+              </div>
+              <span class="absolute bottom-2.5 right-3 px-2 py-0.5 rounded-full bg-amber-600/20 border border-amber-500/30 text-[10px] font-mono font-bold text-amber-300">
+                POT $750
+              </span>
+            </div>
+
+            <div class="space-y-1 mb-4">
+              <div class="flex items-center justify-between">
+                <h3 class="text-lg font-bold text-white">Texas Hold'em</h3>
+                <span class="text-[11px] font-medium text-zinc-400">2–6 Players</span>
+              </div>
+              <p class="text-xs text-zinc-400 leading-relaxed">
+                The gold standard of poker. Build winning 5-card hands through Pre-Flop, Flop, Turn, and River betting rounds.
+              </p>
+            </div>
+          </div>
+
+          <button type="button" data-lobby-quick-game="holdem" class="w-full py-3 rounded-xl bg-white/10 hover:bg-rose-600 text-white font-bold text-xs uppercase tracking-wider transition duration-200">
+            Play Hold'em
+          </button>
+        </div>
+
+        <!-- Game 3: Bluff -->
+        <div class="noir-glass-card rounded-3xl p-6 flex flex-col justify-between group relative overflow-hidden">
+          <div class="absolute -right-8 -top-8 w-32 h-32 bg-purple-600/10 rounded-full blur-2xl group-hover:bg-purple-600/20 transition"></div>
+          <div>
+            <!-- Visual Mockup Preview -->
+            <div class="h-36 rounded-2xl bg-gradient-to-b from-charcoal-900 to-charcoal-950 border border-white/5 p-4 flex items-center justify-center relative mb-5 overflow-hidden">
+              <div class="flex items-center -space-x-4 group-hover:scale-105 transition-transform duration-300">
+                <div class="w-14 h-20 rounded-md bg-charcoal-800 border border-rose-500/40 p-1 shadow-lg -rotate-12"></div>
+                <div class="w-14 h-20 rounded-md bg-charcoal-800 border border-rose-500/40 p-1 shadow-lg rotate-3"></div>
+                <div class="w-14 h-20 rounded-md bg-charcoal-800 border border-rose-500/40 p-1 shadow-lg rotate-12"></div>
+              </div>
+              <span class="absolute bottom-2.5 right-3 px-2 py-0.5 rounded-full bg-purple-600/20 border border-purple-500/30 text-[10px] font-mono font-bold text-purple-300">
+                CLAIM: 3 KINGS
+              </span>
+            </div>
+
+            <div class="space-y-1 mb-4">
+              <div class="flex items-center justify-between">
+                <h3 class="text-lg font-bold text-white">Bluff</h3>
+                <span class="text-[11px] font-medium text-zinc-400">3–6 Players</span>
+              </div>
+              <p class="text-xs text-zinc-400 leading-relaxed">
+                Mind games and deception. Play cards face-down under a declared rank. Call their bluff or take the entire pile!
+              </p>
+            </div>
+          </div>
+
+          <button type="button" data-lobby-quick-game="bluff" class="w-full py-3 rounded-xl bg-white/10 hover:bg-rose-600 text-white font-bold text-xs uppercase tracking-wider transition duration-200">
+            Play Bluff
+          </button>
+        </div>
+
+      </div>
+
+      <!-- User Profile Strip (Compact & Accessible) -->
+      <div class="max-w-md mx-auto pt-4 flex items-center justify-between px-4 py-2.5 rounded-2xl bg-charcoal-900/60 border border-white/5 text-xs text-zinc-400">
+        <div class="flex items-center gap-2.5">
+          <span id="lobbyPlayerAvatar" class="w-7 h-7 rounded-full bg-rose-600 text-white font-bold text-xs flex items-center justify-center">AL</span>
+          <div>
+            <span class="text-white font-semibold" id="lobbyPlayerNameDisplay">Alex</span>
+            <span class="text-[10px] text-zinc-500 ml-1.5 font-mono">SEAT 01</span>
+          </div>
+        </div>
+        <button id="btnOpenProfileModal" type="button" class="text-zinc-300 hover:text-white font-medium hover:underline text-xs">
+          Edit Profile
+        </button>
+      </div>
+
+    </section>
+
+    <!-- =========================================================================
+         SCREEN 2: MULTIPLAYER WAITING ROOM
+         ========================================================================= -->
+    <section id="waitingRoomView" class="hidden w-full max-w-3xl mx-auto py-6 sm:py-10 space-y-6">
+      
+      <!-- Room Header Strip -->
+      <div class="noir-glass rounded-3xl p-6 sm:p-8 space-y-6">
+        
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-white/10">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 live-sync-dot"></span>
+              <span id="waitingGameModeBadge" class="text-xs font-bold uppercase tracking-wider text-rose-400 font-mono">BLACKJACK</span>
+              <span class="text-xs text-zinc-500">• Private Lounge</span>
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-white">Multiplayer Waiting Room</h2>
+            <p class="text-xs sm:text-sm text-zinc-400 mt-0.5">Share the room code or invite link with friends to join.</p>
+          </div>
+
+          <!-- Big Room Code Banner -->
+          <div class="bg-charcoal-950/90 border border-white/10 rounded-2xl px-5 py-3.5 flex items-center justify-between sm:justify-start gap-4 shadow-xl">
+            <div>
+              <div class="text-[10px] font-mono uppercase tracking-widest text-zinc-500">Room Code</div>
+              <div id="waitingRoomCodeText" class="font-mono text-2xl sm:text-3xl font-black text-white tracking-widest leading-none mt-1">CLUB42</div>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button id="btnWaitingCopyCode" type="button" class="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-semibold transition flex items-center gap-1.5">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                </svg>
+                <span>Copy</span>
+              </button>
+              <button id="btnWaitingShare" type="button" class="px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-lg shadow-rose-900/30">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+                </svg>
+                <span>Invite</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Seats & Player Slots Roster -->
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              <span>Connected Players</span>
+              <span class="px-2 py-0.5 rounded-full bg-white/10 text-xs text-zinc-300 font-mono">
+                <span id="waitingPlayerCount">1</span> / <span id="waitingMaxPlayers">4</span>
+              </span>
+            </h3>
+
+            <div id="hostBotControls" class="flex items-center gap-2">
+              <button id="btnWaitingAddBot" type="button" class="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-zinc-200 transition flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                <span>Add AI Bot</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Roster Grid (Responsive) -->
+          <div id="waitingRosterList" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+        </div>
+
+        <!-- Minimum Players Rule Alert -->
+        <div id="waitingRequirementAlert" class="px-4 py-3 rounded-2xl bg-charcoal-900 border border-white/5 text-xs text-zinc-300 flex items-center gap-2.5">
+          <span class="w-2 h-2 rounded-full bg-rose-500 shrink-0"></span>
+          <span id="waitingRequirementText">Ready to play</span>
+        </div>
+
+        <!-- Bottom Room Actions: Start Game (Host) / Waiting Banner (Guest) / Leave -->
+        <div class="space-y-3 pt-2">
+          <button id="btnWaitingStartGame" type="button" class="w-full py-4 rounded-2xl bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-500 hover:to-rose-600 disabled:opacity-40 text-white font-bold text-base tracking-wide shadow-xl shadow-rose-900/40 transition">
+            Start Game Now
+          </button>
+          
+          <div id="guestWaitingBanner" class="hidden w-full py-3.5 px-4 rounded-2xl bg-charcoal-900 border border-white/10 text-center text-xs font-semibold text-zinc-300 flex items-center justify-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
+            <span>Waiting for room host to start the table...</span>
+          </div>
+
+          <div class="flex items-center justify-between pt-1">
+            <button id="btnWaitingLeave" type="button" class="text-xs font-medium text-zinc-400 hover:text-white transition">
+              ← Leave Room &amp; Return to Lobby
+            </button>
+            <button id="btnWaitingGameSwitch" type="button" class="text-xs font-medium text-rose-400 hover:text-rose-300 transition">
+              Switch Game Mode
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- =========================================================================
+         SCREEN 3: CLEAN, SLEEK GAMEPLAY TABLE INTERFACE
+         ========================================================================= -->
+    <section id="tableView" class="hidden w-full max-w-5xl mx-auto flex flex-col justify-between gap-4 py-2 flex-1">
+      
+      <!-- LUXURY POKER TABLE ARENA -->
+      <div id="noirTableArena" class="noir-table rounded-3xl sm:rounded-[36px] p-4 sm:p-6 md:p-8 flex-1 flex flex-col justify-between min-h-[440px] sm:min-h-[520px] relative overflow-hidden transition-all duration-300">
+        
+        <!-- Physical 3D Card Deck Shoe in Top Right Corner -->
+        <div id="deckShoeOrigin" class="deck-shoe-stack" title="Card Shoe"></div>
+
+        <!-- Floating Chat Reactions Stage -->
+        <div id="reactionStage" class="absolute inset-0 pointer-events-none z-30 overflow-hidden"></div>
+
+        <!-- 1. TOP ARC: OPPONENT SEATS & BLACKJACK DEALER STATION -->
+        <div class="w-full z-10 space-y-3 shrink-0">
+          
+          <!-- Opponents Dynamic Grid (Wraps cleanly on mobile, spacious on tablet/desktop) -->
+          <div id="opponentsArc" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3 pr-10"></div>
+
+          <!-- Blackjack Dealer Station (Centered when mode is Blackjack) -->
+          <div id="centerBlackjack" class="hidden flex flex-col items-center justify-center pt-2">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-xs font-bold text-zinc-400 uppercase tracking-widest font-mono">DEALER</span>
+              <span id="bjDealerScoreBadge" class="px-2.5 py-0.5 rounded-full bg-white/10 text-white font-mono text-xs font-bold border border-white/10">?</span>
+            </div>
+            <div id="bjDealerCards" class="flex items-center justify-center gap-2 min-h-[86px]"></div>
+          </div>
+
+        </div>
+
+        <!-- 2. MIDDLE TABLE FELT: POT / COMMUNITY CARDS / BLUFF PILE & CONTEXT PILL -->
+        <div class="my-auto flex flex-col items-center justify-center text-center z-10 w-full py-2">
+          
+          <!-- Modern Spotlight Action Pill -->
+          <div id="liveMoveSpotlight" class="mb-3 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-charcoal-900/90 border border-white/10 shadow-lg max-w-full transition-transform duration-200">
+            <span id="spotlightTurnDot" class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+            <span id="tableActionBanner" class="text-zinc-200 text-xs sm:text-sm font-semibold truncate">
+              Place your bet to begin
+            </span>
+          </div>
+
+          <!-- Hold'em Center Felt: Pot + 5 Community Slots -->
+          <div id="centerHoldem" class="hidden flex flex-col items-center w-full space-y-3">
+            <div class="flex items-center gap-2.5">
+              <div id="holdemPotPill" class="px-4 py-1 rounded-full bg-rose-600/20 border border-rose-500/40 text-xs sm:text-sm font-mono font-bold text-white shadow-lg flex items-center gap-1.5 transition-transform duration-200">
+                <span class="noir-chip-mini"></span>
+                <span>POT $<span id="holdemPotAmount">0</span></span>
+              </div>
+              <span id="holdemStreetBadge" class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-white/10 text-zinc-300 font-bold tracking-wider">PRE-FLOP</span>
+              <div id="holdemCallPill" class="px-3 py-1 rounded-full bg-charcoal-900 border border-white/10 text-xs text-zinc-400">
+                To Call: <span id="holdemCurrentBet" class="text-white font-mono font-bold">$0</span>
+              </div>
+            </div>
+            <div id="holdemCommunityCards" class="flex items-center justify-center gap-1.5 sm:gap-2.5 min-h-[96px] w-full"></div>
+          </div>
+
+          <!-- Bluff Center Felt: Played Pile + Declared Rank -->
+          <div id="centerBluff" class="hidden flex flex-col items-center w-full space-y-2.5">
+            <div class="flex items-center gap-2.5">
+              <div class="px-3.5 py-1 rounded-full bg-rose-600/20 border border-rose-500/30 text-xs font-semibold text-white">
+                Declared Rank: <span id="bluffDeclaredRankBadge" class="text-rose-400 font-bold ml-1 font-mono">Any</span>
+              </div>
+              <div class="px-3 py-1 rounded-full bg-charcoal-900 border border-white/10 text-xs text-zinc-300">
+                <span id="bluffPileCount" class="font-mono font-bold text-white">0</span> cards in pile
+              </div>
+            </div>
+
+            <div id="bluffCenterPileVisual" class="flex flex-col items-center justify-center min-h-[96px] px-4 py-2 rounded-2xl w-full transition-transform duration-200">
+              <div id="bluffPileStackCards" class="flex items-center justify-center gap-2 mb-1.5"></div>
+              <div id="bluffLastClaimText" class="text-xs font-medium text-zinc-400">Select cards below to play</div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- 3. BOTTOM TABLE FELT: ACTIVE PLAYER IDENTITY & BANKROLL BAR -->
+        <div class="flex items-center justify-between px-2 pt-2 z-10 shrink-0 border-t border-white/5">
+          <div class="flex items-center gap-2.5">
+            <div class="relative">
+              <span id="activePlayerAvatar" class="w-8 h-8 rounded-full bg-rose-600/30 border border-rose-500/60 flex items-center justify-center text-xs font-bold text-white font-mono">AL</span>
+              <span class="w-2 h-2 rounded-full bg-emerald-400 absolute -bottom-0.5 -right-0.5 ring-1 ring-black"></span>
+            </div>
+            <div>
+              <div class="flex items-center gap-1.5">
+                <span id="activePlayerName" class="text-xs sm:text-sm font-bold text-white">Alex</span>
+                <span class="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-rose-600/20 text-rose-300 border border-rose-500/30">You</span>
+                <span id="activePlayerRoleBadge" class="hidden text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-white/15 text-white font-mono">D</span>
+              </div>
+              <div id="activeHandEvalBadge" class="text-[11px] font-medium text-zinc-400">Ready</div>
+            </div>
+          </div>
+
+          <!-- Bankroll Pill -->
+          <div id="activeBankrollPill" class="flex items-center gap-2 px-3 py-1 rounded-full bg-charcoal-900 border border-white/10 text-xs sm:text-sm font-bold text-white shadow-md">
+            <span class="noir-chip-mini"></span>
+            <span class="font-mono">$<span id="activePlayerChips">2,500</span></span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 4. BOTTOM PLAYER HAND & ACTION DOCK -->
+      <div id="playerDockPanel" class="noir-glass rounded-3xl p-3 sm:p-4 shrink-0 space-y-3 transition-all duration-300 relative overflow-hidden">
+        
+        <!-- Active Turn Timer Bar -->
+        <div id="userTurnTimerWrap" class="hidden absolute top-0 left-0 right-0 h-1 bg-white/5 overflow-hidden">
+          <div id="userTurnTimerBar" class="turn-timer-bar w-full" style="--turn-ms:25000ms;"></div>
+        </div>
+
+        <!-- Player's Private Hole Cards Row -->
+        <div id="activePlayerHandRow" class="flex items-center justify-center gap-2 overflow-x-auto custom-scrollbar pt-2 pb-1 px-2 min-h-[96px]"></div>
+
+        <!-- GAME CONTROLS 1: BLACKJACK -->
+        <div id="controlsBlackjack" class="hidden space-y-2">
+          <!-- Betting Phase Controls -->
+          <div id="bjBettingPanel" class="space-y-2.5">
+            <div class="flex flex-wrap items-center justify-between gap-2 px-1">
+              <span class="text-xs font-semibold text-zinc-300">
+                Wager: <span class="font-mono font-bold text-white text-sm">$<span id="bjCurrentBetInput">100</span></span>
+              </span>
+              <div class="flex items-center gap-1.5">
+                <button type="button" data-bj-chip="25" class="bj-chip-btn px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-mono font-bold text-white">+$25</button>
+                <button type="button" data-bj-chip="50" class="bj-chip-btn px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-mono font-bold text-white">+$50</button>
+                <button type="button" data-bj-chip="100" class="bj-chip-btn px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-mono font-bold text-white">+$100</button>
+                <button type="button" data-bj-chip="500" class="bj-chip-btn px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-mono font-bold text-white">+$500</button>
+                <button id="btnBjClearBet" type="button" class="px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-medium text-zinc-400">Reset</button>
+              </div>
+            </div>
+            <button id="btnBjDeal" type="button" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-500 hover:to-rose-600 text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-rose-900/30 transition">
+              Deal Hand
+            </button>
+          </div>
+
+          <!-- Active Hand Action Buttons (Hit, Stand, Double, Split) -->
+          <div id="bjActionPanel" class="hidden grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <button id="btnBjHit" type="button" class="py-3.5 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs uppercase tracking-wider transition shadow-lg shadow-rose-900/25">
+              Hit (+Card)
+            </button>
+            <button id="btnBjStand" type="button" class="py-3.5 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs uppercase tracking-wider transition">
+              Stand (Hold)
+            </button>
+            <button id="btnBjDouble" type="button" class="py-3.5 rounded-2xl bg-white/5 hover:bg-white/10 disabled:opacity-30 text-zinc-200 font-semibold text-xs uppercase tracking-wider transition">
+              Double (2x)
+            </button>
+            <button id="btnBjSplit" type="button" class="py-3.5 rounded-2xl bg-white/5 hover:bg-white/10 disabled:opacity-30 text-zinc-200 font-semibold text-xs uppercase tracking-wider transition">
+              Split Pair
+            </button>
+          </div>
+        </div>
+
+        <!-- GAME CONTROLS 2: TEXAS HOLD'EM -->
+        <div id="controlsHoldem" class="hidden space-y-2.5">
+          <!-- Poker Bet & Raise Controls -->
+          <div id="holdemRaiseRow" class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 px-3 py-2 rounded-2xl bg-charcoal-900/90 border border-white/5">
+            <div class="flex items-center gap-3 flex-1">
+              <span class="text-xs font-mono font-bold text-zinc-300 whitespace-nowrap">$<span id="holdemRaiseVal" class="text-white text-sm">100</span></span>
+              <input id="holdemRaiseSlider" type="range" min="50" max="2500" step="25" value="100" class="w-full cursor-pointer h-1.5 rounded-lg bg-charcoal-700" />
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0 justify-end">
+              <button type="button" data-poker-preset="min" class="poker-preset-btn px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] font-semibold text-zinc-300">Min</button>
+              <button type="button" data-poker-preset="half" class="poker-preset-btn px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] font-semibold text-zinc-300">1/2 Pot</button>
+              <button type="button" data-poker-preset="pot" class="poker-preset-btn px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] font-semibold text-zinc-300">Pot</button>
+              <button type="button" data-poker-preset="allin" class="poker-preset-btn px-2.5 py-1 rounded-lg bg-rose-600/20 text-[11px] font-bold text-rose-300 border border-rose-500/30">All-In</button>
+            </div>
+          </div>
+
+          <!-- Essential Poker Actions -->
+          <div class="grid grid-cols-3 gap-2 sm:gap-3">
+            <button id="btnPokerFold" type="button" class="py-3.5 rounded-2xl bg-white/5 hover:bg-white/10 text-zinc-300 font-bold text-xs uppercase tracking-wider transition">
+              Fold Hand
+            </button>
+            <button id="btnPokerCheckCall" type="button" class="py-3.5 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs uppercase tracking-wider transition">
+              Check / Call
+            </button>
+            <button id="btnPokerRaise" type="button" class="py-3.5 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs uppercase tracking-wider transition shadow-lg shadow-rose-900/30">
+              Raise Bet
+            </button>
+          </div>
+          <button id="btnPokerNewHand" type="button" class="hidden w-full py-3.5 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs uppercase tracking-wider transition">
+            Next Hand
+          </button>
+        </div>
+
+        <!-- GAME CONTROLS 3: BLUFF -->
+        <div id="controlsBluff" class="hidden space-y-2.5">
+          <!-- Compact Rank Picker -->
+          <div class="flex items-center justify-between gap-2 px-1">
+            <span id="bluffRankPickerLabel" class="text-xs font-semibold text-zinc-400 shrink-0">Pick Claim Rank:</span>
+            <div id="bluffRankButtons" class="flex items-center gap-1.5 overflow-x-auto custom-scrollbar py-0.5"></div>
+            <span id="bluffSelectedCount" class="hidden">0</span>
+          </div>
+
+          <!-- Bluff Action Buttons -->
+          <div class="grid grid-cols-3 sm:grid-cols-4 gap-2">
+            <button id="btnBluffPlayCards" type="button" class="col-span-1 sm:col-span-2 py-3.5 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs uppercase tracking-wider transition shadow-lg shadow-rose-900/25">
+              Play Selected Cards
+            </button>
+            <button id="btnBluffPass" type="button" class="py-3.5 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs uppercase tracking-wider transition">
+              Pass Turn
+            </button>
+            <button id="btnBluffChallenge" type="button" class="py-3.5 rounded-2xl bg-rose-600/15 hover:bg-rose-600/30 border border-rose-500/30 disabled:opacity-25 text-rose-300 font-bold text-xs uppercase tracking-wider transition">
+              Call Bluff!
+            </button>
+          </div>
+          <button id="btnBluffNewGame" type="button" class="hidden w-full py-3 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs uppercase tracking-wider transition">
+            Reset &amp; Deal Next Round
+          </button>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- =========================================================================
+       MODALS: CREATE ROOM / INVITE SHARE / RULES / PROFILE
+       ========================================================================= -->
+
+  <!-- MODAL: CREATE ROOM CONFIG -->
+  <div id="createRoomModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="noir-glass rounded-3xl max-w-md w-full p-6 sm:p-8 space-y-5 shadow-2xl">
+      <div class="flex items-center justify-between pb-3 border-b border-white/10">
+        <div>
+          <h2 class="text-lg font-bold text-white">Create Private Room</h2>
+          <p class="text-xs text-zinc-400">Configure stakes and table size</p>
+        </div>
+        <button id="btnCloseCreateModal" type="button" class="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white transition">
+          ✕
+        </button>
+      </div>
+
+      <div class="space-y-4">
+        <!-- Select Game Mode -->
+        <div>
+          <label class="block text-xs font-semibold text-zinc-300 mb-1.5">Game Variant</label>
+          <div class="grid grid-cols-3 gap-2">
+            <button type="button" data-modal-game="blackjack" class="modal-game-btn py-3 px-2 rounded-xl bg-rose-600/20 border border-rose-500 text-center transition">
+              <div class="text-xs font-bold text-white">Blackjack</div>
+              <div class="text-[10px] text-zinc-400">21 vs Dealer</div>
+            </button>
+            <button type="button" data-modal-game="holdem" class="modal-game-btn py-3 px-2 rounded-xl bg-charcoal-900 border border-white/10 text-center transition">
+              <div class="text-xs font-bold text-white">Hold'em</div>
+              <div class="text-[10px] text-zinc-400">Texas Poker</div>
+            </button>
+            <button type="button" data-modal-game="bluff" class="modal-game-btn py-3 px-2 rounded-xl bg-charcoal-900 border border-white/10 text-center transition">
+              <div class="text-xs font-bold text-white">Bluff</div>
+              <div class="text-[10px] text-zinc-400">Call / Deceive</div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Bankroll & Seats -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label for="selectStartChips" class="block text-xs font-semibold text-zinc-300 mb-1.5">Starting Chips</label>
+            <select id="selectStartChips" class="w-full px-3 py-2.5 rounded-xl bg-charcoal-900 border border-white/10 text-xs font-semibold text-white focus:outline-none focus:border-rose-500">
+              <option value="1000">$1,000</option>
+              <option value="2500" selected>$2,500</option>
+              <option value="5000">$5,000</option>
+            </select>
+          </div>
+          <div>
+            <label for="selectFriendSeats" class="block text-xs font-semibold text-zinc-300 mb-1.5">Max Seats</label>
+            <select id="selectFriendSeats" class="w-full px-3 py-2.5 rounded-xl bg-charcoal-900 border border-white/10 text-xs font-semibold text-white focus:outline-none focus:border-rose-500">
+              <option value="3">3 Seats</option>
+              <option value="4" selected>4 Seats</option>
+              <option value="5">5 Seats</option>
+              <option value="6">6 Seats</option>
+            </select>
+          </div>
+        </div>
+
+        <button id="btnConfirmCreateRoom" type="button" class="w-full py-4 rounded-2xl bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-500 hover:to-rose-600 text-white font-bold text-sm tracking-wide shadow-xl shadow-rose-900/40 transition">
+          Launch Room &amp; Invite Friends
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: PROFILE & AVATAR EDIT -->
+  <div id="profileModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="noir-glass rounded-3xl max-w-sm w-full p-6 space-y-5 shadow-2xl">
+      <div class="flex items-center justify-between pb-3 border-b border-white/10">
+        <div>
+          <h2 class="text-base font-bold text-white">Player Profile</h2>
+          <p class="text-xs text-zinc-400">Customize your seat identity</p>
+        </div>
+        <button id="btnCloseProfileModal" type="button" class="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white transition">
+          ✕
+        </button>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <label for="inputPlayerName" class="block text-xs font-semibold text-zinc-300 mb-1.5">Display Name</label>
+          <input id="inputPlayerName" type="text" maxlength="14" value="Alex" class="w-full px-3.5 py-2.5 rounded-xl bg-charcoal-900 border border-white/10 text-white text-sm font-medium focus:outline-none focus:border-rose-500 transition" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-zinc-300 mb-1.5">Seat Avatar Number</label>
+          <div class="grid grid-cols-6 gap-1.5">
+            <button type="button" data-avatar="01" class="avatar-option py-2 rounded-xl bg-rose-600 text-white font-mono text-xs font-bold transition">01</button>
+            <button type="button" data-avatar="02" class="avatar-option py-2 rounded-xl bg-charcoal-900 border border-white/10 text-zinc-400 font-mono text-xs font-semibold transition">02</button>
+            <button type="button" data-avatar="03" class="avatar-option py-2 rounded-xl bg-charcoal-900 border border-white/10 text-zinc-400 font-mono text-xs font-semibold transition">03</button>
+            <button type="button" data-avatar="04" class="avatar-option py-2 rounded-xl bg-charcoal-900 border border-white/10 text-zinc-400 font-mono text-xs font-semibold transition">04</button>
+            <button type="button" data-avatar="05" class="avatar-option py-2 rounded-xl bg-charcoal-900 border border-white/10 text-zinc-400 font-mono text-xs font-semibold transition">05</button>
+            <button type="button" data-avatar="06" class="avatar-option py-2 rounded-xl bg-charcoal-900 border border-white/10 text-zinc-400 font-mono text-xs font-semibold transition">06</button>
+          </div>
+        </div>
+
+        <button id="btnSaveProfile" type="button" class="w-full py-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs uppercase tracking-wider transition">
+          Save Profile
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: SHARE & INVITE -->
+  <div id="shareModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="noir-glass rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between pb-2 border-b border-white/10">
+        <div>
+          <h2 class="text-base font-bold text-white">Invite Friends</h2>
+          <p class="text-xs text-zinc-400">Share room link or 6-character code</p>
+        </div>
+        <button id="btnCloseShareModal" type="button" class="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white transition">
+          ✕
+        </button>
+      </div>
+
+      <div class="bg-charcoal-950 border border-white/10 rounded-2xl p-4 text-center space-y-2">
+        <div class="text-[10px] font-mono uppercase tracking-widest text-zinc-500">Room Code</div>
+        <div id="modalRoomCodeText" class="font-mono text-3xl font-black text-white tracking-widest leading-none">CLUB42</div>
+        <div id="modalShareUrlText" class="text-[11px] font-mono text-zinc-400 truncate bg-charcoal-900 p-2 rounded-lg border border-white/5">
+          https://noir.deck/?room=CLUB42
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2">
+        <button id="btnCopyInviteLink" type="button" class="py-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs transition">
+          Copy Link
+        </button>
+        <button id="btnNativeShare" type="button" class="py-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-semibold text-xs transition">
+          System Share
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: GAME RULES -->
+  <div id="rulesModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="noir-glass rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-5 max-h-[85vh] overflow-y-auto custom-scrollbar shadow-2xl">
+      <div class="flex items-center justify-between pb-3 border-b border-white/10">
+        <div>
+          <h2 class="text-lg font-bold text-white">Game Rules &amp; Hand Guides</h2>
+          <p class="text-xs text-zinc-400">How each game works at NOIR</p>
+        </div>
+        <button id="btnCloseRulesModal" type="button" class="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white transition">
+          ✕
+        </button>
+      </div>
+
+      <div class="space-y-4 text-xs text-zinc-300 leading-relaxed">
+        <div class="p-4 rounded-2xl bg-charcoal-900 border border-white/5 space-y-1.5">
+          <div class="font-bold text-white text-sm flex items-center justify-between">
+            <span>Blackjack (21)</span>
+            <span class="text-rose-400 font-mono text-xs">Pays 3:2</span>
+          </div>
+          <p class="text-zinc-400">
+            Beat the dealer's card total without exceeding 21. Dealer stands on all 17s. Aces count as 1 or 11. Split any pair of equal ranks, or double your bet on the initial two cards.
+          </p>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-charcoal-900 border border-white/5 space-y-1.5">
+          <div class="font-bold text-white text-sm flex items-center justify-between">
+            <span>Texas Hold'em</span>
+            <span class="text-amber-400 font-mono text-xs">No-Limit Poker</span>
+          </div>
+          <p class="text-zinc-400">
+            Each player receives 2 private hole cards. Combine them with the 5 shared community cards (Flop, Turn, River) to forge the best 5-card poker hand. Standard poker rankings apply (Royal Flush to High Card).
+          </p>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-charcoal-900 border border-white/5 space-y-1.5">
+          <div class="font-bold text-white text-sm flex items-center justify-between">
+            <span>Bluff (Cheat / I Doubt It)</span>
+            <span class="text-purple-400 font-mono text-xs">Deception</span>
+          </div>
+          <p class="text-zinc-400">
+            Lead player plays 1 to 4 cards face-down and declares a rank. Subsequent players must add cards claiming the same rank or Pass. Any player can Call Bluff before the next move. If caught, the bluffer takes the entire pile; if truthful, the challenger takes it! First player to shed all cards wins.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SHORT CONTEXTUAL NOTIFICATION TOAST -->
+  <div id="toastBanner" class="fixed top-20 left-1/2 -translate-x-1/2 z-50 hidden px-5 py-2.5 rounded-full noir-glass border-rose-500/40 text-white text-xs font-semibold shadow-2xl whitespace-nowrap">
+    Notification
+  </div>
+
+  <!-- SCRIPT ENGINE -->
+  <script>
+    // =========================================================================
+    // 1. UI NOTIFICATIONS
+    // =========================================================================
+    function showToast(msg) {
+      const el = document.getElementById('toastBanner');
+      if (!el) return;
+      el.textContent = msg;
+      el.classList.remove('hidden');
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(() => {
+        el.classList.add('hidden');
+      }, 2200);
+    }
+
+    // =========================================================================
+    // 2. PLAYING CARDS & VECTOR GRAPHICS
+    // =========================================================================
+    const SUIT_SVG = {
+      S: '<svg class="w-4 h-4 sm:w-5 sm:h-5 inline-block fill-current" viewBox="0 0 24 24"><path d="M12 2C7 8 4 11.5 4 14.5C4 17.5 6.5 19.5 9 19.5C10.5 19.5 11.5 18.8 12 18C12.5 18.8 13.5 19.5 15 19.5C17.5 19.5 20 17.5 20 14.5C20 11.5 17 8 12 2ZM10.5 18.5L9 22H15L13.5 18.5H10.5Z"/></svg>',
+      H: '<svg class="w-4 h-4 sm:w-5 sm:h-5 inline-block fill-current" viewBox="0 0 24 24"><path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.27 2 8.5C2 5.41 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.08C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.41 22 8.5C22 12.27 18.6 15.36 13.45 20.03L12 21.35Z"/></svg>',
+      D: '<svg class="w-4 h-4 sm:w-5 sm:h-5 inline-block fill-current" viewBox="0 0 24 24"><path d="M12 2L20 12L12 22L4 12L12 2Z"/></svg>',
+      C: '<svg class="w-4 h-4 sm:w-5 sm:h-5 inline-block fill-current" viewBox="0 0 24 24"><path d="M12 3C9.8 3 8 4.8 8 7C8 8.5 8.8 9.8 10 10.5C7.2 10.8 5 13.1 5 16C5 18.8 7.2 21 10 21C11.1 21 12.1 20.6 12.9 20H11.1L10 22H14L12.9 20C13.7 20.6 14.7 21 15.8 21C18.6 21 20.8 18.8 20.8 16C20.8 13.1 18.6 10.8 15.8 10.5C17 9.8 17.8 8.5 17.8 7C17.8 4.8 16 3 13.8 3H12Z"/></svg>'
+    };
+    const SUIT_SVG_MINI = {
+      S: '<svg class="w-2.5 h-2.5 inline-block fill-current" viewBox="0 0 24 24"><path d="M12 2C7 8 4 11.5 4 14.5C4 17.5 6.5 19.5 9 19.5C10.5 19.5 11.5 18.8 12 18C12.5 18.8 13.5 19.5 15 19.5C17.5 19.5 20 17.5 20 14.5C20 11.5 17 8 12 2ZM10.5 18.5L9 22H15L13.5 18.5H10.5Z"/></svg>',
+      H: '<svg class="w-2.5 h-2.5 inline-block fill-current" viewBox="0 0 24 24"><path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.27 2 8.5C2 5.41 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.08C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.41 22 8.5C22 12.27 18.6 15.36 13.45 20.03L12 21.35Z"/></svg>',
+      D: '<svg class="w-2.5 h-2.5 inline-block fill-current" viewBox="0 0 24 24"><path d="M12 2L20 12L12 22L4 12L12 2Z"/></svg>',
+      C: '<svg class="w-2.5 h-2.5 inline-block fill-current" viewBox="0 0 24 24"><path d="M12 3C9.8 3 8 4.8 8 7C8 8.5 8.8 9.8 10 10.5C7.2 10.8 5 13.1 5 16C5 18.8 7.2 21 10 21C11.1 21 12.1 20.6 12.9 20H11.1L10 22H14L12.9 20C13.7 20.6 14.7 21 15.8 21C18.6 21 20.8 18.8 20.8 16C20.8 13.1 18.6 10.8 15.8 10.5C17 9.8 17.8 8.5 17.8 7C17.8 4.8 16 3 13.8 3H12Z"/></svg>'
+    };
+
+    const SUITS = [
+      { id: 'S', label: 'S', color: 'text-zinc-900' },
+      { id: 'H', label: 'H', color: 'text-rose-600' },
+      { id: 'D', label: 'D', color: 'text-rose-600' },
+      { id: 'C', label: 'C', color: 'text-zinc-900' }
+    ];
+    const RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+    const RANK_VALUE = {
+      '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8,
+      '9': 9, '10': 10, 'J': 11, 'Q': 12, 'K': 13, 'A': 14
+    };
+    const BLUFF_SORT_ORDER = {
+      'A': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7,
+      '8': 8, '9': 9, '10': 10, 'J': 11, 'Q': 12, 'K': 13
+    };
+
+    // Card Animation Lifecycle Engine
+    const seenCardsMap = new Map();
+    const inFlightAnimations = new Map();
+    let lastProcessedFxId = 0;
+
+    function prefersReducedMotion() {
+      try {
+        return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    function clearActiveFlightOverlays() {
+      inFlightAnimations.forEach(rec => {
+        if (rec.flyerEl && rec.flyerEl.parentNode) rec.flyerEl.remove();
+      });
+      inFlightAnimations.clear();
+    }
+
+    function resetAnimationTracking(hydrateSilent = false) {
+      seenCardsMap.clear();
+      clearActiveFlightOverlays();
+      if (hydrateSilent) {
+        for (let sIdx = 0; sIdx < state.players.length; sIdx++) {
+          const p = state.players[sIdx];
+          (p.cards || []).forEach(c => {
+            if (c && c.uid) {
+              const isOpponent = sIdx !== state.activeSeatIndex;
+              const isFaceDown =
+                state.gameMode === 'bluff'
+                  ? isOpponent
+                  : state.gameMode === 'holdem'
+                  ? isOpponent && !(state.holdem.phase === 'showdown' && !p.pokerFolded)
+                  : false;
+              seenCardsMap.set(c.uid, { faceDown: isFaceDown, zone: isOpponent ? `opp_${sIdx}` : 'player_hand' });
+            }
+          });
+        }
+        (state.bj.dealerCards || []).forEach((c, idx) => {
+          if (c && c.uid) {
+            seenCardsMap.set(c.uid, {
+              faceDown: idx === 1 && state.bj.dealerHoleHidden,
+              zone: 'bj_dealer'
+            });
+          }
+        });
+        (state.holdem.community || []).forEach(c => {
+          if (c && c.uid) {
+            seenCardsMap.set(c.uid, { faceDown: false, zone: 'holdem_comm' });
+          }
+        });
+        if (state.bluff.lastPlay && state.bluff.lastPlay.actualCards) {
+          state.bluff.lastPlay.actualCards.forEach(c => {
+            if (c && c.uid) seenCardsMap.set(c.uid, { faceDown: true, zone: 'bluff_pile' });
+          });
+        }
+      }
+    }
+
+    function resolveCardAnimationStyle(animKey, isFaceDown, opts = {}) {
+      const restRot = opts.restRot || '0deg';
+      const inFlight = animKey && inFlightAnimations.get(animKey);
+      const hideDuringFlight = inFlight && performance.now() < inFlight.endTime ? 'opacity:0;' : '';
+      return {
+        cls: '',
+        style: `--rest-rot:${restRot};${hideDuringFlight}`
+      };
+    }
+
+    function secureRandomInt(max) {
+      if (window.crypto && window.crypto.getRandomValues) {
+        const arr = new Uint32Array(1);
+        window.crypto.getRandomValues(arr);
+        return arr[0] % max;
+      }
+      return Math.floor(Math.random() * max);
+    }
+
+    function buildDeck(numDecks = 1) {
+      const deck = [];
+      let uid = 1;
+      const salt = Date.now().toString(36) + '_' + secureRandomInt(9999);
+      for (let d = 0; d < numDecks; d++) {
+        for (const s of SUITS) {
+          for (const r of RANKS) {
+            deck.push({
+              uid: 'c_' + salt + '_' + (uid++),
+              rank: r,
+              suit: s.id,
+              symbol: s.label,
+              color: s.color
+            });
+          }
+        }
+      }
+      for (let i = deck.length - 1; i > 0; i--) {
+        const j = secureRandomInt(i + 1);
+        const temp = deck[i];
+        deck[i] = deck[j];
+        deck[j] = temp;
+      }
+      return deck;
+    }
+
+    function renderCardHTML(card, opts = {}) {
+      const isFaceDown = !card || Boolean(opts.faceDown);
+      const animKey = opts.animKey || (card && card.uid) || '';
+      const zone = opts.zone || 'table';
+      const originSeat = opts.originSeat !== undefined ? String(opts.originSeat) : '';
+      const orderHint = opts.orderHint !== undefined ? String(opts.orderHint) : '0';
+      const anim = resolveCardAnimationStyle(animKey, isFaceDown, opts);
+      const styleAttr = anim.style ? `style="${anim.style}"` : '';
+      const dataAttrs = animKey
+        ? `data-anim-key="${animKey}" data-zone="${zone}" data-face-down="${isFaceDown ? '1' : '0'}" data-origin-seat="${originSeat}" data-order-hint="${orderHint}" data-rest-rot="${opts.restRot || '0deg'}"`
+        : '';
+
+      if (isFaceDown) {
+        const smClass = opts.small ? 'card-sm' : '';
+        return `<div class="playing-card card-back ${smClass}" ${styleAttr} ${dataAttrs}></div>`;
+      }
+      const selClass = opts.selected ? 'selected' : '';
+      const clickAttr = opts.selectable ? `data-card-uid="${card.uid}"` : '';
+      const svgIcon = SUIT_SVG[card.suit] || '';
+      const miniSvg = SUIT_SVG_MINI[card.suit] || '';
+      if (opts.small) {
+        return `
+          <div class="playing-card card-sm ${card.color}" ${styleAttr} ${dataAttrs}>
+            <div class="font-bold text-[9px] sm:text-[10px] leading-none">${card.rank}</div>
+            <div class="text-center my-auto flex items-center justify-center">${miniSvg}</div>
+          </div>
+        `;
+      }
+      return `
+        <div class="playing-card ${selClass} ${card.color}" ${styleAttr} ${dataAttrs} ${clickAttr}>
+          <div class="font-extrabold text-xs sm:text-sm leading-none flex items-center justify-between">
+            <span>${card.rank}</span>
+            ${miniSvg}
+          </div>
+          <div class="text-center my-auto flex items-center justify-center">${svgIcon}</div>
+          <div class="font-extrabold text-[11px] sm:text-xs leading-none flex items-center justify-between rotate-180">
+            <span>${card.rank}</span>
+            ${miniSvg}
+          </div>
+        </div>
+      `;
+    }
+
+    function runCardAnimationLifecyclePass() {
+      const stage = document.getElementById('fxOverlayStage');
+      const shoeEl = document.getElementById('deckShoeOrigin');
+      if (!stage || !shoeEl || !state.inRoom) return;
+
+      const stageRect = stage.getBoundingClientRect();
+      const shoeRect = shoeEl.getBoundingClientRect();
+      if (stageRect.width === 0) return;
+
+      const reduced = prefersReducedMotion();
+      const cardEls = Array.from(document.querySelectorAll('#tableView [data-anim-key]'));
+
+      const toDealOrMove = [];
+      const toFlip = [];
+
+      cardEls.forEach(el => {
+        const key = el.getAttribute('data-anim-key');
+        if (!key) return;
+        const isFaceDown = el.getAttribute('data-face-down') === '1';
+        const zone = el.getAttribute('data-zone') || 'table';
+        const originSeat = el.getAttribute('data-origin-seat');
+        const orderHint = parseInt(el.getAttribute('data-order-hint') || '0', 10);
+        const restRot = el.getAttribute('data-rest-rot') || '0deg';
+
+        const activeFlight = inFlightAnimations.get(key);
+        if (activeFlight && performance.now() < activeFlight.endTime) {
+          el.style.opacity = '0';
+          return;
+        }
+
+        const prev = seenCardsMap.get(key);
+        seenCardsMap.set(key, { faceDown: isFaceDown, zone });
+
+        if (!prev) {
+          toDealOrMove.push({ el, key, zone, originSeat, orderHint, restRot, fromDeck: zone !== 'bluff_pile' });
+        } else if (prev.zone !== zone && zone === 'bluff_pile') {
+          toDealOrMove.push({ el, key, zone, originSeat, orderHint, restRot, fromDeck: false });
+        } else if (prev.faceDown === true && !isFaceDown) {
+          toFlip.push({ el, key, orderHint, restRot });
+        }
+      });
+
+      if (reduced) return;
+
+      toDealOrMove.sort((a, b) => a.orderHint - b.orderHint);
+      toFlip.sort((a, b) => a.orderHint - b.orderHint);
+
+      toDealOrMove.forEach((item, idx) => {
+        const staggerMs = Math.min(idx * 260, 2600);
+        launchUnclippedCardFlight(item, staggerMs, stage, stageRect, shoeRect);
+      });
+
+      toFlip.forEach((item, idx) => {
+        const staggerMs = idx * 220;
+        launch3DCardFlip(item.el, item.key, staggerMs, item.restRot);
+      });
+    }
+
+    function resolveOriginRectForCard(item, shoeRect) {
+      if (!item.fromDeck && item.originSeat !== '' && item.originSeat !== null) {
+        const sIdx = parseInt(item.originSeat, 10);
+        if (sIdx === state.activeSeatIndex) {
+          const handEl = document.getElementById('activePlayerHandRow');
+          if (handEl) return handEl.getBoundingClientRect();
+        } else {
+          const seatEl = document.querySelector(`[data-opp-seat="${sIdx}"]`);
+          if (seatEl) return seatEl.getBoundingClientRect();
+        }
+      }
+      return shoeRect;
+    }
+
+    function launchUnclippedCardFlight(item, delayMs, stage, stageRect, shoeRect) {
+      const targetEl = item.el;
+      const endRect = targetEl.getBoundingClientRect();
+      if (endRect.width === 0) return;
+
+      const startRect = resolveOriginRectForCard(item, shoeRect);
+      const startCenterX = startRect.left + startRect.width / 2;
+      const startCenterY = startRect.top + startRect.height / 2;
+      const endCenterX = endRect.left + endRect.width / 2;
+      const endCenterY = endRect.top + endRect.height / 2;
+
+      const dx = startCenterX - endCenterX;
+      const dy = startCenterY - endCenterY;
+      const durationMs = item.fromDeck ? 720 : 640;
+
+      targetEl.style.opacity = '0';
+
+      const flyer = targetEl.cloneNode(true);
+      flyer.removeAttribute('data-anim-key');
+      flyer.removeAttribute('data-card-uid');
+      flyer.classList.add('is-animating');
+      flyer.style.position = 'absolute';
+      flyer.style.left = (endRect.left - stageRect.left) + 'px';
+      flyer.style.top = (endRect.top - stageRect.top) + 'px';
+      flyer.style.width = endRect.width + 'px';
+      flyer.style.height = endRect.height + 'px';
+      flyer.style.margin = '0';
+      flyer.style.opacity = '0';
+      flyer.style.zIndex = String(60 + item.orderHint);
+      stage.appendChild(flyer);
+
+      const startRot = item.fromDeck ? (dx < 0 ? '-20deg' : '20deg') : '12deg';
+      const midRot = item.restRot || '0deg';
+      const endTime = performance.now() + delayMs + durationMs;
+      inFlightAnimations.set(item.key, { endTime, flyerEl: flyer });
+
+      if (flyer.animate) {
+        const anim = flyer.animate(
+          [
+            {
+              opacity: 0,
+              transform: `translate3d(${dx}px, ${dy}px, 50px) rotateZ(${startRot}) scale(0.6)`,
+              boxShadow: '0 24px 40px rgba(0, 0, 0, 0.85)'
+            },
+            {
+              opacity: 1,
+              offset: 0.15,
+              transform: `translate3d(${dx * 0.8}px, ${dy * 0.8}px, 45px) rotateZ(${startRot}) scale(0.75)`,
+              boxShadow: '0 20px 36px rgba(0, 0, 0, 0.8)'
+            },
+            {
+              opacity: 1,
+              offset: 0.75,
+              transform: `translate3d(${dx * -0.03}px, 4px, 14px) rotateZ(${midRot}) scale(1.05)`,
+              boxShadow: '0 12px 24px rgba(0, 0, 0, 0.65)'
+            },
+            {
+              opacity: 1,
+              transform: `translate3d(0px, 0px, 0px) rotateZ(${midRot}) scale(1)`,
+              boxShadow: '0 6px 18px rgba(0, 0, 0, 0.55)'
+            }
+          ],
+          {
+            duration: durationMs,
+            delay: delayMs,
+            easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
+            fill: 'forwards'
+          }
+        );
+
+        anim.onfinish = () => {
+          inFlightAnimations.delete(item.key);
+          if (flyer.parentNode) flyer.remove();
+          const currentTarget = document.querySelector(`[data-anim-key="${item.key}"]`);
+          if (currentTarget) {
+            currentTarget.style.opacity = '1';
+          }
+        };
+      } else {
+        setTimeout(() => {
+          inFlightAnimations.delete(item.key);
+          if (flyer.parentNode) flyer.remove();
+          const currentTarget = document.querySelector(`[data-anim-key="${item.key}"]`);
+          if (currentTarget) currentTarget.style.opacity = '1';
+        }, delayMs + durationMs);
+      }
+    }
+
+    function launch3DCardFlip(cardEl, animKey, delayMs, restRot = '0deg') {
+      if (!cardEl || !cardEl.animate) return;
+      cardEl.classList.add('is-animating', 'flip-back-phase');
+      const durationMs = 680;
+      const midpointMs = delayMs + Math.floor(durationMs * 0.46);
+      setTimeout(() => {
+        const currentEl = document.querySelector(`[data-anim-key="${animKey}"]`) || cardEl;
+        if (currentEl) currentEl.classList.remove('flip-back-phase');
+      }, midpointMs);
+
+      const anim = cardEl.animate(
+        [
+          {
+            transform: `perspective(950px) rotateY(180deg) rotateZ(${restRot}) scale(0.95)`,
+            boxShadow: '0 14px 26px rgba(0, 0, 0, 0.78)'
+          },
+          {
+            offset: 0.46,
+            transform: `perspective(950px) rotateY(90deg) translateY(-8px) scale(1.06)`,
+            boxShadow: '0 24px 36px rgba(0, 0, 0, 0.85)'
+          },
+          {
+            transform: `perspective(950px) rotateY(0deg) rotateZ(${restRot}) translateY(0px) scale(1)`,
+            boxShadow: '0 6px 18px rgba(0, 0, 0, 0.55)'
+          }
+        ],
+        {
+          duration: durationMs,
+          delay: delayMs,
+          easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+          fill: 'forwards'
+        }
+      );
+      anim.onfinish = () => {
+        cardEl.classList.remove('is-animating', 'flip-back-phase');
+      };
+    }
+
+    function emitTableFx(fxEvent) {
+      if (!fxEvent || fxEvent.id === lastProcessedFxId || prefersReducedMotion()) return;
+      lastProcessedFxId = fxEvent.id;
+      const stage = document.getElementById('fxOverlayStage');
+      if (!stage) return;
+      const stageRect = stage.getBoundingClientRect();
+      if (stageRect.width === 0) return;
+
+      function resolvePoint(role, seatIdx) {
+        if (role === 'pot') {
+          const el = document.getElementById('holdemPotPill') || document.getElementById('liveMoveSpotlight');
+          if (el) {
+            const r = el.getBoundingClientRect();
+            return { x: r.left - stageRect.left + r.width / 2, y: r.top - stageRect.top + r.height / 2 };
+          }
+        }
+        if (role === 'pile') {
+          const el = document.getElementById('bluffCenterPileVisual') || document.getElementById('liveMoveSpotlight');
+          if (el) {
+            const r = el.getBoundingClientRect();
+            return { x: r.left - stageRect.left + r.width / 2, y: r.top - stageRect.top + r.height / 2 };
+          }
+        }
+        if (role === 'shoe') {
+          const el = document.getElementById('deckShoeOrigin');
+          if (el) {
+            const r = el.getBoundingClientRect();
+            return { x: r.left - stageRect.left + r.width / 2, y: r.top - stageRect.top + r.height / 2 };
+          }
+        }
+        if (role === 'seat') {
+          if (seatIdx === state.activeSeatIndex) {
+            const el = document.getElementById('activePlayerHandRow') || document.getElementById('playerDockPanel');
+            if (el) {
+              const r = el.getBoundingClientRect();
+              return { x: r.left - stageRect.left + r.width / 2, y: r.top - stageRect.top + r.height / 2 };
+            }
+          } else {
+            const el = document.querySelector(`[data-opp-seat="${seatIdx}"]`);
+            if (el) {
+              const r = el.getBoundingClientRect();
+              return { x: r.left - stageRect.left + r.width / 2, y: r.top - stageRect.top + r.height / 2 };
+            }
+          }
+        }
+        return { x: stageRect.width / 2, y: stageRect.height / 2 };
+      }
+
+      if (fxEvent.kind === 'chip_to_pot' || fxEvent.kind === 'pot_to_winner') {
+        const fromPt = fxEvent.kind === 'chip_to_pot' ? resolvePoint('seat', fxEvent.seatIdx) : resolvePoint('pot');
+        const toPt = fxEvent.kind === 'chip_to_pot' ? resolvePoint('pot') : resolvePoint('seat', fxEvent.seatIdx);
+        const dx = toPt.x - fromPt.x;
+        const dy = toPt.y - fromPt.y;
+        const count = fxEvent.kind === 'pot_to_winner' ? 5 : 3;
+
+        for (let i = 0; i < count; i++) {
+          const chip = document.createElement('div');
+          chip.className = 'noir-chip-token';
+          chip.style.position = 'absolute';
+          chip.style.left = (fromPt.x - 13 + (i - 1) * 4) + 'px';
+          chip.style.top = (fromPt.y - 13 - i * 2) + 'px';
+          chip.style.zIndex = String(65 + i);
+          chip.textContent = '$';
+          stage.appendChild(chip);
+
+          const arcLift = -18 - i * 4;
+          if (chip.animate) {
+            const anim = chip.animate(
+              [
+                { opacity: 0.9, transform: 'translate3d(0px, 0px, 0px) rotateZ(0deg) scale(0.85)' },
+                { opacity: 1, offset: 0.6, transform: `translate3d(${dx * 0.65}px, ${dy * 0.65 + arcLift}px, 24px) rotateZ(110deg) scale(1.1)` },
+                { opacity: 0, transform: `translate3d(${dx}px, ${dy}px, 0px) rotateZ(180deg) scale(0.75)` }
+              ],
+              { duration: fxEvent.kind === 'pot_to_winner' ? 880 : 750, delay: i * 130, easing: 'cubic-bezier(0.16, 1, 0.3, 1)', fill: 'forwards' }
+            );
+            anim.onfinish = () => chip.remove();
+          } else {
+            setTimeout(() => chip.remove(), 1100);
+          }
+        }
+        const potPill = document.getElementById('holdemPotPill');
+        if (potPill) {
+          potPill.classList.remove('anim-outcome-win');
+          void potPill.offsetWidth;
+          potPill.classList.add('anim-outcome-win');
+        }
+        if (fxEvent.kind === 'pot_to_winner') {
+          const arena = document.getElementById('noirTableArena');
+          if (arena) {
+            arena.classList.remove('table-win-lighting');
+            void arena.offsetWidth;
+            arena.classList.add('table-win-lighting');
+          }
+        }
+      } else if (fxEvent.kind === 'fold_muck' || fxEvent.kind === 'pile_sweep' || fxEvent.kind === 'pile_collect') {
+        const fromPt = fxEvent.kind === 'fold_muck' ? resolvePoint('seat', fxEvent.seatIdx) : resolvePoint('pile');
+        const toPt = fxEvent.kind === 'pile_collect' ? resolvePoint('seat', fxEvent.seatIdx) : resolvePoint('shoe');
+        const dx = toPt.x - fromPt.x;
+        const dy = toPt.y - fromPt.y;
+        const cardsCount = Math.min(5, fxEvent.count || 2);
+        const startDelay = fxEvent.delayMs || 0;
+
+        for (let i = 0; i < cardsCount; i++) {
+          const ghost = document.createElement('div');
+          ghost.className = 'playing-card card-back is-animating';
+          ghost.style.position = 'absolute';
+          ghost.style.width = '42px';
+          ghost.style.height = '60px';
+          ghost.style.left = (fromPt.x - 21 + (i - 1) * 6) + 'px';
+          ghost.style.top = (fromPt.y - 30) + 'px';
+          ghost.style.opacity = '0';
+          ghost.style.zIndex = '64';
+          stage.appendChild(ghost);
+
+          const rotEnd = (i % 2 === 0 ? 28 : -28) + 'deg';
+          if (ghost.animate) {
+            const anim = ghost.animate(
+              [
+                { opacity: 1, transform: 'translate3d(0px, 0px, 10px) rotateZ(0deg) scale(0.95)' },
+                { opacity: 1, offset: 0.65, transform: `translate3d(${dx * 0.78}px, ${dy * 0.78}px, 24px) rotateZ(${rotEnd}) scale(1.04)` },
+                { opacity: 0, transform: `translate3d(${dx}px, ${dy}px, 0px) rotateZ(${rotEnd}) scale(0.62)` }
+              ],
+              { duration: 580, delay: startDelay + i * 100, easing: 'cubic-bezier(0.16, 1, 0.3, 1)', fill: 'forwards' }
+            );
+            anim.onfinish = () => ghost.remove();
+          } else {
+            setTimeout(() => ghost.remove(), startDelay + 800);
+          }
+        }
+      } else if (fxEvent.kind === 'outcome_pulse') {
+        const dock = document.getElementById('playerDockPanel');
+        const arena = document.getElementById('noirTableArena');
+        if (dock) {
+          const cls = fxEvent.result === 'lose' ? 'anim-outcome-shake' : 'anim-outcome-win';
+          dock.classList.remove('anim-outcome-win', 'anim-outcome-shake');
+          void dock.offsetWidth;
+          dock.classList.add(cls);
+        }
+        if (arena && fxEvent.result === 'win') {
+          arena.classList.remove('table-win-lighting');
+          void arena.offsetWidth;
+          arena.classList.add('table-win-lighting');
+        }
+      }
+    }
+
+    function triggerSyncedFx(fxPayload) {
+      const fxEvent = Object.assign({ id: Date.now() + secureRandomInt(99999) }, fxPayload);
+      state.lastFxEvent = fxEvent;
+      emitTableFx(fxEvent);
+    }
+
+    // =========================================================================
+    // 3. STATE & STORAGE / BROADCAST SYNC
+    // =========================================================================
+    const BOT_NAMES = ['Aarav', 'Priya', 'Rohan', 'Kabir', 'Meera', 'Dev', 'Zoya'];
+
+    const state = {
+      inRoom: false,
+      inWaitingRoom: false,
+      roomCode: 'CLUB42',
+      gameMode: 'blackjack',
+      selectedAvatar: '01',
+      activeSeatIndex: 0,
+      myPlayerId: '',
+      hostId: '',
+      maxSeats: 4,
+      autoPlayFriends: true,
+      players: [],
+      bannerText: 'Place your bet to begin',
+      lastActorName: '',
+      recentMoves: [],
+      lastFxEvent: null,
+
+      bj: {
+        phase: 'betting',
+        deck: [],
+        dealerCards: [],
+        dealerHoleHidden: true,
+        turnSeat: 0,
+        defaultBet: 100
+      },
+
+      holdem: {
+        phase: 'idle',
+        deck: [],
+        community: [],
+        pot: 0,
+        currentBet: 0,
+        dealerIdx: 0,
+        turnSeat: 0,
+        smallBlind: 25,
+        bigBlind: 50,
+        actedThisStreet: {}
+      },
+
+      bluff: {
+        phase: 'playing',
+        declaredRank: null,
+        pile: [],
+        lastPlay: null,
+        lastReveal: null,
+        turnSeat: 0,
+        passedSeats: {},
+        selectedCardUids: {},
+        chosenRankInput: 'A',
+        winnerName: null
+      }
+    };
+
+    function getPlayerInitials(name) {
+      const clean = (name || 'P').trim().toUpperCase();
+      const parts = clean.split(/\s+/);
+      if (parts.length >= 2) return (parts[0][0] + parts[1][0]).slice(0, 2);
+      return clean.slice(0, 2);
+    }
+
+    function pulseMultiplayerSyncDot() {
+      const dot = document.getElementById('multiplayerSyncDot');
+      if (!dot) return;
+      dot.className = 'w-2 h-2 rounded-full bg-rose-400 scale-125 transition-all';
+      setTimeout(() => {
+        if (dot) dot.className = 'w-2 h-2 rounded-full bg-emerald-400 live-sync-dot transition-all';
+      }, 450);
+    }
+
+    // Safe Storage Fallback
+    window.__noirMemStorage = window.__noirMemStorage || {};
+    window.__noirRoomStore = window.__noirRoomStore || {};
+
+    function safeGetSession(key) {
+      try {
+        if (typeof sessionStorage !== 'undefined') return sessionStorage.getItem(key);
+      } catch (e) {}
+      return window.__noirMemStorage[key] || null;
+    }
+
+    function safeSetSession(key, val) {
+      try {
+        if (typeof sessionStorage !== 'undefined') {
+          sessionStorage.setItem(key, val);
+          return;
+        }
+      } catch (e) {}
+      window.__noirMemStorage[key] = String(val);
+    }
+
+    function safeGetRoomStore(key) {
+      try {
+        if (typeof localStorage !== 'undefined') {
+          const val = localStorage.getItem(key);
+          if (val) return val;
+        }
+      } catch (e) {}
+      return window.__noirRoomStore[key] || null;
+    }
+
+    function safeSetRoomStore(key, val) {
+      try {
+        if (typeof localStorage !== 'undefined') localStorage.setItem(key, val);
+      } catch (e) {}
+      window.__noirRoomStore[key] = String(val);
+    }
+
+    function getStoredMyId() {
+      let id = safeGetSession('noir_my_player_id');
+      if (!id) {
+        id = 'usr_' + Date.now().toString(36) + '_' + secureRandomInt(9999);
+        safeSetSession('noir_my_player_id', id);
+      }
+      return id;
+    }
+
+    let roomChannel = null;
+    try {
+      if (typeof BroadcastChannel !== 'undefined') {
+        roomChannel = new BroadcastChannel('noir_room_sync');
+        roomChannel.onmessage = (ev) => {
+          if (ev.data && ev.data.type === 'STATE_SYNC' && ev.data.roomCode === state.roomCode) {
+            Object.assign(state, ev.data.payload);
+            pulseMultiplayerSyncDot();
+            renderAll();
+            if (state.lastFxEvent) emitTableFx(state.lastFxEvent);
+          }
+        };
+      }
+      window.addEventListener('storage', (ev) => {
+        if (state.inRoom && ev.key === 'noir_room_' + state.roomCode && ev.newValue) {
+          try {
+            const incoming = JSON.parse(ev.newValue);
+            Object.assign(state, incoming);
+            pulseMultiplayerSyncDot();
+            renderAll();
+          } catch (err) {}
+        }
+      });
+    } catch (e) {}
+
+    function broadcastRoomState() {
+      try {
+        if (roomChannel && state.inRoom) {
+          roomChannel.postMessage({
+            type: 'STATE_SYNC',
+            roomCode: state.roomCode,
+            payload: JSON.parse(JSON.stringify({
+              inRoom: state.inRoom,
+              inWaitingRoom: state.inWaitingRoom,
+              roomCode: state.roomCode,
+              gameMode: state.gameMode,
+              hostId: state.hostId,
+              maxSeats: state.maxSeats,
+              players: state.players,
+              bannerText: state.bannerText,
+              lastFxEvent: state.lastFxEvent,
+              bj: state.bj,
+              holdem: state.holdem,
+              bluff: state.bluff
+            }))
+          });
+        }
+        safeSetRoomStore('noir_room_' + state.roomCode, JSON.stringify({
+          inRoom: state.inRoom,
+          inWaitingRoom: state.inWaitingRoom,
+          roomCode: state.roomCode,
+          gameMode: state.gameMode,
+          hostId: state.hostId,
+          maxSeats: state.maxSeats,
+          players: state.players,
+          bannerText: state.bannerText,
+          bj: state.bj,
+          holdem: state.holdem,
+          bluff: state.bluff
+        }));
+      } catch (e) {}
+    }
+
+    // =========================================================================
+    // 4. ROOM CREATION, JOINING & WAITING ROOM
+    // =========================================================================
+    function generateRoomCode() {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      let code = '';
+      for (let i = 0; i < 6; i++) {
+        code += chars[secureRandomInt(chars.length)];
+      }
+      return code;
+    }
+
+    function createPrivateRoom(startChips, maxSeats, selectedGame) {
+      const hostName = (document.getElementById('inputPlayerName').value || 'Alex').trim();
+      const myId = getStoredMyId();
+      state.roomCode = generateRoomCode();
+      state.gameMode = selectedGame || 'blackjack';
+      state.myPlayerId = myId;
+      state.hostId = myId;
+      state.maxSeats = maxSeats || 4;
+      state.inRoom = true;
+      state.inWaitingRoom = true;
+      state.activeSeatIndex = 0;
+
+      state.players = [
+        {
+          id: myId,
+          name: hostName,
+          avatar: state.selectedAvatar || '01',
+          chips: startChips || 2500,
+          isHost: true,
+          isBot: false,
+          cards: [],
+          bjBet: 100,
+          bjStatus: '',
+          pokerBet: 0,
+          pokerFolded: false,
+          pokerRole: ''
+        }
+      ];
+
+      resetAnimationTracking(false);
+      broadcastRoomState();
+      renderAll();
+      showToast(`Private Room ${state.roomCode} created!`);
+    }
+
+    function joinWithRoomCode(code) {
+      const cleanCode = (code || '').trim().toUpperCase();
+      if (!cleanCode || cleanCode.length < 4) {
+        showToast('Please enter a valid room code');
+        return;
+      }
+
+      const myId = getStoredMyId();
+      const myName = (document.getElementById('inputPlayerName').value || 'Friend').trim();
+      const myAvatar = state.selectedAvatar || '02';
+
+      let roomData = null;
+      try {
+        const raw = safeGetRoomStore('noir_room_' + cleanCode);
+        if (raw) roomData = JSON.parse(raw);
+      } catch (e) {}
+
+      if (!roomData) {
+        showToast(`Room ${cleanCode} not found or expired`);
+        return;
+      }
+
+      const currentCount = (roomData.players || []).length;
+      const maxAllowed = roomData.maxSeats || 6;
+      const existingIdx = (roomData.players || []).findIndex(p => p.id === myId || p.name.toLowerCase() === myName.toLowerCase());
+
+      if (existingIdx === -1 && currentCount >= maxAllowed) {
+        showToast(`Room ${cleanCode} is full (${maxAllowed}/${maxAllowed})`);
+        return;
+      }
+
+      state.roomCode = cleanCode;
+      state.myPlayerId = myId;
+      state.inRoom = true;
+      state.inWaitingRoom = Boolean(roomData.inWaitingRoom);
+      state.gameMode = roomData.gameMode || 'blackjack';
+      state.hostId = roomData.hostId || (roomData.players[0] && roomData.players[0].id);
+      state.maxSeats = maxAllowed;
+      state.players = roomData.players || [];
+      state.bj = roomData.bj || state.bj;
+      state.holdem = roomData.holdem || state.holdem;
+      state.bluff = roomData.bluff || state.bluff;
+
+      if (existingIdx !== -1) {
+        state.activeSeatIndex = existingIdx;
+        state.players[existingIdx].name = myName;
+        state.players[existingIdx].isBot = false;
+      } else {
+        const newPlayer = {
+          id: myId,
+          name: myName,
+          avatar: myAvatar,
+          chips: (state.players[0] && state.players[0].chips) || 2500,
+          isHost: false,
+          isBot: false,
+          cards: [],
+          bjBet: 100,
+          bjStatus: '',
+          pokerBet: 0,
+          pokerFolded: false,
+          pokerRole: '',
+          justJoined: true
+        };
+        state.players.push(newPlayer);
+        state.activeSeatIndex = state.players.length - 1;
+      }
+
+      resetAnimationTracking(true);
+      broadcastRoomState();
+      renderAll();
+      showToast(`Joined Room ${cleanCode}`);
+    }
+
+    function addBotToRoom() {
+      const myId = getStoredMyId();
+      if (state.hostId !== myId) {
+        showToast('Only the room host can add bots');
+        return;
+      }
+      if (state.players.length >= (state.maxSeats || 6)) {
+        showToast(`Room is at max capacity (${state.maxSeats})`);
+        return;
+      }
+
+      const existingNames = new Set(state.players.map(p => p.name));
+      const availableNames = BOT_NAMES.filter(n => !existingNames.has(n));
+      const botName = availableNames.length ? availableNames[0] : ('Bot ' + (state.players.length + 1));
+      const botAvatar = '0' + ((state.players.length % 6) + 1);
+
+      const botPlayer = {
+        id: 'bot_' + Date.now().toString(36) + '_' + secureRandomInt(999),
+        name: botName,
+        avatar: botAvatar,
+        chips: (state.players[0] && state.players[0].chips) || 2500,
+        isHost: false,
+        isBot: true,
+        cards: [],
+        bjBet: 100,
+        bjStatus: '',
+        pokerBet: 0,
+        pokerFolded: false,
+        pokerRole: '',
+        justJoined: true
+      };
+
+      state.players.push(botPlayer);
+      broadcastRoomState();
+      renderAll();
+      showToast(`Added ${botName} (BOT) to table`);
+    }
+
+    function removeBotFromRoom(botId) {
+      const myId = getStoredMyId();
+      if (state.hostId !== myId) {
+        showToast('Only the room host can manage players');
+        return;
+      }
+      const targetIdx = state.players.findIndex(p => p.id === botId);
+      if (targetIdx === -1) return;
+      const targetName = state.players[targetIdx].name;
+      state.players.splice(targetIdx, 1);
+      if (state.activeSeatIndex >= state.players.length) {
+        state.activeSeatIndex = 0;
+      }
+      broadcastRoomState();
+      renderAll();
+      showToast(`Removed ${targetName}`);
+    }
+
+    function hostStartGame() {
+      const myId = getStoredMyId();
+      if (state.hostId !== myId) {
+        showToast('Waiting for the host to start the table');
+        return;
+      }
+
+      const minRequired = state.gameMode === 'bluff' ? 3 : state.gameMode === 'holdem' ? 2 : 1;
+      if (state.players.length < minRequired) {
+        showToast(`Need at least ${minRequired} players/bots to start ${state.gameMode.toUpperCase()}`);
+        return;
+      }
+
+      state.inWaitingRoom = false;
+      switchGameMode(state.gameMode);
+      broadcastRoomState();
+      showToast('Game started!');
+    }
+
+    function recordMove(actorName, shortTag, fullMessage, seatIdx = null) {
+      state.lastActorName = actorName;
+      state.bannerText = fullMessage;
+      if (seatIdx !== null && state.players[seatIdx]) {
+        state.players[seatIdx].lastMoveBadge = shortTag;
+      }
+    }
+
+    function switchGameMode(newMode) {
+      clearTimeout(window.__aiTurnTimer);
+      state.gameMode = newMode;
+      state.activeSeatIndex = 0;
+      resetAnimationTracking(false);
+      document.getElementById('tableToolsDrawer').classList.add('hidden');
+      if (newMode === 'blackjack') {
+        setupBlackjackBetting();
+      } else if (newMode === 'holdem') {
+        startHoldemHand();
+      } else if (newMode === 'bluff') {
+        startBluffGame();
+      }
+      broadcastRoomState();
+    }
+
+    // =========================================================================
+    // 5. ENGINE A: BLACKJACK
+    // =========================================================================
+    function calcBlackjackScore(cards) {
+      let total = 0;
+      let aces = 0;
+      for (const c of cards) {
+        if (c.rank === 'A') {
+          aces++;
+          total += 11;
+        } else if (['K', 'Q', 'J', '10'].includes(c.rank)) {
+          total += 10;
+        } else {
+          total += parseInt(c.rank, 10);
+        }
+      }
+      while (total > 21 && aces > 0) {
+        total -= 10;
+        aces--;
+      }
+      return { total, isSoft: aces > 0 };
+    }
+
+    function setupBlackjackBetting() {
+      resetAnimationTracking(false);
+      state.bj.phase = 'betting';
+      state.bj.deck = buildDeck(4);
+      state.bj.dealerCards = [];
+      state.bj.dealerHoleHidden = true;
+      state.bj.turnSeat = 0;
+      for (const p of state.players) {
+        p.cards = [];
+        p.bjStatus = '';
+        p.lastMoveBadge = '$' + (p.bjBet || 100);
+        if (!p.bjBet || p.bjBet > p.chips) {
+          p.bjBet = Math.min(100, Math.max(25, p.chips));
+        }
+      }
+      state.bannerText = 'Choose your bet and tap Deal Hand';
+      renderAll();
+    }
+
+    function dealBlackjackRound() {
+      resetAnimationTracking(false);
+      if (state.bj.deck.length < 26) {
+        state.bj.deck = buildDeck(4);
+      }
+      state.bj.phase = 'playing';
+      state.bj.dealerHoleHidden = true;
+      state.bj.dealerCards = [state.bj.deck.pop(), state.bj.deck.pop()];
+
+      for (const p of state.players) {
+        const bet = Math.min(p.chips, Math.max(25, p.bjBet || 100));
+        p.bjBet = bet;
+        p.chips -= bet;
+        p.cards = [state.bj.deck.pop(), state.bj.deck.pop()];
+        const sc = calcBlackjackScore(p.cards).total;
+        p.bjStatus = sc === 21 ? 'BLACKJACK' : 'PLAYING';
+        p.lastMoveBadge = sc === 21 ? '21' : String(sc);
+      }
+
+      triggerSyncedFx({ kind: 'chip_to_pot', seatIdx: state.activeSeatIndex });
+      state.bj.turnSeat = 0;
+      broadcastRoomState();
+      advanceBlackjackTurn();
+    }
+
+    function advanceBlackjackTurn() {
+      clearTimeout(window.__aiTurnTimer);
+      while (
+        state.bj.turnSeat < state.players.length &&
+        state.players[state.bj.turnSeat].bjStatus !== 'PLAYING'
+      ) {
+        state.bj.turnSeat++;
+      }
+
+      if (state.bj.turnSeat >= state.players.length) {
+        runAutomatedDealerBlackjack();
+        return;
+      }
+
+      const activeP = state.players[state.bj.turnSeat];
+      state.bannerText =
+        state.bj.turnSeat === state.activeSeatIndex
+          ? 'Your turn — Hit or Stand'
+          : `${activeP.name} is deciding...`;
+      renderAll();
+
+      if (state.autoPlayFriends && state.bj.turnSeat !== state.activeSeatIndex) {
+        const botThinkTime = 2200 + secureRandomInt(600);
+        window.__aiTurnTimer = setTimeout(() => {
+          const score = calcBlackjackScore(activeP.cards).total;
+          if (score < 16) {
+            bjHit(state.bj.turnSeat);
+          } else {
+            bjStand(state.bj.turnSeat);
+          }
+        }, botThinkTime);
+      }
+    }
+
+    function bjHit(seatIdx) {
+      if (state.bj.phase !== 'playing' || seatIdx !== state.bj.turnSeat) return;
+      const p = state.players[seatIdx];
+      p.cards.push(state.bj.deck.pop());
+      const total = calcBlackjackScore(p.cards).total;
+      if (total > 21) {
+        p.bjStatus = 'BUST';
+        recordMove(p.name, 'BUST', `${p.name} busted (${total})`, seatIdx);
+        if (seatIdx === state.activeSeatIndex) {
+          triggerSyncedFx({ kind: 'outcome_pulse', result: 'lose' });
+        }
+        state.bj.turnSeat++;
+        broadcastRoomState();
+        renderAll();
+        setTimeout(advanceBlackjackTurn, 1000);
+      } else if (total === 21) {
+        p.bjStatus = '21';
+        recordMove(p.name, '21', `${p.name} hit 21!`, seatIdx);
+        state.bj.turnSeat++;
+        broadcastRoomState();
+        renderAll();
+        setTimeout(advanceBlackjackTurn, 1000);
+      } else {
+        recordMove(p.name, `Hit (${total})`, `${p.name} hits (${total})`, seatIdx);
+        broadcastRoomState();
+        renderAll();
+        if (seatIdx !== state.activeSeatIndex) {
+          setTimeout(advanceBlackjackTurn, 800);
+        } else {
+          advanceBlackjackTurn();
+        }
+      }
+    }
+
+    function bjStand(seatIdx) {
+      if (state.bj.phase !== 'playing' || seatIdx !== state.bj.turnSeat) return;
+      const p = state.players[seatIdx];
+      const total = calcBlackjackScore(p.cards).total;
+      p.bjStatus = 'STAND';
+      recordMove(p.name, `Stand ${total}`, `${p.name} stands on ${total}`, seatIdx);
+      state.bj.turnSeat++;
+      broadcastRoomState();
+      renderAll();
+      setTimeout(advanceBlackjackTurn, 800);
+    }
+
+    function bjDoubleDown(seatIdx) {
+      if (state.bj.phase !== 'playing' || seatIdx !== state.bj.turnSeat) return;
+      const p = state.players[seatIdx];
+      if (p.cards.length !== 2 || p.chips < p.bjBet) return;
+      p.chips -= p.bjBet;
+      p.bjBet *= 2;
+      p.cards.push(state.bj.deck.pop());
+      const total = calcBlackjackScore(p.cards).total;
+      p.bjStatus = total > 21 ? 'BUST' : 'DOUBLED';
+      recordMove(p.name, total > 21 ? 'BUST' : `2x (${total})`, `${p.name} doubled to ${total}`, seatIdx);
+      state.bj.turnSeat++;
+      broadcastRoomState();
+      renderAll();
+      setTimeout(advanceBlackjackTurn, 1000);
+    }
+
+    function bjSplitPair(seatIdx) {
+      if (state.bj.phase !== 'playing' || seatIdx !== state.bj.turnSeat) return;
+      const p = state.players[seatIdx];
+      if (p.cards.length !== 2 || p.cards[0].rank !== p.cards[1].rank) return;
+      p.cards = [p.cards[0], state.bj.deck.pop()];
+      showToast('Pair split');
+      const total = calcBlackjackScore(p.cards).total;
+      if (total === 21) {
+        p.bjStatus = '21';
+        state.bj.turnSeat++;
+      }
+      broadcastRoomState();
+      renderAll();
+      setTimeout(advanceBlackjackTurn, 800);
+    }
+
+    function runAutomatedDealerBlackjack() {
+      state.bj.phase = 'dealer';
+      state.bj.dealerHoleHidden = false;
+      const initialScore = calcBlackjackScore(state.bj.dealerCards).total;
+      state.bannerText = `Dealer reveals hole card (${initialScore})`;
+      broadcastRoomState();
+      renderAll();
+
+      function stepDealer() {
+        const curScore = calcBlackjackScore(state.bj.dealerCards).total;
+        if (curScore < 17) {
+          state.bannerText = `Dealer takes a card (${curScore} < 17)...`;
+          renderAll();
+          setTimeout(() => {
+            state.bj.dealerCards.push(state.bj.deck.pop());
+            const newScore = calcBlackjackScore(state.bj.dealerCards).total;
+            if (newScore > 21) {
+              state.bannerText = `Dealer hits (${newScore}) — BUST!`;
+            } else {
+              state.bannerText = `Dealer hits (${newScore})`;
+            }
+            broadcastRoomState();
+            renderAll();
+            setTimeout(stepDealer, 1400);
+          }, 1100);
+          return;
+        }
+
+        // Dealer has 17+ or busted - calculate outcomes
+        const dScore = curScore;
+        const dBust = dScore > 21;
+
+        for (const p of state.players) {
+          const pScore = calcBlackjackScore(p.cards).total;
+          const isNatural = p.cards.length === 2 && pScore === 21;
+          if (pScore > 21) {
+            p.bjStatus = 'LOSE';
+            p.lastMoveBadge = 'LOSE';
+          } else if (isNatural && dScore !== 21) {
+            const winAmt = Math.floor(p.bjBet * 2.5);
+            p.chips += winAmt;
+            p.bjStatus = `WIN +$${winAmt - p.bjBet}`;
+            p.lastMoveBadge = 'WIN';
+          } else if (dBust || pScore > dScore) {
+            const winAmt = p.bjBet * 2;
+            p.chips += winAmt;
+            p.bjStatus = `WIN +$${p.bjBet}`;
+            p.lastMoveBadge = 'WIN';
+          } else if (pScore === dScore) {
+            p.chips += p.bjBet;
+            p.bjStatus = 'PUSH';
+            p.lastMoveBadge = 'PUSH';
+          } else {
+            p.bjStatus = 'LOSE';
+            p.lastMoveBadge = 'LOSE';
+          }
+        }
+
+        const me = state.players[state.activeSeatIndex] || state.players[0];
+        state.bj.phase = 'betting';
+        state.bannerText = `${me.bjStatus} — Dealer ${dBust ? 'busted (' + dScore + ')' : 'has ' + dScore}`;
+        if (me.bjStatus.startsWith('WIN')) {
+          triggerSyncedFx({ kind: 'pot_to_winner', seatIdx: state.activeSeatIndex });
+        }
+        triggerSyncedFx({
+          kind: 'outcome_pulse',
+          result: me.bjStatus.startsWith('WIN') ? 'win' : me.bjStatus === 'LOSE' ? 'lose' : 'push'
+        });
+        broadcastRoomState();
+        renderAll();
+      }
+
+      setTimeout(stepDealer, 1300);
+    }
+
+    // =========================================================================
+    // 6. ENGINE B: TEXAS HOLD'EM POKER
+    // =========================================================================
+    function evaluate7CardPoker(cards) {
+      if (!cards || cards.length < 2) return { score: 0, label: '' };
+      const vals = cards.map(c => RANK_VALUE[c.rank]).sort((a, b) => b - a);
+      const counts = {};
+      const suitCards = { S: [], H: [], D: [], C: [] };
+      for (const c of cards) {
+        const v = RANK_VALUE[c.rank];
+        counts[v] = (counts[v] || 0) + 1;
+        suitCards[c.suit].push(v);
+      }
+
+      function findStraightHigh(numList) {
+        const uniq = Array.from(new Set(numList)).sort((a, b) => b - a);
+        if (uniq.includes(14)) uniq.push(1);
+        let streak = 1;
+        for (let i = 0; i < uniq.length - 1; i++) {
+          if (uniq[i] - 1 === uniq[i + 1]) {
+            streak++;
+            if (streak >= 5) return uniq[i - 3];
+          } else {
+            streak = 1;
+          }
+        }
+        return 0;
+      }
+
+      let flushSuit = null;
+      for (const s of ['S', 'H', 'D', 'C']) {
+        if (suitCards[s].length >= 5) {
+          flushSuit = s;
+          break;
+        }
+      }
+
+      if (flushSuit) {
+        const sfHigh = findStraightHigh(suitCards[flushSuit]);
+        if (sfHigh > 0) {
+          return {
+            score: 8000000 + sfHigh,
+            label: sfHigh === 14 ? 'Royal Flush' : 'Straight Flush'
+          };
+        }
+      }
+
+      const groups = Object.entries(counts)
+        .map(([val, cnt]) => ({ val: parseInt(val, 10), cnt }))
+        .sort((a, b) => b.cnt - a.cnt || b.val - a.val);
+
+      if (groups[0].cnt === 4) return { score: 7000000 + groups[0].val * 100, label: 'Four of a Kind' };
+      if (groups[0].cnt === 3 && groups[1] && groups[1].cnt >= 2) {
+        return { score: 6000000 + groups[0].val * 100 + groups[1].val, label: 'Full House' };
+      }
+      if (flushSuit) return { score: 5000000 + suitCards[flushSuit].sort((a, b) => b - a)[0], label: 'Flush' };
+      const stHigh = findStraightHigh(vals);
+      if (stHigh > 0) return { score: 4000000 + stHigh, label: 'Straight' };
+      if (groups[0].cnt === 3) return { score: 3000000 + groups[0].val * 100, label: 'Three of a Kind' };
+      if (groups[0].cnt === 2 && groups[1] && groups[1].cnt === 2) {
+        return { score: 2000000 + groups[0].val * 500 + groups[1].val * 20, label: 'Two Pair' };
+      }
+      if (groups[0].cnt === 2) return { score: 1000000 + groups[0].val * 500 + (vals[0] || 0), label: 'One Pair' };
+      return { score: vals[0] || 0, label: 'High Card' };
+    }
+
+    function startHoldemHand() {
+      clearTimeout(window.__aiTurnTimer);
+      resetAnimationTracking(false);
+      const n = state.players.length;
+      state.holdem.deck = buildDeck(1);
+      state.holdem.community = [];
+      state.holdem.pot = 0;
+      state.holdem.phase = 'preflop';
+      state.holdem.dealerIdx = (state.holdem.dealerIdx + 1) % n;
+      state.holdem.actedThisStreet = {};
+
+      const sbIdx = (state.holdem.dealerIdx + 1) % n;
+      const bbIdx = (state.holdem.dealerIdx + 2) % n;
+
+      for (let i = 0; i < n; i++) {
+        const p = state.players[i];
+        if (p.chips < 100) p.chips = 1000;
+        p.cards = [state.holdem.deck.pop(), state.holdem.deck.pop()];
+        p.pokerBet = 0;
+        p.pokerFolded = false;
+        p.pokerRole = i === state.holdem.dealerIdx ? 'D' : i === sbIdx ? 'SB' : i === bbIdx ? 'BB' : '';
+      }
+
+      const sbAmt = Math.min(state.holdem.smallBlind, state.players[sbIdx].chips);
+      state.players[sbIdx].chips -= sbAmt;
+      state.players[sbIdx].pokerBet = sbAmt;
+
+      const bbAmt = Math.min(state.holdem.bigBlind, state.players[bbIdx].chips);
+      state.players[bbIdx].chips -= bbAmt;
+      state.players[bbIdx].pokerBet = bbAmt;
+
+      state.holdem.pot = sbAmt + bbAmt;
+      state.holdem.currentBet = bbAmt;
+      state.holdem.turnSeat = (bbIdx + 1) % n;
+      for (const p of state.players) p.lastMoveBadge = p.pokerBet ? `$${p.pokerBet}` : '';
+      broadcastRoomState();
+      checkHoldemProgression();
+    }
+
+    function checkHoldemProgression() {
+      clearTimeout(window.__aiTurnTimer);
+      const activePlayers = state.players.filter(p => !p.pokerFolded);
+      if (activePlayers.length === 1) {
+        const winner = activePlayers[0];
+        const winIdx = state.players.indexOf(winner);
+        triggerSyncedFx({
+          kind: 'pot_to_winner',
+          seatIdx: winIdx
+        });
+        winner.chips += state.holdem.pot;
+        state.holdem.phase = 'showdown';
+        state.bannerText = `${winner.name} wins $${state.holdem.pot}`;
+        renderAll();
+        return;
+      }
+
+      const allMatched = activePlayers.every(
+        p => (state.holdem.actedThisStreet[p.id] && p.pokerBet === state.holdem.currentBet) || p.chips === 0
+      );
+
+      if (allMatched) {
+        advanceHoldemStreet();
+        return;
+      }
+
+      let safety = 0;
+      while (
+        (state.players[state.holdem.turnSeat].pokerFolded ||
+          state.players[state.holdem.turnSeat].chips === 0) &&
+        safety < state.players.length
+      ) {
+        state.holdem.turnSeat = (state.holdem.turnSeat + 1) % state.players.length;
+        safety++;
+      }
+
+      const curr = state.players[state.holdem.turnSeat];
+      const toCall = Math.max(0, state.holdem.currentBet - curr.pokerBet);
+      state.bannerText =
+        state.holdem.turnSeat === state.activeSeatIndex
+          ? toCall > 0
+            ? `Your turn — Call $${toCall} or Raise`
+            : 'Your turn — Check or Bet'
+          : `${curr.name} is thinking...`;
+      renderAll();
+
+      if (state.autoPlayFriends && state.holdem.turnSeat !== state.activeSeatIndex && state.holdem.phase !== 'showdown') {
+        const botThinkMs = 2400 + secureRandomInt(800);
+        window.__aiTurnTimer = setTimeout(() => {
+          const ev = evaluate7CardPoker([...curr.cards, ...state.holdem.community]);
+          if (toCall > 250 && ev.score < 1000000 && Math.random() < 0.55) {
+            pokerActionFold(state.holdem.turnSeat);
+          } else if (ev.score >= 2000000 && curr.chips > toCall + 100 && Math.random() < 0.4) {
+            pokerActionRaise(state.holdem.turnSeat, state.holdem.currentBet + 100);
+          } else {
+            pokerActionCheckCall(state.holdem.turnSeat);
+          }
+        }, botThinkMs);
+      }
+    }
+
+    function advanceHoldemStreet() {
+      state.holdem.actedThisStreet = {};
+      state.holdem.currentBet = 0;
+      for (const p of state.players) {
+        p.pokerBet = 0;
+        if (!p.pokerFolded) p.lastMoveBadge = '';
+      }
+
+      if (state.holdem.phase === 'preflop') {
+        state.holdem.phase = 'flop';
+        state.bannerText = 'Dealing the Flop (3 community cards)...';
+        state.holdem.community.push(
+          state.holdem.deck.pop(),
+          state.holdem.deck.pop(),
+          state.holdem.deck.pop()
+        );
+        broadcastRoomState();
+        renderAll();
+        setTimeout(() => {
+          state.holdem.turnSeat = (state.holdem.dealerIdx + 1) % state.players.length;
+          checkHoldemProgression();
+        }, 1500);
+        return;
+      } else if (state.holdem.phase === 'flop') {
+        state.holdem.phase = 'turn';
+        state.bannerText = 'Dealing the Turn card...';
+        state.holdem.community.push(state.holdem.deck.pop());
+        broadcastRoomState();
+        renderAll();
+        setTimeout(() => {
+          state.holdem.turnSeat = (state.holdem.dealerIdx + 1) % state.players.length;
+          checkHoldemProgression();
+        }, 1400);
+        return;
+      } else if (state.holdem.phase === 'turn') {
+        state.holdem.phase = 'river';
+        state.bannerText = 'Dealing the final River card...';
+        state.holdem.community.push(state.holdem.deck.pop());
+        broadcastRoomState();
+        renderAll();
+        setTimeout(() => {
+          state.holdem.turnSeat = (state.holdem.dealerIdx + 1) % state.players.length;
+          checkHoldemProgression();
+        }, 1400);
+        return;
+      } else {
+        resolveHoldemShowdown();
+        return;
+      }
+    }
+
+    function resolveHoldemShowdown() {
+      state.holdem.phase = 'showdown';
+      let bestScore = -1;
+      let winners = [];
+      let bestLabel = '';
+
+      for (const p of state.players) {
+        if (p.pokerFolded) continue;
+        const ev = evaluate7CardPoker([...p.cards, ...state.holdem.community]);
+        p.lastShowdownLabel = ev.label;
+        if (ev.score > bestScore) {
+          bestScore = ev.score;
+          winners = [p];
+          bestLabel = ev.label;
+        } else if (ev.score === bestScore) {
+          winners.push(p);
+        }
+      }
+
+      const share = Math.floor(state.holdem.pot / Math.max(1, winners.length));
+      for (const w of winners) {
+        w.chips += share;
+        w.lastMoveBadge = 'WIN';
+      }
+
+      if (winners.length > 0) {
+        const winIdx = state.players.indexOf(winners[0]);
+        triggerSyncedFx({
+          kind: 'pot_to_winner',
+          seatIdx: winIdx
+        });
+      }
+
+      state.bannerText = `${winners.map(w => w.name).join(' & ')} won $${state.holdem.pot} (${bestLabel})`;
+      broadcastRoomState();
+      renderAll();
+    }
+
+    function pokerActionFold(seatIdx) {
+      if (state.holdem.phase === 'showdown' || seatIdx !== state.holdem.turnSeat) return;
+      const p = state.players[seatIdx];
+      p.pokerFolded = true;
+      state.holdem.actedThisStreet[p.id] = true;
+      triggerSyncedFx({
+        kind: 'fold_muck',
+        count: 2,
+        seatIdx
+      });
+      recordMove(p.name, 'Fold', `${p.name} folds`, seatIdx);
+      state.holdem.turnSeat = (state.holdem.turnSeat + 1) % state.players.length;
+      broadcastRoomState();
+      renderAll();
+      setTimeout(checkHoldemProgression, 750);
+    }
+
+    function pokerActionCheckCall(seatIdx) {
+      if (state.holdem.phase === 'showdown' || seatIdx !== state.holdem.turnSeat) return;
+      const p = state.players[seatIdx];
+      const needed = Math.min(p.chips, Math.max(0, state.holdem.currentBet - p.pokerBet));
+      p.chips -= needed;
+      p.pokerBet += needed;
+      state.holdem.pot += needed;
+      state.holdem.actedThisStreet[p.id] = true;
+      if (needed > 0) {
+        triggerSyncedFx({
+          kind: 'chip_to_pot',
+          seatIdx
+        });
+      }
+      recordMove(
+        p.name,
+        needed === 0 ? 'Check' : `Call $${needed}`,
+        needed === 0 ? `${p.name} checks` : `${p.name} calls $${needed}`,
+        seatIdx
+      );
+      state.holdem.turnSeat = (state.holdem.turnSeat + 1) % state.players.length;
+      broadcastRoomState();
+      renderAll();
+      setTimeout(checkHoldemProgression, 750);
+    }
+
+    function pokerActionRaise(seatIdx, targetTotalBet) {
+      if (state.holdem.phase === 'showdown' || seatIdx !== state.holdem.turnSeat) return;
+      const p = state.players[seatIdx];
+      const desired = Math.max(state.holdem.currentBet + 50, targetTotalBet);
+      const added = Math.min(p.chips, Math.max(0, desired - p.pokerBet));
+      p.chips -= added;
+      p.pokerBet += added;
+      state.holdem.pot += added;
+      if (p.pokerBet > state.holdem.currentBet) {
+        state.holdem.currentBet = p.pokerBet;
+      }
+      state.holdem.actedThisStreet[p.id] = true;
+      triggerSyncedFx({
+        kind: 'chip_to_pot',
+        seatIdx
+      });
+      recordMove(p.name, `Raise $${p.pokerBet}`, `${p.name} raises to $${p.pokerBet}`, seatIdx);
+      state.holdem.turnSeat = (state.holdem.turnSeat + 1) % state.players.length;
+      broadcastRoomState();
+      renderAll();
+      setTimeout(checkHoldemProgression, 750);
+    }
+
+    // =========================================================================
+    // 7. ENGINE C: BLUFF
+    // =========================================================================
+    function sortBluffHand(cards) {
+      return cards.sort((a, b) => BLUFF_SORT_ORDER[a.rank] - BLUFF_SORT_ORDER[b.rank]);
+    }
+
+    function startBluffGame() {
+      clearTimeout(window.__aiTurnTimer);
+      resetAnimationTracking(false);
+      const deck = buildDeck(1);
+      state.bluff.phase = 'playing';
+      state.bluff.declaredRank = null;
+      state.bluff.pile = [];
+      state.bluff.lastPlay = null;
+      state.bluff.lastReveal = null;
+      for (const p of state.players) p.lastMoveBadge = '';
+      state.bluff.turnSeat = 0;
+      state.bluff.passedSeats = {};
+      state.bluff.selectedCardUids = {};
+      state.bluff.chosenRankInput = 'A';
+      state.bluff.winnerName = null;
+
+      for (const p of state.players) p.cards = [];
+      let idx = 0;
+      while (deck.length > 0) {
+        state.players[idx % state.players.length].cards.push(deck.pop());
+        idx++;
+      }
+      for (const p of state.players) sortBluffHand(p.cards);
+
+      state.bannerText = 'Your turn — Pick a rank and play 1–4 cards';
+      broadcastRoomState();
+      renderAll();
+    }
+
+    function checkBluffWinner() {
+      for (const p of state.players) {
+        if (p.cards.length === 0) {
+          state.bluff.phase = 'gameover';
+          state.bluff.winnerName = p.name;
+          p.chips += 300;
+          state.bannerText = `${p.name} won Bluff (+$300)`;
+          triggerSyncedFx({ kind: 'outcome_pulse', result: 'win' });
+          renderAll();
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function bluffPlaySelectedCards(seatIdx, cardUids, chosenRank) {
+      if (state.bluff.phase !== 'playing' || seatIdx !== state.bluff.turnSeat) return;
+      const p = state.players[seatIdx];
+      if (!cardUids || cardUids.length < 1 || cardUids.length > 4) {
+        showToast('Tap 1 to 4 cards first');
+        return;
+      }
+
+      const activeRank = state.bluff.declaredRank || chosenRank || state.bluff.chosenRankInput || 'A';
+      state.bluff.declaredRank = activeRank;
+
+      const playedCards = [];
+      p.cards = p.cards.filter(c => {
+        if (cardUids.includes(c.uid)) {
+          playedCards.push(c);
+          return false;
+        }
+        return true;
+      });
+
+      state.bluff.pile.push(...playedCards);
+      state.bluff.lastReveal = null;
+      state.bluff.lastPlay = {
+        playId: Date.now() + '_' + seatIdx,
+        seatIndex: seatIdx,
+        playerName: p.name,
+        count: playedCards.length,
+        claimedRank: activeRank,
+        actualCards: playedCards
+      };
+      state.bluff.passedSeats = {};
+      state.bluff.selectedCardUids = {};
+      recordMove(
+        p.name,
+        `${playedCards.length}x ${activeRank}`,
+        `${p.name} played ${playedCards.length}x ${activeRank}`,
+        seatIdx
+      );
+      if (checkBluffWinner()) return;
+
+      state.bluff.turnSeat = (state.bluff.turnSeat + 1) % state.players.length;
+      broadcastRoomState();
+      scheduleAiBluffTurn();
+    }
+
+    function bluffPassTurn(seatIdx) {
+      if (state.bluff.phase !== 'playing' || seatIdx !== state.bluff.turnSeat) return;
+      if (!state.bluff.declaredRank) {
+        showToast('Select cards to start the pile');
+        return;
+      }
+      const p = state.players[seatIdx];
+      state.bluff.passedSeats[seatIdx] = true;
+
+      if (Object.keys(state.bluff.passedSeats).length >= state.players.length - 1 && state.bluff.lastPlay) {
+        const leaderIdx = state.bluff.lastPlay.seatIndex;
+        triggerSyncedFx({
+          kind: 'pile_sweep',
+          count: Math.min(4, state.bluff.pile.length)
+        });
+        state.bluff.pile = [];
+        state.bluff.declaredRank = null;
+        state.bluff.lastPlay = null;
+        state.bluff.lastReveal = null;
+        state.bluff.passedSeats = {};
+        for (const pl of state.players) pl.lastMoveBadge = '';
+        state.bluff.turnSeat = leaderIdx;
+        recordMove(p.name, 'Pass', `Pile cleared — ${state.players[leaderIdx].name} leads next`, seatIdx);
+      } else {
+        state.bluff.turnSeat = (state.bluff.turnSeat + 1) % state.players.length;
+        recordMove(p.name, 'Pass', `${p.name} passed`, seatIdx);
+      }
+
+      broadcastRoomState();
+      scheduleAiBluffTurn();
+    }
+
+    function bluffCallChallenge(challengerSeatIdx) {
+      if (state.bluff.phase !== 'playing' || !state.bluff.lastPlay) return;
+      clearTimeout(window.__aiTurnTimer);
+      const last = state.bluff.lastPlay;
+      if (last.seatIndex === challengerSeatIdx) {
+        showToast('Cannot call bluff on yourself');
+        return;
+      }
+
+      const challenger = state.players[challengerSeatIdx];
+      const accused = state.players[last.seatIndex];
+      const wasHonest = last.actualCards.every(c => c.rank === last.claimedRank);
+      const pileTotal = state.bluff.pile.length;
+
+      last.actualCards.forEach(c => {
+        seenCardsMap.set(c.uid, { faceDown: true, zone: 'bluff_pile' });
+      });
+
+      state.bluff.lastReveal = {
+        accusedName: accused.name,
+        challengerName: challenger.name,
+        claimedRank: last.claimedRank,
+        cards: last.actualCards,
+        wasHonest,
+        pileTotal
+      };
+
+      state.bannerText = wasHonest
+        ? `${challenger.name} called Bluff — but ${accused.name} told the TRUTH!`
+        : `${challenger.name} CAUGHT ${accused.name} BLUFFING!`;
+      broadcastRoomState();
+      renderAll();
+
+      setTimeout(() => {
+        const loserIdx = !wasHonest ? last.seatIndex : challengerSeatIdx;
+        triggerSyncedFx({
+          kind: 'pile_collect',
+          seatIdx: loserIdx,
+          count: Math.min(5, pileTotal),
+          delayMs: 200
+        });
+
+        state.bluff.pile.forEach(c => {
+          if (!last.actualCards.some(ac => ac.uid === c.uid)) {
+            seenCardsMap.set(c.uid, {
+              faceDown: loserIdx !== state.activeSeatIndex,
+              zone: loserIdx === state.activeSeatIndex ? 'player_hand' : `opp_${loserIdx}`
+            });
+          }
+        });
+
+        if (!wasHonest) {
+          accused.cards.push(...state.bluff.pile);
+          sortBluffHand(accused.cards);
+          recordMove(
+            challenger.name,
+            'Caught Bluff',
+            `${accused.name} was bluffing and took ${pileTotal} cards`,
+            challengerSeatIdx
+          );
+          accused.lastMoveBadge = `+${pileTotal} cards`;
+          state.bluff.turnSeat = challengerSeatIdx;
+        } else {
+          challenger.cards.push(...state.bluff.pile);
+          sortBluffHand(challenger.cards);
+          recordMove(
+            challenger.name,
+            'False Call',
+            `${accused.name} told the truth — ${challenger.name} took ${pileTotal} cards`,
+            challengerSeatIdx
+          );
+          challenger.lastMoveBadge = `+${pileTotal} cards`;
+          state.bluff.turnSeat = last.seatIndex;
+        }
+
+        state.bluff.pile = [];
+        state.bluff.declaredRank = null;
+        state.bluff.lastPlay = null;
+        state.bluff.passedSeats = {};
+        state.bluff.selectedCardUids = {};
+
+        if (checkBluffWinner()) return;
+        broadcastRoomState();
+        scheduleAiBluffTurn();
+      }, 2400);
+    }
+
+    function scheduleAiBluffTurn() {
+      clearTimeout(window.__aiTurnTimer);
+      renderAll();
+      if (state.bluff.phase !== 'playing') return;
+
+      if (state.autoPlayFriends && state.bluff.turnSeat !== state.activeSeatIndex) {
+        const botBluffDelay = 2200 + secureRandomInt(1000);
+        window.__aiTurnTimer = setTimeout(() => {
+          const aiIdx = state.bluff.turnSeat;
+          const ai = state.players[aiIdx];
+          if (!ai || ai.cards.length === 0) return;
+
+          if (
+            state.bluff.lastPlay &&
+            state.bluff.lastPlay.seatIndex !== aiIdx &&
+            (state.bluff.lastPlay.count >= 3 || Math.random() < 0.24)
+          ) {
+            bluffCallChallenge(aiIdx);
+            return;
+          }
+
+          if (!state.bluff.declaredRank) {
+            const chosenRank = ai.cards[0].rank;
+            const matching = ai.cards.filter(c => c.rank === chosenRank).slice(0, 3);
+            bluffPlaySelectedCards(aiIdx, matching.map(c => c.uid), chosenRank);
+          } else {
+            const target = state.bluff.declaredRank;
+            const matching = ai.cards.filter(c => c.rank === target).slice(0, 3);
+            if (matching.length > 0) {
+              bluffPlaySelectedCards(aiIdx, matching.map(c => c.uid), target);
+            } else if (Math.random() < 0.55) {
+              const bluffCard = ai.cards[secureRandomInt(ai.cards.length)];
+              bluffPlaySelectedCards(aiIdx, [bluffCard.uid], target);
+            } else {
+              bluffPassTurn(aiIdx);
+            }
+          }
+        }, botBluffDelay);
+      }
+    }
+
+    // =========================================================================
+    // 8. SCREEN RENDERING PIPELINE
+    // =========================================================================
+    function renderWaitingRoom() {
+      const myId = getStoredMyId();
+      const isHost = state.hostId === myId;
+      const maxAllowed = state.maxSeats || 4;
+      const count = state.players.length;
+
+      document.getElementById('waitingRoomCodeText').textContent = state.roomCode;
+      document.getElementById('waitingGameModeBadge').textContent = state.gameMode.toUpperCase();
+      document.getElementById('waitingPlayerCount').textContent = count;
+      document.getElementById('waitingMaxPlayers').textContent = maxAllowed;
+
+      const hostBotControls = document.getElementById('hostBotControls');
+      const btnStart = document.getElementById('btnWaitingStartGame');
+      const guestBanner = document.getElementById('guestWaitingBanner');
+      const addBotBtn = document.getElementById('btnWaitingAddBot');
+
+      if (isHost) {
+        if (hostBotControls) hostBotControls.classList.remove('hidden');
+        if (btnStart) btnStart.classList.remove('hidden');
+        if (guestBanner) guestBanner.classList.add('hidden');
+        if (addBotBtn) addBotBtn.disabled = count >= maxAllowed;
+      } else {
+        if (hostBotControls) hostBotControls.classList.add('hidden');
+        if (btnStart) btnStart.classList.add('hidden');
+        if (guestBanner) guestBanner.classList.remove('hidden');
+      }
+
+      const minRequired = state.gameMode === 'bluff' ? 3 : state.gameMode === 'holdem' ? 2 : 1;
+      const reqText = document.getElementById('waitingRequirementText');
+      const canStart = count >= minRequired;
+      if (btnStart) btnStart.disabled = !canStart;
+      if (reqText) {
+        reqText.textContent = canStart
+          ? `Ready to start table! (${count} seated, min ${minRequired} required)`
+          : `Need at least ${minRequired} players/bots to start ${state.gameMode.toUpperCase()} (${count}/${minRequired})`;
+      }
+
+      const rosterList = document.getElementById('waitingRosterList');
+      if (!rosterList) return;
+
+      let rosterHTML = '';
+      for (let i = 0; i < maxAllowed; i++) {
+        const p = state.players[i];
+        if (p) {
+          const isMe = p.id === myId;
+          const initials = getPlayerInitials(p.name);
+          const removeBtnHTML = (isHost && p.isBot)
+            ? `<button type="button" data-remove-bot="${p.id}" class="text-[11px] font-semibold text-zinc-400 hover:text-rose-400 px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 transition">Remove</button>`
+            : '';
+          const tagBadge = p.isHost
+            ? `<span class="px-2.5 py-0.5 rounded-full bg-rose-600/20 text-rose-300 border border-rose-500/30 text-[10px] font-bold">HOST</span>`
+            : p.isBot
+            ? `<span class="px-2.5 py-0.5 rounded-full bg-white/10 text-zinc-300 text-[10px] font-bold">BOT</span>`
+            : isMe
+            ? `<span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold">YOU</span>`
+            : `<span class="px-2.5 py-0.5 rounded-full bg-white/5 text-zinc-400 text-[10px] font-medium">READY</span>`;
+
+          rosterHTML += `
+            <div class="flex items-center justify-between p-3.5 rounded-2xl bg-charcoal-900 border border-white/5 shadow-md">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="relative shrink-0">
+                  <span class="w-10 h-10 rounded-full ${isMe ? 'bg-gradient-to-br from-rose-600 to-rose-700 text-white' : 'bg-charcoal-800 text-zinc-200'} border border-white/15 flex items-center justify-center text-xs font-bold font-mono">${initials}</span>
+                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 absolute -bottom-0.5 -right-0.5 ring-2 ring-charcoal-950"></span>
+                </div>
+                <div class="truncate">
+                  <div class="flex items-center gap-1.5 truncate">
+                    <span class="text-sm font-bold text-white truncate">${p.name}</span>
+                  </div>
+                  <div class="text-[11px] font-mono text-zinc-400">$${p.chips} bankroll</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 shrink-0">
+                ${tagBadge}
+                ${removeBtnHTML}
+              </div>
+            </div>
+          `;
+        } else {
+          rosterHTML += `
+            <div class="flex items-center justify-between p-3.5 rounded-2xl border border-dashed border-white/10 bg-white/[0.01]">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full border border-dashed border-white/15 flex items-center justify-center text-xs text-zinc-600 font-mono">0${i + 1}</div>
+                <div>
+                  <span class="text-xs font-semibold text-zinc-500">Empty Seat</span>
+                  <div class="text-[10px] text-zinc-600">Available slot</div>
+                </div>
+              </div>
+              <span class="text-[11px] font-medium text-zinc-600">Waiting...</span>
+            </div>
+          `;
+        }
+      }
+      rosterList.innerHTML = rosterHTML;
+
+      rosterList.querySelectorAll('[data-remove-bot]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const bId = btn.getAttribute('data-remove-bot');
+          removeBotFromRoom(bId);
+        });
+      });
+    }
+
+    function renderAll() {
+      const lobbyView = document.getElementById('lobbyView');
+      const waitingRoomView = document.getElementById('waitingRoomView');
+      const tableView = document.getElementById('tableView');
+      const roomBadge = document.getElementById('roomHeaderBadge');
+      const gamePills = document.getElementById('gameSelectorPills');
+
+      const me = state.players[state.activeSeatIndex] || {
+        name: document.getElementById('inputPlayerName').value || 'Alex',
+        chips: 2500,
+        avatar: state.selectedAvatar || '01',
+        cards: []
+      };
+
+      // Top Nav Bar Sync
+      document.getElementById('navUserChipsVal').textContent = (me.chips || 2500).toLocaleString();
+      document.getElementById('lobbyPlayerNameDisplay').textContent = me.name;
+      document.getElementById('lobbyPlayerAvatar').textContent = getPlayerInitials(me.name);
+
+      if (!state.inRoom) {
+        lobbyView.classList.remove('hidden');
+        if (waitingRoomView) waitingRoomView.classList.add('hidden');
+        tableView.classList.add('hidden');
+        roomBadge.classList.add('hidden');
+        roomBadge.classList.remove('flex');
+        gamePills.classList.add('hidden');
+        return;
+      }
+
+      // STATE 1: WAITING ROOM
+      if (state.inWaitingRoom) {
+        lobbyView.classList.add('hidden');
+        if (waitingRoomView) waitingRoomView.classList.remove('hidden');
+        tableView.classList.add('hidden');
+        roomBadge.classList.remove('hidden');
+        roomBadge.classList.add('flex');
+        gamePills.classList.add('hidden');
+
+        document.getElementById('headerRoomCode').textContent = state.roomCode;
+        renderWaitingRoom();
+        return;
+      }
+
+      // STATE 2: ACTIVE AT TABLE
+      lobbyView.classList.add('hidden');
+      if (waitingRoomView) waitingRoomView.classList.add('hidden');
+      tableView.classList.remove('hidden');
+      roomBadge.classList.remove('hidden');
+      roomBadge.classList.add('flex');
+      gamePills.classList.remove('hidden');
+      gamePills.classList.add('flex');
+
+      document.getElementById('headerRoomCode').textContent = state.roomCode;
+      document.getElementById('modalRoomCodeText').textContent = state.roomCode;
+      document.getElementById('modalShareUrlText').textContent =
+        window.location.origin + window.location.pathname + '?room=' + state.roomCode;
+
+      // Update Game Selector Tabs
+      document.querySelectorAll('.game-tab-btn').forEach(btn => {
+        const g = btn.getAttribute('data-game');
+        if (g === state.gameMode) {
+          btn.className = 'game-tab-btn px-3 py-1 rounded-full text-xs font-bold bg-rose-600 text-white transition';
+        } else {
+          btn.className = 'game-tab-btn px-3 py-1 rounded-full text-xs font-medium text-zinc-400 hover:text-white transition';
+        }
+      });
+
+      // Update Drawer Seat Switcher
+      const seatContainer = document.getElementById('phoneSeatSwitcher');
+      if (seatContainer) {
+        seatContainer.innerHTML = state.players
+          .map((p, idx) => {
+            const isCurrent = idx === state.activeSeatIndex;
+            return `
+              <button type="button" data-switch-seat="${idx}" class="seat-switch-btn p-2 rounded-xl text-xs font-medium transition text-left ${
+                isCurrent
+                  ? 'bg-rose-600 text-white font-bold'
+                  : 'bg-charcoal-900 text-zinc-400 hover:text-white border border-white/5'
+              }">
+                <div class="truncate">${p.name}</div>
+                <div class="text-[10px] opacity-75 font-mono">$${p.chips}</div>
+              </button>
+            `;
+          })
+          .join('');
+
+        document.querySelectorAll('.seat-switch-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            state.activeSeatIndex = parseInt(btn.getAttribute('data-switch-seat'), 10);
+            resetAnimationTracking(true);
+            document.getElementById('tableToolsDrawer').classList.add('hidden');
+            renderAll();
+          });
+        });
+      }
+
+      // Context Banner Spotlight
+      document.getElementById('tableActionBanner').textContent = state.bannerText;
+
+      const activeTurnIdx =
+        state.gameMode === 'blackjack'
+          ? state.bj.turnSeat
+          : state.gameMode === 'holdem'
+          ? state.holdem.turnSeat
+          : state.bluff.turnSeat;
+
+      const isRoundActive =
+        (state.gameMode === 'blackjack' && state.bj.phase === 'playing') ||
+        (state.gameMode === 'holdem' && state.holdem.phase !== 'showdown') ||
+        (state.gameMode === 'bluff' && state.bluff.phase === 'playing');
+      const isUserTurnNow = isRoundActive && activeTurnIdx === state.activeSeatIndex;
+
+      const dockPanel = document.getElementById('playerDockPanel');
+      const userTimerWrap = document.getElementById('userTurnTimerWrap');
+      if (dockPanel) dockPanel.classList.toggle('user-dock-active-turn', isUserTurnNow);
+      if (userTimerWrap) userTimerWrap.classList.toggle('hidden', !isUserTurnNow);
+
+      // Render Opponent Seats (Spacious & Clean)
+      const oppContainer = document.getElementById('opponentsArc');
+      oppContainer.innerHTML = state.players
+        .map((p, idx) => ({ p, idx }))
+        .filter(item => item.idx !== state.activeSeatIndex)
+        .map(({ p, idx }) => {
+          const isTurn = isRoundActive && idx === activeTurnIdx;
+          const isFoldedOrBust =
+            (state.gameMode === 'holdem' && p.pokerFolded) ||
+            (state.gameMode === 'blackjack' && (p.bjStatus === 'BUST' || p.bjStatus === 'LOSE'));
+          const ringClass = isTurn
+            ? 'seat-active-turn'
+            : isFoldedOrBust
+            ? 'bg-charcoal-900/50 border border-white/5 opacity-50'
+            : 'bg-charcoal-900/80 border border-white/10 shadow-md';
+
+          let subBadge = '';
+          let miniCardsHTML = '';
+
+          if (state.gameMode === 'blackjack') {
+            const sc = p.cards.length ? calcBlackjackScore(p.cards).total : '';
+            const label = isTurn ? 'Thinking...' : (p.bjStatus && p.bjStatus !== 'PLAYING' ? p.bjStatus : (sc ? `${sc}` : `$${p.bjBet}`));
+            subBadge = `<span class="px-2 py-0.5 rounded-full bg-white/10 text-[10px] font-mono font-bold ${isTurn ? 'text-rose-400' : 'text-zinc-300'}">${label}</span>`;
+            miniCardsHTML = p.cards
+              .map((c, cIdx) =>
+                renderCardHTML(c, {
+                  small: true,
+                  faceDown: false,
+                  animKey: c.uid,
+                  zone: `opp_${idx}`,
+                  orderHint: idx * 2 + cIdx + 2
+                })
+              )
+              .join('');
+          } else if (state.gameMode === 'holdem') {
+            const showFace = state.holdem.phase === 'showdown' && !p.pokerFolded;
+            const actionTxt = p.pokerFolded ? 'Folded' : isTurn ? 'Thinking' : (p.lastMoveBadge || (p.pokerBet ? `$${p.pokerBet}` : 'Wait'));
+            subBadge = `<span class="px-2 py-0.5 rounded-full bg-white/10 text-[10px] font-mono font-bold ${p.pokerFolded ? 'text-zinc-500' : 'text-rose-400'}">${actionTxt}</span>`;
+            miniCardsHTML = p.pokerFolded
+              ? ''
+              : p.cards
+                  .map((c, cIdx) =>
+                    renderCardHTML(c, {
+                      small: true,
+                      faceDown: !showFace,
+                      animKey: c.uid,
+                      zone: `opp_${idx}`,
+                      orderHint: idx * 2 + cIdx + 2
+                    })
+                  )
+                  .join('');
+          } else {
+            const moveTxt = isTurn ? 'Thinking' : (p.lastMoveBadge || `${p.cards.length}c`);
+            subBadge = `<span class="px-2 py-0.5 rounded-full bg-white/10 text-[10px] font-mono font-bold text-rose-400">${moveTxt}</span>`;
+            const previewSlice = p.cards.slice(0, 3);
+            miniCardsHTML = previewSlice
+              .map((c, k) =>
+                renderCardHTML(c, {
+                  small: true,
+                  faceDown: true,
+                  animKey: c.uid,
+                  zone: `opp_${idx}`,
+                  orderHint: idx + k
+                })
+              )
+              .join('');
+          }
+
+          const initials = getPlayerInitials(p.name);
+          const rolePill = state.gameMode === 'holdem' && p.pokerRole
+            ? `<span class="text-[9px] font-bold px-1 rounded bg-white/10 text-zinc-300 font-mono">${p.pokerRole}</span>`
+            : '';
+          const timerBarHTML = isTurn
+            ? `<div class="absolute top-0 left-0 right-0 h-1 bg-white/5 overflow-hidden rounded-t-2xl"><div class="turn-timer-bar w-full" style="--turn-ms:2800ms;"></div></div>`
+            : '';
+
+          return `
+            <div data-opp-seat="${idx}" class="rounded-2xl px-3 py-2.5 ${ringClass} flex flex-col justify-between transition relative overflow-hidden">
+              ${timerBarHTML}
+              <div class="flex items-center justify-between gap-1">
+                <div class="flex items-center gap-2 min-w-0">
+                  <div class="relative shrink-0">
+                    <span class="w-6 h-6 rounded-full bg-charcoal-800 border border-white/15 flex items-center justify-center text-[10px] font-bold text-zinc-200 font-mono">${initials}</span>
+                    <span class="w-1.5 h-1.5 rounded-full ${isTurn ? 'bg-rose-500' : 'bg-emerald-400'} absolute -bottom-0.5 -right-0.5 ring-1 ring-black"></span>
+                  </div>
+                  <span class="text-xs font-bold text-white truncate">${p.name}</span>
+                  ${rolePill}
+                </div>
+                <span class="text-[11px] font-mono text-zinc-400 shrink-0">${state.gameMode === 'bluff' ? p.cards.length + 'c' : '$' + p.chips}</span>
+              </div>
+              <div class="flex items-center justify-between gap-1 mt-2">
+                <div class="flex items-center -space-x-1.5 min-h-[38px]">
+                  ${miniCardsHTML}
+                </div>
+                <div class="text-right truncate">${subBadge}</div>
+              </div>
+            </div>
+          `;
+        })
+        .join('');
+
+      // Toggle Center Game Modes
+      document.getElementById('centerBlackjack').classList.toggle('hidden', state.gameMode !== 'blackjack');
+      document.getElementById('centerHoldem').classList.toggle('hidden', state.gameMode !== 'holdem');
+      document.getElementById('centerBluff').classList.toggle('hidden', state.gameMode !== 'bluff');
+
+      document.getElementById('controlsBlackjack').classList.toggle('hidden', state.gameMode !== 'blackjack');
+      document.getElementById('controlsHoldem').classList.toggle('hidden', state.gameMode !== 'holdem');
+      document.getElementById('controlsBluff').classList.toggle('hidden', state.gameMode !== 'bluff');
+
+      // Update Bottom Active Player Identity
+      document.getElementById('activePlayerAvatar').textContent = getPlayerInitials(me.name);
+      document.getElementById('activePlayerName').textContent = me.name;
+      document.getElementById('activePlayerChips').textContent = me.chips;
+
+      if (state.gameMode === 'blackjack') {
+        renderBlackjackView(me);
+      } else if (state.gameMode === 'holdem') {
+        renderHoldemView(me);
+      } else {
+        renderBluffView(me);
+      }
+
+      runCardAnimationLifecyclePass();
+    }
+
+    function renderBlackjackView(me) {
+      const dealerBox = document.getElementById('bjDealerCards');
+      dealerBox.innerHTML = state.bj.dealerCards
+        .map((c, idx) =>
+          renderCardHTML(c, {
+            faceDown: idx === 1 && state.bj.dealerHoleHidden,
+            animKey: c.uid,
+            zone: 'bj_dealer',
+            orderHint: idx === 0 ? 1 : idx === 1 ? 8 : 10 + idx
+          })
+        )
+        .join('');
+
+      const dScoreEl = document.getElementById('bjDealerScoreBadge');
+      if (state.bj.dealerCards.length === 0) {
+        dScoreEl.textContent = '--';
+      } else if (state.bj.dealerHoleHidden) {
+        dScoreEl.textContent = calcBlackjackScore([state.bj.dealerCards[0]]).total;
+      } else {
+        dScoreEl.textContent = calcBlackjackScore(state.bj.dealerCards).total;
+      }
+
+      const myScore = me.cards.length ? calcBlackjackScore(me.cards).total : 0;
+      const statusBadge = me.bjStatus && me.bjStatus !== 'PLAYING' ? ` • ${me.bjStatus}` : '';
+      document.getElementById('activeHandEvalBadge').textContent = me.cards.length
+        ? `Hand Total: ${myScore}${statusBadge}`
+        : `Selected Bet: $${me.bjBet || 100}`;
+      document.getElementById('activePlayerRoleBadge').classList.add('hidden');
+
+      const handRow = document.getElementById('activePlayerHandRow');
+      handRow.className = 'flex items-center justify-center gap-2 overflow-x-auto custom-scrollbar pt-2 pb-1 px-2 min-h-[96px]';
+      handRow.innerHTML = me.cards.length
+        ? me.cards
+            .map((c, cIdx) =>
+              renderCardHTML(c, {
+                animKey: c.uid,
+                zone: 'player_hand',
+                orderHint: cIdx === 0 ? 0 : cIdx === 1 ? 4 : 9 + cIdx
+              })
+            )
+            .join('')
+        : '<div class="text-xs text-zinc-500 my-auto py-4">Cards will be dealt here</div>';
+
+      const isBetting = state.bj.phase === 'betting';
+      document.getElementById('bjBettingPanel').classList.toggle('hidden', !isBetting);
+      document.getElementById('bjActionPanel').classList.toggle('hidden', isBetting);
+      document.getElementById('bjCurrentBetInput').textContent = me.bjBet || 100;
+
+      const canSplit = me.cards.length === 2 && me.cards[0].rank === me.cards[1].rank;
+      const canDouble = me.cards.length === 2 && me.chips >= me.bjBet;
+      document.getElementById('btnBjSplit').disabled = !canSplit;
+      document.getElementById('btnBjDouble').disabled = !canDouble;
+    }
+
+    function renderHoldemView(me) {
+      document.getElementById('holdemPotAmount').textContent = state.holdem.pot;
+      document.getElementById('holdemStreetBadge').textContent = state.holdem.phase.toUpperCase();
+      const toCall = Math.max(0, state.holdem.currentBet - me.pokerBet);
+      document.getElementById('holdemCurrentBet').textContent = '$' + toCall;
+
+      const roleBadge = document.getElementById('activePlayerRoleBadge');
+      if (me.pokerRole) {
+        roleBadge.textContent = me.pokerRole;
+        roleBadge.classList.remove('hidden');
+      } else {
+        roleBadge.classList.add('hidden');
+      }
+
+      const commBox = document.getElementById('holdemCommunityCards');
+      let commHTML = '';
+      for (let i = 0; i < 5; i++) {
+        const c = state.holdem.community[i];
+        if (c) {
+          commHTML += renderCardHTML(c, {
+            animKey: c.uid,
+            zone: 'holdem_comm',
+            orderHint: i
+          });
+        } else {
+          commHTML += `<div class="w-[58px] h-[82px] sm:w-[68px] sm:h-[96px] rounded-lg sm:rounded-xl border border-white/10 bg-white/[0.02] shrink-0"></div>`;
+        }
+      }
+      commBox.innerHTML = commHTML;
+
+      const ev = evaluate7CardPoker([...me.cards, ...state.holdem.community]);
+      document.getElementById('activeHandEvalBadge').textContent = me.pokerFolded
+        ? 'Hand Folded'
+        : ev.label ? `Current Hand: ${ev.label}` : 'Hole Cards';
+
+      const handRow = document.getElementById('activePlayerHandRow');
+      handRow.className = 'flex items-center justify-center gap-2.5 overflow-x-auto custom-scrollbar pt-2 pb-1 px-2 min-h-[96px]';
+      handRow.innerHTML = me.pokerFolded
+        ? '<div class="text-xs text-zinc-500 my-auto py-4">Hand folded for this round</div>'
+        : me.cards
+            .map((c, idx) =>
+              renderCardHTML(c, {
+                animKey: c.uid,
+                zone: 'player_hand',
+                orderHint: idx,
+                restRot: (idx === 0 ? -2 : 2) + 'deg'
+              })
+            )
+            .join('');
+
+      document.getElementById('btnPokerCheckCall').textContent =
+        toCall === 0 ? 'Check' : `Call $${Math.min(me.chips, toCall)}`;
+
+      const isShowdown = state.holdem.phase === 'showdown';
+      document.getElementById('holdemRaiseRow').classList.toggle('hidden', isShowdown);
+      document.getElementById('btnPokerNewHand').classList.toggle('hidden', !isShowdown);
+
+      const slider = document.getElementById('holdemRaiseSlider');
+      const minRaise = Math.min(me.chips + me.pokerBet, state.holdem.currentBet + 50);
+      slider.min = minRaise;
+      slider.max = Math.max(minRaise, me.chips + me.pokerBet);
+      if (parseInt(slider.value, 10) < minRaise) slider.value = minRaise;
+      document.getElementById('holdemRaiseVal').textContent = slider.value;
+    }
+
+    function renderBluffView(me) {
+      document.getElementById('activePlayerRoleBadge').classList.add('hidden');
+      document.getElementById('activeHandEvalBadge').textContent = `In Hand: ${me.cards.length} cards`;
+
+      const rankBadge = document.getElementById('bluffDeclaredRankBadge');
+      rankBadge.textContent = state.bluff.declaredRank || 'Any';
+      document.getElementById('bluffPileCount').textContent = state.bluff.pile.length;
+
+      const stackEl = document.getElementById('bluffPileStackCards');
+      if (state.bluff.lastReveal) {
+        const rev = state.bluff.lastReveal;
+        stackEl.innerHTML = rev.cards
+          .map((c, idx) =>
+            renderCardHTML(c, {
+              small: false,
+              faceDown: false,
+              animKey: c.uid,
+              zone: 'bluff_pile',
+              orderHint: idx,
+              restRot: ((idx - 1) * 3) + 'deg'
+            })
+          )
+          .join('');
+        document.getElementById('bluffLastClaimText').textContent = rev.wasHonest
+          ? `Truth! — ${rev.challengerName} took ${rev.pileTotal} cards`
+          : `Caught Bluff! — ${rev.accusedName} took ${rev.pileTotal} cards`;
+      } else if (state.bluff.lastPlay) {
+        const lp = state.bluff.lastPlay;
+        stackEl.innerHTML = lp.actualCards
+          .map((c, i) => {
+            const tilt = (i % 2 === 0 ? -4 : 4) + (i * 1.5);
+            return renderCardHTML(c, {
+              small: false,
+              faceDown: true,
+              animKey: c.uid,
+              zone: 'bluff_pile',
+              originSeat: lp.seatIndex,
+              orderHint: i,
+              restRot: tilt + 'deg'
+            });
+          })
+          .join('');
+        document.getElementById('bluffLastClaimText').textContent =
+          `${lp.playerName} played ${lp.count}x ${lp.claimedRank}`;
+      } else {
+        stackEl.innerHTML = `<div class="w-[58px] h-[82px] rounded-lg border border-dashed border-white/20 flex items-center justify-center text-xs text-zinc-500 font-mono">PILE</div>`;
+        document.getElementById('bluffLastClaimText').textContent =
+          'Pick a rank and play 1–4 cards';
+      }
+
+      const rankBtns = document.getElementById('bluffRankButtons');
+      const canPickRank = !state.bluff.declaredRank;
+      document.getElementById('bluffRankPickerLabel').textContent = canPickRank ? 'Pick Claim Rank:' : 'Locked to:';
+
+      rankBtns.innerHTML = RANKS.map(r => {
+        const currentTarget = state.bluff.declaredRank || state.bluff.chosenRankInput;
+        const isSel = r === currentTarget;
+        return `
+          <button type="button" data-bluff-rank="${r}" ${!canPickRank ? 'disabled' : ''} class="bluff-rank-btn w-8 h-8 rounded-lg text-xs font-mono font-bold shrink-0 transition ${
+            isSel
+              ? 'bg-rose-600 text-white shadow-md'
+              : 'bg-white/5 text-zinc-400 hover:text-white disabled:opacity-30'
+          }">
+            ${r}
+          </button>
+        `;
+      }).join('');
+
+      document.querySelectorAll('.bluff-rank-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.bluff.chosenRankInput = btn.getAttribute('data-bluff-rank');
+          renderAll();
+        });
+      });
+
+      const selectedMap = state.bluff.selectedCardUids;
+      const selectedList = Object.keys(selectedMap).filter(k => selectedMap[k]);
+      document.getElementById('bluffSelectedCount').textContent = selectedList.length;
+
+      const handRow = document.getElementById('activePlayerHandRow');
+      const overlapClass = me.cards.length > 7 ? '-space-x-4' : 'gap-2';
+      handRow.className = `flex items-center justify-center ${overlapClass} overflow-x-auto custom-scrollbar pt-2 pb-1 px-3 min-h-[96px]`;
+      handRow.innerHTML = me.cards
+        .map((c, idx) =>
+          renderCardHTML(c, {
+            selectable: true,
+            selected: Boolean(selectedMap[c.uid]),
+            animKey: c.uid,
+            zone: 'player_hand',
+            orderHint: idx
+          })
+        )
+        .join('');
+
+      handRow.querySelectorAll('[data-card-uid]').forEach(cardEl => {
+        cardEl.addEventListener('click', () => {
+          const uid = cardEl.getAttribute('data-card-uid');
+          if (selectedMap[uid]) {
+            delete selectedMap[uid];
+          } else {
+            const count = Object.keys(selectedMap).filter(k => selectedMap[k]).length;
+            if (count >= 4) {
+              showToast('Max 4 cards per move');
+              return;
+            }
+            selectedMap[uid] = true;
+            if (!state.bluff.declaredRank) {
+              const tappedObj = me.cards.find(c => c.uid === uid);
+              if (tappedObj) state.bluff.chosenRankInput = tappedObj.rank;
+            }
+          }
+          renderAll();
+        });
+      });
+
+      const targetRank = state.bluff.declaredRank || state.bluff.chosenRankInput;
+      document.getElementById('btnBluffPlayCards').textContent = `Play ${
+        selectedList.length || 1
+      }x ${targetRank}`;
+      document.getElementById('btnBluffChallenge').disabled = !state.bluff.lastPlay;
+      document.getElementById('btnBluffNewGame').classList.toggle('hidden', state.bluff.phase !== 'gameover');
+    }
+
+    // =========================================================================
+    // 9. REACTIONS & SHARING
+    // =========================================================================
+    function triggerTableReaction(text) {
+      const stage = document.getElementById('reactionStage');
+      if (!stage) return;
+      const bubble = document.createElement('div');
+      const leftPct = 25 + secureRandomInt(50);
+      bubble.className =
+        'floating-reaction absolute bottom-8 px-4 py-1.5 rounded-full bg-rose-600 text-white text-xs font-bold shadow-xl border border-rose-400/40';
+      bubble.style.left = leftPct + '%';
+      bubble.textContent = `${state.players[state.activeSeatIndex].name}: ${text}`;
+      stage.appendChild(bubble);
+      setTimeout(() => bubble.remove(), 1800);
+    }
+
+    function copyRoomInvite() {
+      const url = window.location.origin + window.location.pathname + '?room=' + state.roomCode;
+      const text = `Join my NOIR card table (${state.roomCode}): ${url}`;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(
+          () => showToast('Invite link copied to clipboard!'),
+          () => fallbackCopy(text)
+        );
+      } else {
+        fallbackCopy(text);
+      }
+    }
+
+    function fallbackCopy(text) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand('copy');
+        showToast('Invite link copied to clipboard!');
+      } catch (e) {}
+      ta.remove();
+    }
+
+    // =========================================================================
+    // 10. EVENT LISTENERS & INITIALIZATION
+    // =========================================================================
+    window.addEventListener('DOMContentLoaded', () => {
+      // Global Nav Logo
+      document.getElementById('btnNavLogo').addEventListener('click', () => {
+        if (state.inRoom) {
+          if (confirm('Leave current table and return to main lobby?')) {
+            clearTimeout(window.__aiTurnTimer);
+            state.inRoom = false;
+            state.inWaitingRoom = false;
+            renderAll();
+          }
+        }
+      });
+
+      // Quick Game Launch from Lobby Cards
+      document.querySelectorAll('[data-lobby-quick-game]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const game = btn.getAttribute('data-lobby-quick-game');
+          createPrivateRoom(2500, 4, game);
+        });
+      });
+
+      // Create Room Modal
+      let modalChosenGame = 'blackjack';
+      document.getElementById('btnOpenCreateModal').addEventListener('click', () => {
+        document.getElementById('createRoomModal').classList.remove('hidden');
+      });
+      document.getElementById('btnCloseCreateModal').addEventListener('click', () => {
+        document.getElementById('createRoomModal').classList.add('hidden');
+      });
+      document.querySelectorAll('.modal-game-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          modalChosenGame = btn.getAttribute('data-modal-game');
+          document.querySelectorAll('.modal-game-btn').forEach(b => {
+            b.className = 'modal-game-btn py-3 px-2 rounded-xl bg-charcoal-900 border border-white/10 text-center transition';
+          });
+          btn.className = 'modal-game-btn py-3 px-2 rounded-xl bg-rose-600/20 border border-rose-500 text-center transition';
+        });
+      });
+      document.getElementById('btnConfirmCreateRoom').addEventListener('click', () => {
+        const chips = parseInt(document.getElementById('selectStartChips').value, 10) || 2500;
+        const maxSeats = parseInt(document.getElementById('selectFriendSeats').value, 10) || 4;
+        document.getElementById('createRoomModal').classList.add('hidden');
+        createPrivateRoom(chips, maxSeats, modalChosenGame);
+      });
+
+      // Join Room Button
+      document.getElementById('btnJoinRoom').addEventListener('click', () => {
+        const raw = (document.getElementById('inputJoinCode').value || '').trim().toUpperCase();
+        joinWithRoomCode(raw);
+      });
+
+      // Profile Modal
+      document.getElementById('btnOpenProfileModal').addEventListener('click', () => {
+        document.getElementById('profileModal').classList.remove('hidden');
+      });
+      document.getElementById('btnUserChipsPill').addEventListener('click', () => {
+        document.getElementById('profileModal').classList.remove('hidden');
+      });
+      document.getElementById('btnCloseProfileModal').addEventListener('click', () => {
+        document.getElementById('profileModal').classList.add('hidden');
+      });
+      document.querySelectorAll('.avatar-option').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.selectedAvatar = btn.getAttribute('data-avatar');
+          document.querySelectorAll('.avatar-option').forEach(b => {
+            b.className = 'avatar-option py-2 rounded-xl bg-charcoal-900 border border-white/10 text-zinc-400 font-mono text-xs font-semibold transition';
+          });
+          btn.className = 'avatar-option py-2 rounded-xl bg-rose-600 text-white font-mono text-xs font-bold transition';
+        });
+      });
+      document.getElementById('btnSaveProfile').addEventListener('click', () => {
+        const newName = (document.getElementById('inputPlayerName').value || 'Alex').trim();
+        if (state.players[state.activeSeatIndex]) {
+          state.players[state.activeSeatIndex].name = newName;
+          state.players[state.activeSeatIndex].avatar = state.selectedAvatar;
+        }
+        document.getElementById('profileModal').classList.add('hidden');
+        showToast('Profile updated');
+        renderAll();
+      });
+
+      // Rules Modal
+      document.getElementById('btnNavRules').addEventListener('click', () => {
+        document.getElementById('rulesModal').classList.remove('hidden');
+      });
+      document.getElementById('btnCloseRulesModal').addEventListener('click', () => {
+        document.getElementById('rulesModal').classList.add('hidden');
+      });
+
+      // Table Menu Drawer
+      document.getElementById('btnNavMenu').addEventListener('click', () => {
+        document.getElementById('tableToolsDrawer').classList.remove('hidden');
+      });
+      document.getElementById('btnCloseDrawer').addEventListener('click', () => {
+        document.getElementById('tableToolsDrawer').classList.add('hidden');
+      });
+
+      // Waiting Room Actions
+      document.getElementById('btnWaitingCopyCode').addEventListener('click', copyRoomInvite);
+      document.getElementById('btnHeaderCopyCode').addEventListener('click', copyRoomInvite);
+      document.getElementById('btnWaitingShare').addEventListener('click', () => {
+        const url = window.location.origin + window.location.pathname + '?room=' + state.roomCode;
+        if (navigator.share) {
+          navigator.share({
+            title: 'NOIR Waiting Room (' + state.roomCode + ')',
+            text: 'Join my private card room on NOIR!',
+            url
+          }).catch(() => {});
+        } else {
+          document.getElementById('shareModal').classList.remove('hidden');
+        }
+      });
+      document.getElementById('btnCloseShareModal').addEventListener('click', () => {
+        document.getElementById('shareModal').classList.add('hidden');
+      });
+      document.getElementById('btnCopyInviteLink').addEventListener('click', copyRoomInvite);
+      document.getElementById('btnNativeShare').addEventListener('click', () => {
+        const url = window.location.origin + window.location.pathname + '?room=' + state.roomCode;
+        if (navigator.share) {
+          navigator.share({
+            title: 'NOIR Card Room (' + state.roomCode + ')',
+            text: 'Join my card table on NOIR!',
+            url
+          }).catch(() => {});
+        } else {
+          copyRoomInvite();
+        }
+      });
+
+      document.getElementById('btnWaitingAddBot').addEventListener('click', addBotToRoom);
+      document.getElementById('btnWaitingStartGame').addEventListener('click', hostStartGame);
+      document.getElementById('btnWaitingLeave').addEventListener('click', () => {
+        state.inRoom = false;
+        state.inWaitingRoom = false;
+        renderAll();
+      });
+      document.getElementById('btnWaitingGameSwitch').addEventListener('click', () => {
+        const modes = ['blackjack', 'holdem', 'bluff'];
+        const next = modes[(modes.indexOf(state.gameMode) + 1) % modes.length];
+        state.gameMode = next;
+        broadcastRoomState();
+        renderAll();
+        showToast(`Game switched to ${next.toUpperCase()}`);
+      });
+
+      // Download Standalone HTML
+      document.getElementById('btnDownloadHtml').addEventListener('click', () => {
+        try {
+          const htmlContent = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+          const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'noir_card_lounge.html';
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(() => {
+            URL.revokeObjectURL(url);
+            a.remove();
+          }, 300);
+          showToast('Downloaded noir_card_lounge.html');
+        } catch (e) {
+          showToast('Download failed');
+        }
+      });
+
+      // Settings in Drawer
+      document.getElementById('chkAutoFriends').addEventListener('change', (e) => {
+        state.autoPlayFriends = e.target.checked;
+        showToast(state.autoPlayFriends ? 'Auto-play on' : 'Pass-and-play mode');
+      });
+      document.getElementById('btnTopUpChips').addEventListener('click', () => {
+        const me = state.players[state.activeSeatIndex] || state.players[0];
+        if (me) {
+          me.chips += 1000;
+          showToast('+$1,000 added to bankroll');
+          renderAll();
+        }
+      });
+      document.getElementById('btnLeaveRoom').addEventListener('click', () => {
+        clearTimeout(window.__aiTurnTimer);
+        state.inRoom = false;
+        state.inWaitingRoom = false;
+        document.getElementById('tableToolsDrawer').classList.add('hidden');
+        renderAll();
+      });
+
+      // Quick Reaction Buttons
+      document.querySelectorAll('.react-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          triggerTableReaction(btn.getAttribute('data-react'));
+        });
+      });
+
+      // Game Switcher Tabs
+      document.querySelectorAll('.game-tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          switchGameMode(btn.getAttribute('data-game'));
+        });
+      });
+
+      // 1. BLACKJACK EVENT LISTENERS
+      document.querySelectorAll('.bj-chip-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const add = parseInt(btn.getAttribute('data-bj-chip'), 10);
+          const me = state.players[state.activeSeatIndex];
+          if (me) {
+            me.bjBet = Math.min(me.chips, (me.bjBet || 0) + add);
+            renderAll();
+          }
+        });
+      });
+      document.getElementById('btnBjClearBet').addEventListener('click', () => {
+        const me = state.players[state.activeSeatIndex];
+        if (me) {
+          me.bjBet = 25;
+          renderAll();
+        }
+      });
+      document.getElementById('btnBjDeal').addEventListener('click', dealBlackjackRound);
+      document.getElementById('btnBjHit').addEventListener('click', () => {
+        state.bj.turnSeat = state.activeSeatIndex;
+        bjHit(state.activeSeatIndex);
+      });
+      document.getElementById('btnBjStand').addEventListener('click', () => {
+        state.bj.turnSeat = state.activeSeatIndex;
+        bjStand(state.activeSeatIndex);
+      });
+      document.getElementById('btnBjDouble').addEventListener('click', () => {
+        state.bj.turnSeat = state.activeSeatIndex;
+        bjDoubleDown(state.activeSeatIndex);
+      });
+      document.getElementById('btnBjSplit').addEventListener('click', () => {
+        state.bj.turnSeat = state.activeSeatIndex;
+        bjSplitPair(state.activeSeatIndex);
+      });
+
+      // 2. TEXAS HOLD'EM EVENT LISTENERS
+      const raiseSlider = document.getElementById('holdemRaiseSlider');
+      raiseSlider.addEventListener('input', () => {
+        document.getElementById('holdemRaiseVal').textContent = raiseSlider.value;
+      });
+      document.querySelectorAll('.poker-preset-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const me = state.players[state.activeSeatIndex];
+          const type = btn.getAttribute('data-poker-preset');
+          let val = state.holdem.currentBet + 50;
+          if (type === 'half') val = state.holdem.currentBet + Math.max(50, Math.floor(state.holdem.pot / 2));
+          if (type === 'pot') val = state.holdem.currentBet + Math.max(100, state.holdem.pot);
+          if (type === 'allin') val = me.chips + me.pokerBet;
+          val = Math.min(me.chips + me.pokerBet, Math.max(50, val));
+          raiseSlider.value = val;
+          document.getElementById('holdemRaiseVal').textContent = val;
+        });
+      });
+      document.getElementById('btnPokerFold').addEventListener('click', () => {
+        state.holdem.turnSeat = state.activeSeatIndex;
+        pokerActionFold(state.activeSeatIndex);
+      });
+      document.getElementById('btnPokerCheckCall').addEventListener('click', () => {
+        state.holdem.turnSeat = state.activeSeatIndex;
+        pokerActionCheckCall(state.activeSeatIndex);
+      });
+      document.getElementById('btnPokerRaise').addEventListener('click', () => {
+        state.holdem.turnSeat = state.activeSeatIndex;
+        const val = parseInt(raiseSlider.value, 10) || state.holdem.currentBet + 100;
+        pokerActionRaise(state.activeSeatIndex, val);
+      });
+      document.getElementById('btnPokerNewHand').addEventListener('click', startHoldemHand);
+
+      // 3. BLUFF EVENT LISTENERS
+      document.getElementById('btnBluffPlayCards').addEventListener('click', () => {
+        const me = state.players[state.activeSeatIndex];
+        let uids = Object.keys(state.bluff.selectedCardUids).filter(k => state.bluff.selectedCardUids[k]);
+        if (uids.length === 0 && me.cards.length > 0) {
+          uids = [me.cards[0].uid];
+        }
+        state.bluff.turnSeat = state.activeSeatIndex;
+        bluffPlaySelectedCards(state.activeSeatIndex, uids, state.bluff.chosenRankInput);
+      });
+      document.getElementById('btnBluffPass').addEventListener('click', () => {
+        state.bluff.turnSeat = state.activeSeatIndex;
+        bluffPassTurn(state.activeSeatIndex);
+      });
+      document.getElementById('btnBluffChallenge').addEventListener('click', () => {
+        bluffCallChallenge(state.activeSeatIndex);
+      });
+      document.getElementById('btnBluffNewGame').addEventListener('click', startBluffGame);
+
+      // URL Query Room Auto-Join
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const urlRoom = params.get('room');
+        if (urlRoom) {
+          document.getElementById('inputJoinCode').value = urlRoom;
+          joinWithRoomCode(urlRoom);
+        }
+      } catch (e) {}
+
+      renderAll();
+    });
+  </script>
+</body>
+</html>
