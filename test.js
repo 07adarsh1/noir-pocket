@@ -136,6 +136,28 @@ async function runTests() {
     process.exit(1);
   }
 
+  // 4b. Verify Player Rename Relay & Server Sync
+  console.log('\n--- Checking Player Rename Action ---');
+  const renameActionPromise = new Promise(resolve => {
+    hostSocket.on('player_action', data => {
+      if (data.action === 'rename_player') resolve(data);
+    });
+  });
+
+  guestSocket.emit('player_action', {
+    roomCode: ROOM_CODE,
+    action: 'rename_player',
+    payload: { playerId: 'guest_p2', name: 'Bob Maverick', avatar: '05' }
+  });
+
+  const renameAction = await renameActionPromise;
+  if (renameAction.action === 'rename_player' && renameAction.payload.name === 'Bob Maverick') {
+    console.log('[PASS] Player rename action relayed to host authority socket cleanly!');
+  } else {
+    console.error('[FAIL] Rename action failed:', renameAction);
+    process.exit(1);
+  }
+
   // 5. Verify Table Chat & Banter (Tier 2.6)
   console.log('\n--- Checking Table Chat & Banter ---');
   const hostChatPromise = new Promise(resolve => {

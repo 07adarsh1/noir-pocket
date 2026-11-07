@@ -1358,33 +1358,39 @@
 
   <!-- MODAL: CREATE ROOM CONFIG -->
   <div id="createRoomModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-    <div class="noir-glass rounded-3xl max-w-md w-full p-6 sm:p-8 space-y-5 shadow-2xl">
-      <div class="flex items-center justify-between pb-3 border-b border-white/10">
+    <div class="noir-glass rounded-2xl max-w-md w-full p-6 sm:p-8 space-y-5 shadow-2xl border border-zinc-800 bg-zinc-950">
+      <div class="flex items-center justify-between pb-3 border-b border-zinc-800">
         <div>
-          <h2 class="text-lg font-bold text-white">Create Private Room</h2>
-          <p class="text-xs text-zinc-400">Configure stakes and table size</p>
+          <h2 class="text-base sm:text-lg font-bold text-white tracking-tight">Create Private Room</h2>
+          <p class="text-xs text-zinc-400">Configure host name, stakes, and game variant</p>
         </div>
-        <button id="btnCloseCreateModal" type="button" class="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white transition">
+        <button id="btnCloseCreateModal" type="button" class="p-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-white transition">
           ✕
         </button>
       </div>
 
       <div class="space-y-4">
+        <!-- Host Display Name -->
+        <div>
+          <label for="inputCreateHostName" class="block text-xs font-semibold text-zinc-300 mb-1.5 uppercase font-mono tracking-wider">Your Host Display Name</label>
+          <input id="inputCreateHostName" type="text" maxlength="14" placeholder="Enter your name..." value="Alex" class="w-full px-3.5 py-2.5 rounded-lg bg-zinc-900 border border-zinc-800 text-white text-sm font-medium focus:outline-none focus:border-zinc-500 transition" />
+        </div>
+
         <!-- Select Game Mode -->
         <div>
-          <label class="block text-xs font-semibold text-zinc-300 mb-1.5">Game Variant</label>
+          <label class="block text-xs font-semibold text-zinc-300 mb-1.5 uppercase font-mono tracking-wider">Game Variant</label>
           <div class="grid grid-cols-3 gap-2">
-            <button type="button" data-modal-game="blackjack" class="modal-game-btn py-3 px-2 rounded-xl bg-rose-600/20 border border-rose-500 text-center transition">
-              <div class="text-xs font-bold text-white">Blackjack</div>
-              <div class="text-[10px] text-zinc-400">21 vs Dealer</div>
+            <button type="button" data-modal-game="blackjack" class="modal-game-btn py-3 px-2 rounded-lg bg-white text-zinc-950 font-bold border-transparent text-center transition">
+              <div class="text-xs font-bold">Blackjack</div>
+              <div class="text-[10px] opacity-75">21 vs Dealer</div>
             </button>
-            <button type="button" data-modal-game="holdem" class="modal-game-btn py-3 px-2 rounded-xl bg-charcoal-900 border border-white/10 text-center transition">
-              <div class="text-xs font-bold text-white">Hold'em</div>
-              <div class="text-[10px] text-zinc-400">Texas Poker</div>
+            <button type="button" data-modal-game="holdem" class="modal-game-btn py-3 px-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 text-center transition hover:border-zinc-700">
+              <div class="text-xs font-bold text-zinc-200">Hold'em</div>
+              <div class="text-[10px] text-zinc-500">Texas Poker</div>
             </button>
-            <button type="button" data-modal-game="bluff" class="modal-game-btn py-3 px-2 rounded-xl bg-charcoal-900 border border-white/10 text-center transition">
-              <div class="text-xs font-bold text-white">Bluff</div>
-              <div class="text-[10px] text-zinc-400">Call / Deceive</div>
+            <button type="button" data-modal-game="bluff" class="modal-game-btn py-3 px-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 text-center transition hover:border-zinc-700">
+              <div class="text-xs font-bold text-zinc-200">Bluff</div>
+              <div class="text-[10px] text-zinc-500">Call / Deceive</div>
             </button>
           </div>
         </div>
@@ -1392,16 +1398,16 @@
         <!-- Bankroll & Seats -->
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label for="selectStartChips" class="block text-xs font-semibold text-zinc-300 mb-1.5">Starting Chips</label>
-            <select id="selectStartChips" class="w-full px-3 py-2.5 rounded-xl bg-charcoal-900 border border-white/10 text-xs font-semibold text-white focus:outline-none focus:border-rose-500">
+            <label for="selectStartChips" class="block text-xs font-semibold text-zinc-300 mb-1.5 uppercase font-mono tracking-wider">Starting Chips</label>
+            <select id="selectStartChips" class="w-full px-3 py-2.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs font-semibold text-white focus:outline-none focus:border-zinc-500">
               <option value="1000">$1,000</option>
               <option value="2500" selected>$2,500</option>
               <option value="5000">$5,000</option>
             </select>
           </div>
           <div>
-            <label for="selectFriendSeats" class="block text-xs font-semibold text-zinc-300 mb-1.5">Max Seats</label>
-            <select id="selectFriendSeats" class="w-full px-3 py-2.5 rounded-xl bg-charcoal-900 border border-white/10 text-xs font-semibold text-white focus:outline-none focus:border-rose-500">
+            <label for="selectFriendSeats" class="block text-xs font-semibold text-zinc-300 mb-1.5 uppercase font-mono tracking-wider">Max Seats</label>
+            <select id="selectFriendSeats" class="w-full px-3 py-2.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs font-semibold text-white focus:outline-none focus:border-zinc-500">
               <option value="3">3 Seats</option>
               <option value="4" selected>4 Seats</option>
               <option value="5">5 Seats</option>
@@ -1410,45 +1416,95 @@
           </div>
         </div>
 
-        <button id="btnConfirmCreateRoom" type="button" class="w-full py-4 rounded-xl bg-white hover:bg-zinc-200 text-zinc-950 font-bold text-sm tracking-wide transition">
+        <button id="btnConfirmCreateRoom" type="button" class="w-full py-3.5 rounded-lg bg-white hover:bg-zinc-200 text-zinc-950 font-bold text-xs uppercase tracking-wider transition">
           Launch Room &amp; Invite Friends
         </button>
       </div>
     </div>
   </div>
 
+  <!-- MODAL: JOIN ROOM CONFIG & IDENTITY -->
+  <div id="joinRoomModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="noir-glass rounded-2xl max-w-sm w-full p-6 space-y-5 shadow-2xl border border-zinc-800 bg-zinc-950">
+      <div class="flex items-center justify-between pb-3 border-b border-zinc-800">
+        <div>
+          <h2 class="text-base font-bold text-white tracking-tight">Join Table</h2>
+          <div class="flex items-center gap-2 mt-1">
+            <span class="text-[11px] text-zinc-400">Target Table:</span>
+            <span id="joinModalRoomCodeBadge" class="font-mono text-xs font-bold text-white bg-zinc-900 border border-zinc-700 px-2 py-0.5 rounded tracking-wider">ROOM</span>
+          </div>
+        </div>
+        <button id="btnCloseJoinModal" type="button" class="p-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-white transition">
+          ✕
+        </button>
+      </div>
+
+      <div class="space-y-4">
+        <!-- Player Name Input -->
+        <div>
+          <label for="inputJoinPlayerName" class="block text-xs font-semibold text-zinc-300 mb-1.5 uppercase font-mono tracking-wider">Your Display Name</label>
+          <input id="inputJoinPlayerName" type="text" maxlength="14" placeholder="Enter your name..." value="Alex" class="w-full px-3.5 py-2.5 rounded-lg bg-zinc-900 border border-zinc-800 text-white text-sm font-medium focus:outline-none focus:border-zinc-500 transition" />
+          <p class="text-[11px] text-zinc-500 mt-1">This name will appear on your cards, chips, and chat.</p>
+        </div>
+
+        <!-- Avatar Choice -->
+        <div>
+          <label class="block text-xs font-semibold text-zinc-300 mb-1.5 uppercase font-mono tracking-wider">Seat Avatar</label>
+          <div class="grid grid-cols-6 gap-1.5" id="joinAvatarSelector">
+            <button type="button" data-join-avatar="01" class="join-avatar-option py-2 rounded-lg bg-white text-zinc-950 font-mono text-xs font-bold transition">01</button>
+            <button type="button" data-join-avatar="02" class="join-avatar-option py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 font-mono text-xs font-semibold hover:border-zinc-700 transition">02</button>
+            <button type="button" data-join-avatar="03" class="join-avatar-option py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 font-mono text-xs font-semibold hover:border-zinc-700 transition">03</button>
+            <button type="button" data-join-avatar="04" class="join-avatar-option py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 font-mono text-xs font-semibold hover:border-zinc-700 transition">04</button>
+            <button type="button" data-join-avatar="05" class="join-avatar-option py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 font-mono text-xs font-semibold hover:border-zinc-700 transition">05</button>
+            <button type="button" data-join-avatar="06" class="join-avatar-option py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 font-mono text-xs font-semibold hover:border-zinc-700 transition">06</button>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="space-y-2 pt-2">
+          <button id="btnConfirmJoinRoom" type="button" class="w-full py-3 rounded-lg bg-white hover:bg-zinc-200 text-zinc-950 font-bold text-xs uppercase tracking-wider transition">
+            Take Seat &amp; Join
+          </button>
+          <button id="btnJoinAsSpectatorModal" type="button" class="w-full py-2.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white font-medium text-xs uppercase tracking-wider transition">
+            Watch as Spectator
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: PROFILE & AVATAR EDIT -->
   <div id="profileModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-    <div class="noir-glass rounded-3xl max-w-sm w-full p-6 space-y-5 shadow-2xl">
-      <div class="flex items-center justify-between pb-3 border-b border-white/10">
+    <div class="noir-glass rounded-2xl max-w-sm w-full p-6 space-y-5 shadow-2xl border border-zinc-800 bg-zinc-950">
+      <div class="flex items-center justify-between pb-3 border-b border-zinc-800">
         <div>
-          <h2 class="text-base font-bold text-white">Player Profile</h2>
+          <h2 class="text-base font-bold text-white tracking-tight">Player Profile</h2>
           <p class="text-xs text-zinc-400">Customize your seat identity</p>
         </div>
-        <button id="btnCloseProfileModal" type="button" class="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white transition">
+        <button id="btnCloseProfileModal" type="button" class="p-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-white transition">
           ✕
         </button>
       </div>
 
       <div class="space-y-4">
         <div>
-          <label for="inputPlayerName" class="block text-xs font-semibold text-zinc-300 mb-1.5">Display Name</label>
-          <input id="inputPlayerName" type="text" maxlength="14" value="Alex" class="w-full px-3.5 py-2.5 rounded-xl bg-charcoal-900 border border-white/10 text-white text-sm font-medium focus:outline-none focus:border-rose-500 transition" />
+          <label for="inputPlayerName" class="block text-xs font-semibold text-zinc-300 mb-1.5 uppercase font-mono tracking-wider">Display Name</label>
+          <input id="inputPlayerName" type="text" maxlength="14" value="Alex" class="w-full px-3.5 py-2.5 rounded-lg bg-zinc-900 border border-zinc-800 text-white text-sm font-medium focus:outline-none focus:border-zinc-500 transition" />
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-zinc-300 mb-1.5">Seat Avatar Number</label>
+          <label class="block text-xs font-semibold text-zinc-300 mb-1.5 uppercase font-mono tracking-wider">Seat Avatar Number</label>
           <div class="grid grid-cols-6 gap-1.5">
-            <button type="button" data-avatar="01" class="avatar-option py-2 rounded-xl bg-rose-600 text-white font-mono text-xs font-bold transition">01</button>
-            <button type="button" data-avatar="02" class="avatar-option py-2 rounded-xl bg-charcoal-900 border border-white/10 text-zinc-400 font-mono text-xs font-semibold transition">02</button>
-            <button type="button" data-avatar="03" class="avatar-option py-2 rounded-xl bg-charcoal-900 border border-white/10 text-zinc-400 font-mono text-xs font-semibold transition">03</button>
-            <button type="button" data-avatar="04" class="avatar-option py-2 rounded-xl bg-charcoal-900 border border-white/10 text-zinc-400 font-mono text-xs font-semibold transition">04</button>
-            <button type="button" data-avatar="05" class="avatar-option py-2 rounded-xl bg-charcoal-900 border border-white/10 text-zinc-400 font-mono text-xs font-semibold transition">05</button>
-            <button type="button" data-avatar="06" class="avatar-option py-2 rounded-xl bg-charcoal-900 border border-white/10 text-zinc-400 font-mono text-xs font-semibold transition">06</button>
+            <button type="button" data-avatar="01" class="avatar-option py-2 rounded-lg bg-white text-zinc-950 font-mono text-xs font-bold transition">01</button>
+            <button type="button" data-avatar="02" class="avatar-option py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 font-mono text-xs font-semibold hover:border-zinc-700 transition">02</button>
+            <button type="button" data-avatar="03" class="avatar-option py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 font-mono text-xs font-semibold hover:border-zinc-700 transition">03</button>
+            <button type="button" data-avatar="04" class="avatar-option py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 font-mono text-xs font-semibold hover:border-zinc-700 transition">04</button>
+            <button type="button" data-avatar="05" class="avatar-option py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 font-mono text-xs font-semibold hover:border-zinc-700 transition">05</button>
+            <button type="button" data-avatar="06" class="avatar-option py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 font-mono text-xs font-semibold hover:border-zinc-700 transition">06</button>
           </div>
         </div>
 
-        <button id="btnSaveProfile" type="button" class="w-full py-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs uppercase tracking-wider transition">
+        <button id="btnSaveProfile" type="button" class="w-full py-3 rounded-lg bg-white hover:bg-zinc-200 text-zinc-950 font-bold text-xs uppercase tracking-wider transition">
           Save Profile
         </button>
       </div>
@@ -2320,6 +2376,109 @@
       return id;
     }
 
+    function getStoredPlayerName() {
+      const stored = safeGetRoomStore('noir_player_name');
+      if (stored && stored.trim()) return stored.trim().slice(0, 14);
+      const inputEl = document.getElementById('inputPlayerName');
+      if (inputEl && inputEl.value && inputEl.value.trim()) return inputEl.value.trim().slice(0, 14);
+      return 'Alex';
+    }
+
+    function saveStoredPlayerName(name) {
+      const clean = (name || '').trim().slice(0, 14) || 'Player';
+      safeSetRoomStore('noir_player_name', clean);
+      const pInput = document.getElementById('inputPlayerName');
+      if (pInput) pInput.value = clean;
+      const joinInput = document.getElementById('inputJoinPlayerName');
+      if (joinInput) joinInput.value = clean;
+      const hostInput = document.getElementById('inputCreateHostName');
+      if (hostInput) hostInput.value = clean;
+      return clean;
+    }
+
+    function getStoredAvatar() {
+      const stored = safeGetRoomStore('noir_avatar');
+      return stored || state.selectedAvatar || '01';
+    }
+
+    function saveStoredAvatar(avatar) {
+      if (!avatar) return;
+      state.selectedAvatar = avatar;
+      safeSetRoomStore('noir_avatar', avatar);
+    }
+
+    let pendingJoinRoomCode = '';
+
+    function updateJoinAvatarSelection(chosenAvatar) {
+      const target = chosenAvatar || getStoredAvatar();
+      state.selectedAvatar = target;
+      document.querySelectorAll('.join-avatar-option').forEach(b => {
+        const av = b.getAttribute('data-join-avatar');
+        if (av === target) {
+          b.className = 'join-avatar-option py-2 rounded-lg bg-white text-zinc-950 font-mono text-xs font-bold transition';
+        } else {
+          b.className = 'join-avatar-option py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 font-mono text-xs font-semibold hover:border-zinc-700 transition';
+        }
+      });
+    }
+
+    function updateProfileAvatarSelection(chosenAvatar) {
+      const target = chosenAvatar || getStoredAvatar();
+      state.selectedAvatar = target;
+      document.querySelectorAll('.avatar-option').forEach(b => {
+        const av = b.getAttribute('data-avatar');
+        if (av === target) {
+          b.className = 'avatar-option py-2 rounded-lg bg-white text-zinc-950 font-mono text-xs font-bold transition';
+        } else {
+          b.className = 'avatar-option py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 font-mono text-xs font-semibold hover:border-zinc-700 transition';
+        }
+      });
+    }
+
+    function openJoinModal(code) {
+      const clean = (code || '').trim().toUpperCase();
+      if (!clean) return;
+      pendingJoinRoomCode = clean;
+
+      const codeBadge = document.getElementById('joinModalRoomCodeBadge');
+      if (codeBadge) codeBadge.textContent = clean;
+
+      const nameInput = document.getElementById('inputJoinPlayerName');
+      if (nameInput) {
+        nameInput.value = getStoredPlayerName();
+      }
+
+      updateJoinAvatarSelection(getStoredAvatar());
+
+      const modal = document.getElementById('joinRoomModal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+          if (nameInput) {
+            nameInput.focus();
+            nameInput.select();
+          }
+        }, 60);
+      }
+    }
+
+    function closeJoinModal() {
+      const modal = document.getElementById('joinRoomModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function executeJoinFromModal(asSpectator = false) {
+      const nameInput = document.getElementById('inputJoinPlayerName');
+      const chosenName = (nameInput?.value || getStoredPlayerName()).trim().slice(0, 14) || 'Player';
+      const chosenAvatar = state.selectedAvatar || getStoredAvatar() || '01';
+
+      saveStoredPlayerName(chosenName);
+      saveStoredAvatar(chosenAvatar);
+      closeJoinModal();
+
+      joinWithRoomCode(pendingJoinRoomCode, chosenName, chosenAvatar, asSpectator);
+    }
+
     let roomChannel = null;
     let socket = null;
     let isSocketConnected = false;
@@ -2484,6 +2643,28 @@
           break;
         case 'bluff_challenge':
           bluffCallChallenge(sIdx);
+          break;
+        case 'rename_player':
+          if (payload && payload.name) {
+            let targetIdx = payload.seatIdx;
+            if (targetIdx === undefined && payload.playerId) {
+              targetIdx = state.players.findIndex(p => p.id === payload.playerId);
+            }
+            if (targetIdx === undefined || targetIdx < 0) targetIdx = sIdx;
+            if (targetIdx >= 0 && targetIdx < state.players.length) {
+              const oldName = state.players[targetIdx].name;
+              const newName = String(payload.name).trim().slice(0, 14);
+              state.players[targetIdx].name = newName;
+              if (payload.avatar) state.players[targetIdx].avatar = payload.avatar;
+              if (isHostUser()) {
+                broadcastRoomState();
+              }
+              renderAll();
+              if (oldName !== newName) {
+                showToast(`${oldName} changed name to ${newName}`);
+              }
+            }
+          }
           break;
       }
     }
@@ -2813,7 +2994,11 @@
     }
 
     function createPrivateRoom(startChips, maxSeats, selectedGame, autoAddBots = false) {
-      const hostName = (document.getElementById('inputPlayerName')?.value || 'Alex').trim();
+      const hostInput = document.getElementById('inputCreateHostName');
+      const hostName = (hostInput?.value || getStoredPlayerName()).trim().slice(0, 14) || 'Alex';
+      saveStoredPlayerName(hostName);
+      const myAvatar = getStoredAvatar();
+      saveStoredAvatar(myAvatar);
       const myId = getStoredMyId();
       state.roomCode = generateRoomCode();
       state.gameMode = selectedGame || 'blackjack';
@@ -2828,7 +3013,7 @@
         {
           id: myId,
           name: hostName,
-          avatar: state.selectedAvatar || '01',
+          avatar: myAvatar,
           chips: startChips || 2500,
           isHost: true,
           isBot: false,
@@ -2896,12 +3081,13 @@
       if (existingIdx !== -1) {
         state.activeSeatIndex = existingIdx;
         state.players[existingIdx].name = myName;
+        state.players[existingIdx].avatar = myAvatar || state.players[existingIdx].avatar || '02';
         state.players[existingIdx].isBot = false;
       } else {
         const newPlayer = {
           id: myId,
           name: myName,
-          avatar: myAvatar,
+          avatar: myAvatar || '02',
           chips: (state.players[0] && state.players[0].chips) || 2500,
           isHost: false,
           isBot: false,
@@ -2920,7 +3106,7 @@
       resetAnimationTracking(true);
       broadcastRoomState();
       renderAll();
-      showToast(`Joined Room ${cleanCode}`);
+      showToast(`Joined Room ${cleanCode} as ${myName}`);
     }
 
     function joinAsSpectator(roomData, cleanCode, myId, myName, myAvatar) {
@@ -2955,16 +3141,19 @@
       showToast(`Entered Room ${cleanCode} as Spectator`);
     }
 
-    function joinWithRoomCode(code) {
+    function joinWithRoomCode(code, customName = null, customAvatar = null, asSpectator = false) {
       const cleanCode = (code || '').trim().toUpperCase();
-      if (!cleanCode || cleanCode.length < 4) {
+      if (!cleanCode || cleanCode.length < 3) {
         showToast('Please enter a valid room code');
         return;
       }
 
       const myId = getStoredMyId();
-      const myName = (document.getElementById('inputPlayerName').value || 'Friend').trim();
-      const myAvatar = state.selectedAvatar || '02';
+      const myName = (customName || getStoredPlayerName()).trim().slice(0, 14) || 'Friend';
+      const myAvatar = customAvatar || getStoredAvatar();
+
+      saveStoredPlayerName(myName);
+      saveStoredAvatar(myAvatar);
 
       function attemptLocalStorageJoin() {
         let roomData = null;
@@ -2977,7 +3166,11 @@
           showToast(`Room ${cleanCode} not found or expired`);
           return;
         }
-        seatPlayerInRoom(roomData, cleanCode, myId, myName, myAvatar);
+        if (asSpectator) {
+          joinAsSpectator(roomData, cleanCode, myId, myName, myAvatar);
+        } else {
+          seatPlayerInRoom(roomData, cleanCode, myId, myName, myAvatar);
+        }
       }
 
       // Check Socket.IO first if connected
@@ -2991,9 +3184,17 @@
           isBot: false
         };
 
-        socket.emit('join_room', { roomCode: cleanCode, player: tempPlayer }, (res) => {
+        socket.emit('join_room', {
+          roomCode: cleanCode,
+          player: tempPlayer,
+          asSpectator: Boolean(asSpectator)
+        }, (res) => {
           if (res && res.ok && res.state) {
-            seatPlayerInRoom(res.state, cleanCode, myId, myName, myAvatar);
+            if (asSpectator || res.isSpectator) {
+              joinAsSpectator(res.state, cleanCode, myId, myName, myAvatar);
+            } else {
+              seatPlayerInRoom(res.state, cleanCode, myId, myName, myAvatar);
+            }
           } else {
             attemptLocalStorageJoin();
           }
@@ -4087,6 +4288,9 @@
           const removeBtnHTML = (isHost && p.isBot)
             ? `<button type="button" data-remove-bot="${p.id}" class="text-[11px] font-semibold text-zinc-400 hover:text-rose-400 px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 transition">Remove</button>`
             : '';
+          const renameBtnHTML = isMe
+            ? `<button type="button" id="btnWaitingRenameMe" class="text-[11px] font-mono text-zinc-300 hover:text-white px-2.5 py-1 rounded-md bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 transition">Rename</button>`
+            : '';
           const tagBadge = p.isHost
             ? `<span class="px-2.5 py-0.5 rounded-full bg-rose-600/20 text-rose-300 border border-rose-500/30 text-[10px] font-bold">HOST</span>`
             : p.isBot
@@ -4111,6 +4315,7 @@
               </div>
               <div class="flex items-center gap-2 shrink-0">
                 ${tagBadge}
+                ${renameBtnHTML}
                 ${removeBtnHTML}
               </div>
             </div>
@@ -4131,6 +4336,22 @@
         }
       }
       rosterList.innerHTML = rosterHTML;
+
+      const renameBtn = document.getElementById('btnWaitingRenameMe');
+      if (renameBtn) {
+        renameBtn.addEventListener('click', () => {
+          const pInput = document.getElementById('inputPlayerName');
+          if (pInput) pInput.value = getStoredPlayerName();
+          updateProfileAvatarSelection(getStoredAvatar());
+          document.getElementById('profileModal').classList.remove('hidden');
+          setTimeout(() => {
+            if (pInput) {
+              pInput.focus();
+              pInput.select();
+            }
+          }, 50);
+        });
+      }
 
       rosterList.querySelectorAll('[data-remove-bot]').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -4765,7 +4986,15 @@
       // Create Room Modal
       let modalChosenGame = 'blackjack';
       document.getElementById('btnOpenCreateModal').addEventListener('click', () => {
+        const hostInput = document.getElementById('inputCreateHostName');
+        if (hostInput) hostInput.value = getStoredPlayerName();
         document.getElementById('createRoomModal').classList.remove('hidden');
+        setTimeout(() => {
+          if (hostInput) {
+            hostInput.focus();
+            hostInput.select();
+          }
+        }, 50);
       });
       document.getElementById('btnCloseCreateModal').addEventListener('click', () => {
         document.getElementById('createRoomModal').classList.add('hidden');
@@ -4779,33 +5008,105 @@
         btn.addEventListener('click', () => {
           modalChosenGame = btn.getAttribute('data-modal-game');
           document.querySelectorAll('.modal-game-btn').forEach(b => {
-            b.className = 'modal-game-btn py-3 px-2 rounded-xl bg-charcoal-900 border border-white/10 text-center transition';
+            b.className = 'modal-game-btn py-3 px-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 text-center transition hover:border-zinc-700';
+            const title = b.querySelector('.text-xs');
+            if (title) title.className = 'text-xs font-bold text-zinc-200';
           });
-          btn.className = 'modal-game-btn py-3 px-2 rounded-xl bg-rose-600/20 border border-rose-500 text-center transition';
+          btn.className = 'modal-game-btn py-3 px-2 rounded-lg bg-white text-zinc-950 font-bold border-transparent text-center transition';
+          const activeTitle = btn.querySelector('.text-xs');
+          if (activeTitle) activeTitle.className = 'text-xs font-bold';
         });
       });
       document.getElementById('btnConfirmCreateRoom').addEventListener('click', () => {
+        const hostInput = document.getElementById('inputCreateHostName');
+        const hostName = (hostInput?.value || getStoredPlayerName()).trim().slice(0, 14) || 'Alex';
+        saveStoredPlayerName(hostName);
         const chips = parseInt(document.getElementById('selectStartChips').value, 10) || 2500;
         const maxSeats = parseInt(document.getElementById('selectFriendSeats').value, 10) || 4;
         document.getElementById('createRoomModal').classList.add('hidden');
         createPrivateRoom(chips, maxSeats, modalChosenGame);
       });
 
-      // Join Room Button & Enter Key
+      // Join Room Button & Enter Key (Opens Join Table Modal with Name Customization)
       const handleJoinSubmit = () => {
         const raw = (document.getElementById('inputJoinCode')?.value || '').trim().toUpperCase();
-        if (raw) joinWithRoomCode(raw);
+        if (!raw || raw.length < 3) {
+          showToast('Please enter a valid room code');
+          document.getElementById('inputJoinCode')?.focus();
+          return;
+        }
+        openJoinModal(raw);
       };
       document.getElementById('btnJoinRoom').addEventListener('click', handleJoinSubmit);
       document.getElementById('inputJoinCode')?.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') handleJoinSubmit();
       });
 
+      // Join Room Modal Events
+      document.getElementById('btnConfirmJoinRoom')?.addEventListener('click', () => {
+        executeJoinFromModal(false);
+      });
+      document.getElementById('btnJoinAsSpectatorModal')?.addEventListener('click', () => {
+        executeJoinFromModal(true);
+      });
+      document.getElementById('btnCloseJoinModal')?.addEventListener('click', closeJoinModal);
+      document.getElementById('joinRoomModal')?.addEventListener('click', (e) => {
+        if (e.target === document.getElementById('joinRoomModal')) {
+          closeJoinModal();
+        }
+      });
+      document.getElementById('inputJoinPlayerName')?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          executeJoinFromModal(false);
+        } else if (e.key === 'Escape') {
+          closeJoinModal();
+        }
+      });
+      document.querySelectorAll('.join-avatar-option').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const av = btn.getAttribute('data-join-avatar');
+          saveStoredAvatar(av);
+          updateJoinAvatarSelection(av);
+          updateProfileAvatarSelection(av);
+        });
+      });
+
+      // Global Escape handler for modals
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          const joinModal = document.getElementById('joinRoomModal');
+          if (joinModal && !joinModal.classList.contains('hidden')) {
+            closeJoinModal();
+          }
+          const createModal = document.getElementById('createRoomModal');
+          if (createModal && !createModal.classList.contains('hidden')) {
+            createModal.classList.add('hidden');
+          }
+          const profModal = document.getElementById('profileModal');
+          if (profModal && !profModal.classList.contains('hidden')) {
+            profModal.classList.add('hidden');
+          }
+        }
+      });
+
       // Profile Modal
       document.getElementById('btnOpenProfileModal').addEventListener('click', () => {
+        const pInput = document.getElementById('inputPlayerName');
+        if (pInput) pInput.value = getStoredPlayerName();
+        updateProfileAvatarSelection(getStoredAvatar());
         document.getElementById('profileModal').classList.remove('hidden');
+        setTimeout(() => {
+          if (pInput) {
+            pInput.focus();
+            pInput.select();
+          }
+        }, 50);
       });
       document.getElementById('btnUserChipsPill').addEventListener('click', () => {
+        const pInput = document.getElementById('inputPlayerName');
+        if (pInput) pInput.value = getStoredPlayerName();
+        updateProfileAvatarSelection(getStoredAvatar());
         document.getElementById('profileModal').classList.remove('hidden');
       });
       document.getElementById('btnCloseProfileModal').addEventListener('click', () => {
@@ -4816,24 +5117,39 @@
           document.getElementById('profileModal').classList.add('hidden');
         }
       });
+      document.getElementById('inputPlayerName')?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          document.getElementById('btnSaveProfile')?.click();
+        }
+      });
       document.querySelectorAll('.avatar-option').forEach(btn => {
         btn.addEventListener('click', () => {
-          state.selectedAvatar = btn.getAttribute('data-avatar');
-          document.querySelectorAll('.avatar-option').forEach(b => {
-            b.className = 'avatar-option py-2 rounded-xl bg-charcoal-900 border border-white/10 text-zinc-400 font-mono text-xs font-semibold transition';
-          });
-          btn.className = 'avatar-option py-2 rounded-xl bg-rose-600 text-white font-mono text-xs font-bold transition';
+          const av = btn.getAttribute('data-avatar');
+          saveStoredAvatar(av);
+          updateProfileAvatarSelection(av);
+          updateJoinAvatarSelection(av);
         });
       });
       document.getElementById('btnSaveProfile').addEventListener('click', () => {
-        const newName = (document.getElementById('inputPlayerName')?.value || 'Alex').trim();
-        if (state.players[state.activeSeatIndex]) {
+        const newName = (document.getElementById('inputPlayerName')?.value || getStoredPlayerName()).trim().slice(0, 14) || 'Player';
+        const newAvatar = state.selectedAvatar || getStoredAvatar() || '01';
+        saveStoredPlayerName(newName);
+        saveStoredAvatar(newAvatar);
+
+        if (state.inRoom && state.players[state.activeSeatIndex]) {
           state.players[state.activeSeatIndex].name = newName;
-          state.players[state.activeSeatIndex].avatar = state.selectedAvatar;
+          state.players[state.activeSeatIndex].avatar = newAvatar;
+          dispatchTableAction('rename_player', {
+            playerId: state.myPlayerId,
+            seatIdx: state.activeSeatIndex,
+            name: newName,
+            avatar: newAvatar
+          });
         }
+        if (isHostUser()) broadcastRoomState();
         document.getElementById('profileModal').classList.add('hidden');
-        showToast('Profile updated');
-        broadcastRoomState();
+        showToast('Profile updated: ' + newName);
         renderAll();
       });
 
@@ -5117,13 +5433,22 @@
         renderHandHistory();
       });
 
-      // URL Query Room Auto-Join
+      // Initialize Player Identity
+      const initialName = getStoredPlayerName();
+      const initialAvatar = getStoredAvatar();
+      saveStoredPlayerName(initialName);
+      saveStoredAvatar(initialAvatar);
+      updateJoinAvatarSelection(initialAvatar);
+      updateProfileAvatarSelection(initialAvatar);
+
+      // URL Query Room Auto-Join (Prompts player to set their name and avatar)
       try {
         const params = new URLSearchParams(window.location.search);
         const urlRoom = params.get('room');
         if (urlRoom) {
-          document.getElementById('inputJoinCode').value = urlRoom;
-          joinWithRoomCode(urlRoom);
+          const clean = urlRoom.trim().toUpperCase();
+          document.getElementById('inputJoinCode').value = clean;
+          openJoinModal(clean);
         }
       } catch (e) {}
 

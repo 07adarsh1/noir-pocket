@@ -365,6 +365,19 @@ io.on('connection', (socket) => {
       const roomEntry = rooms.get(code);
       if (!roomEntry) return;
 
+      // Real-time player rename handler (authoritative server sync)
+      if (action === 'rename_player' && payload && payload.name) {
+        if (roomEntry.state && Array.isArray(roomEntry.state.players)) {
+          const targetPlayerId = payload.playerId || socket.data.playerId;
+          const p = roomEntry.state.players.find(x => x.id === targetPlayerId);
+          if (p) {
+            p.name = String(payload.name).trim().slice(0, 14);
+            if (payload.avatar) p.avatar = payload.avatar;
+            roomEntry.updatedAt = Date.now();
+          }
+        }
+      }
+
       const hostSocket = io.sockets.sockets.get(roomEntry.hostSocketId);
       if (hostSocket && hostSocket.id !== socket.id) {
         hostSocket.emit('player_action', {
