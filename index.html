@@ -1513,7 +1513,7 @@
     };
 
     function renderCardHTML(card, opts = {}) {
-      const isFaceDown = !card || Boolean(opts.faceDown);
+      const isFaceDown = !card || Boolean(opts.faceDown || card.hidden || !card.rank);
       const animKey = opts.animKey || (card && card.uid) || '';
       const zone = opts.zone || 'table';
       const originSeat = opts.originSeat !== undefined ? String(opts.originSeat) : '';
@@ -2127,6 +2127,32 @@
       const myId = getStoredMyId();
       const isSpectator = state.isSpectator || (incoming.spectators && incoming.spectators.some(s => s.id === myId));
       const myIdx = (incoming.players || []).findIndex(p => p.id === myId);
+
+      // If this client is host, protect unmasked cards from being overwritten by masked snapshots
+      if (isHostUser()) {
+        if (state.bj && Array.isArray(state.bj.dealerCards) && state.bj.dealerCards.length > 0) {
+          if (incoming.bj && Array.isArray(incoming.bj.dealerCards)) {
+            incoming.bj.dealerCards = incoming.bj.dealerCards.map((ic, i) => {
+              const localCard = state.bj.dealerCards[i];
+              if (localCard && (!ic || ic.hidden || !ic.rank)) return localCard;
+              return ic;
+            });
+          }
+        }
+        if (state.players && Array.isArray(state.players)) {
+          (incoming.players || []).forEach((ip, i) => {
+            const sp = state.players[i];
+            if (sp && Array.isArray(sp.cards) && Array.isArray(ip.cards)) {
+              ip.cards = ip.cards.map((ic, ci) => {
+                const sc = sp.cards[ci];
+                if (sc && (!ic || ic.hidden || !ic.rank)) return sc;
+                return ic;
+              });
+            }
+          });
+        }
+      }
+
       Object.assign(state, incoming);
       if (isSpectator) {
         state.isSpectator = true;
@@ -2843,14 +2869,17 @@
     function calcBlackjackScore(cards) {
       let total = 0;
       let aces = 0;
+      if (!Array.isArray(cards)) return { total: 0, isSoft: false };
       for (const c of cards) {
+        if (!c || c.hidden || !c.rank) continue;
         if (c.rank === 'A') {
           aces++;
           total += 11;
         } else if (['K', 'Q', 'J', '10'].includes(c.rank)) {
           total += 10;
         } else {
-          total += parseInt(c.rank, 10);
+          const val = parseInt(c.rank, 10);
+          if (!isNaN(val)) total += val;
         }
       }
       while (total > 21 && aces > 0) {

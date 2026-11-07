@@ -141,7 +141,9 @@ function maskStateForPlayer(fullState, targetPlayerId, isSpectator = false) {
   });
 
   // 2. Mask Blackjack Dealer Hole Card
-  if (projected.gameMode === 'blackjack' && projected.bj) {
+  // Only mask for non-host participants; the host manages the shoe and game engine
+  const isHost = Boolean(targetPlayerId && (targetPlayerId === projected.hostId));
+  if (!isHost && projected.gameMode === 'blackjack' && projected.bj) {
     if (projected.bj.dealerHoleHidden && Array.isArray(projected.bj.dealerCards) && projected.bj.dealerCards.length > 1) {
       projected.bj.dealerCards = projected.bj.dealerCards.map((c, idx) => {
         if (idx === 1) return { uid: c.uid, hidden: true };
@@ -178,6 +180,9 @@ function broadcastMaskedRoomState(code) {
   for (const socketId of socketsInRoom) {
     const clientSocket = io.sockets.sockets.get(socketId);
     if (!clientSocket) continue;
+
+    // Do not echo masked state back to the authoring host socket
+    if (socketId === roomEntry.hostSocketId) continue;
 
     const playerId = clientSocket.data.playerId;
     const isSpectator = Boolean(clientSocket.data.isSpectator);
