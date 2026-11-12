@@ -613,25 +613,24 @@
     @media (min-width:640px) { #activePlayerHandRow.bluff-hand { min-height:148px; } }
 
 
-    .holdem-hand-guide { padding:14px 15px; border:1px solid rgba(216,189,139,.2); border-radius:16px; background:linear-gradient(130deg,rgba(34,53,42,.85),rgba(20,25,22,.92)); }
-    .holdem-guide-heading { display:flex; justify-content:space-between; align-items:center; gap:12px; }
-    .holdem-guide-kicker { color:#c5b28e; font:600 10px/1.3 'JetBrains Mono',monospace; letter-spacing:.08em; text-transform:uppercase; }
-    .holdem-guide-name { color:#faf4e8; font-weight:700; font-size:15px; margin-top:4px; }
-    .holdem-guide-level { color:#e6cea5; font:600 11px 'JetBrains Mono',monospace; white-space:nowrap; }
-    .holdem-strength-track { height:7px; overflow:hidden; margin-top:10px; border-radius:99px; background:rgba(255,255,255,.1); }
-    .holdem-strength-fill { height:100%; width:0; border-radius:inherit; background:linear-gradient(90deg,#86a78a,#d9bd86); transition:width .25s ease; }
-    .holdem-draw-hint { color:#e2c790; font-size:12px; margin-top:8px; }
-    .holdem-draw-hint:empty { display:none; }
-    .holdem-guide-note,.holdem-rankings p { color:#aeb5a9; font-size:11px; line-height:1.5; margin-top:8px; }
-    .holdem-rankings { margin-top:10px; border-top:1px solid rgba(216,189,139,.14); padding-top:10px; }
-    .holdem-rankings summary { cursor:pointer; color:#f0dfbf; font-size:12px; font-weight:700; display:flex; justify-content:space-between; align-items:center; list-style:none; }
-    .holdem-rankings summary::-webkit-details-marker { display:none; }
-    .holdem-rankings ol { counter-reset:rank; margin:10px 0 0; padding:0; display:grid; gap:3px; list-style:none; }
-    .holdem-rankings li { counter-increment:rank; display:grid; grid-template-columns:22px minmax(100px,1fr) minmax(100px,1.3fr); gap:6px; padding:6px 8px; border-radius:8px; color:#c3c8be; font-size:11px; align-items:center; }
-    .holdem-rankings li::before { content:counter(rank,decimal-leading-zero); color:#a89676; font:10px 'JetBrains Mono',monospace; }
-    .holdem-rankings li b { color:#eee9dd; }
-    .holdem-rankings li.is-current { background:rgba(216,189,139,.16); outline:1px solid rgba(216,189,139,.3); }
-    @media (max-width:420px) { .holdem-rankings li { grid-template-columns:19px minmax(88px,1fr) minmax(95px,1.2fr); font-size:10px; padding:6px 4px; } }
+    .holdem-hand-guide { margin-top:0 !important; }
+    .holdem-guide-row { display:flex; gap:12px; align-items:center; padding:0 3px; }
+    .holdem-strength-track { height:5px; flex:1; min-width:40px; overflow:hidden; border-radius:99px; background:rgba(255,255,255,.1); }
+    .holdem-strength-fill { height:100%; width:0; border-radius:inherit; background:linear-gradient(90deg,#86a78a,#dec18a); transition:width .25s ease; }
+    .holdem-rank-button { color:#e8d6b4; font-size:11px; font-weight:700; white-space:nowrap; padding:7px 10px; border:1px solid rgba(216,189,139,.22); border-radius:9px; background:rgba(216,189,139,.07); }
+    .holdem-rank-button:hover { background:rgba(216,189,139,.16); }
+    .holdem-rankings-panel { margin-top:10px; border:1px solid rgba(216,189,139,.18); border-radius:14px; background:#18251e; padding:12px; }
+    .holdem-rankings-panel[hidden] { display:none; }
+    .holdem-rankings-panel p { color:#b7c0b3; font-size:11px; line-height:1.5; }
+    .holdem-rankings-panel ol { counter-reset:rank; margin:10px 0; padding:0; display:grid; gap:4px; list-style:none; }
+    .holdem-rankings-panel li { counter-increment:rank; display:grid; grid-template-columns:20px minmax(86px,1fr) auto; gap:8px; padding:6px; border-radius:9px; align-items:center; color:#ece9dc; font-size:11px; }
+    .holdem-rankings-panel li::before { content:counter(rank,decimal-leading-zero); color:#ab9a79; font:10px 'JetBrains Mono',monospace; }
+    .holdem-rankings-panel li.is-current { background:rgba(216,189,139,.15); outline:1px solid rgba(216,189,139,.3); }
+    .ranking-example { display:flex; gap:3px; }
+    .ranking-card { display:flex; flex-direction:column; align-items:center; justify-content:center; width:25px; height:34px; border-radius:4px; background:#f6f1e5; border:1px solid #d7cdbb; color:#16201a; font:bold 11px/1 Georgia,serif; box-shadow:0 2px 5px rgba(0,0,0,.22); }
+    .ranking-card.red { color:#bd3151; }
+    .ranking-card span { font-size:12px; line-height:1; }
+    @media (max-width:380px) { .holdem-rankings-panel li { grid-template-columns:18px minmax(76px,1fr) auto; gap:4px; font-size:10px; padding:5px 3px; } .ranking-card { width:21px; height:31px; } .ranking-example { gap:2px; } }
 
   </style>
 </head>
@@ -1367,35 +1366,31 @@
           <button id="btnRebuy" type="button" class="mt-3 w-full rounded-xl bg-amber-200 px-4 py-3 text-xs font-bold text-zinc-950 disabled:opacity-40">Rebuy 5,000 chips</button>
         </div>
         <div id="turnGuidance" role="status" aria-live="polite" class="rounded-xl px-3 py-2 text-sm font-semibold bg-white/5 text-zinc-300"></div>
-        <details class="text-xs text-zinc-400"><summary class="cursor-pointer text-zinc-300 font-semibold">Rules &amp; hand rankings</summary><p id="tableRules" class="mt-2 leading-relaxed"></p></details>
-        <section id="holdemHandGuide" class="hidden holdem-hand-guide" aria-label="Poker hand guide">
-          <div class="holdem-guide-heading">
-            <div><div class="holdem-guide-kicker">Your hand · category guide</div><div id="holdemStrengthName" class="holdem-guide-name">Waiting for cards</div></div>
-            <span id="holdemStrengthLevel" class="holdem-guide-level"></span>
-          </div>
-          <div id="holdemStrengthMeter" class="holdem-strength-track" role="meter" aria-label="Hand category" aria-valuemin="0" aria-valuemax="10" aria-valuenow="0" aria-valuetext="Waiting for cards"><div id="holdemStrengthFill" class="holdem-strength-fill"></div></div>
-          <div id="holdemDrawHint" class="holdem-draw-hint"></div>
-          <p class="holdem-guide-note">Shows your made hand, not your chance of winning.</p>
-          <details class="holdem-rankings">
-            <summary>Hand rankings <span aria-hidden="true">↗</span></summary>
-            <p>Make the best five-card hand using your cards and the community cards.</p>
-            <ol>
-              <li data-hand-rank="Royal Flush"><b>Royal flush</b><span>10, J, Q, K, A · same suit</span></li>
-              <li data-hand-rank="Straight Flush"><b>Straight flush</b><span>Five in sequence · same suit</span></li>
-              <li data-hand-rank="Four of a Kind"><b>Four of a kind</b><span>Four cards of the same rank</span></li>
-              <li data-hand-rank="Full House"><b>Full house</b><span>Three of a kind and a pair</span></li>
-              <li data-hand-rank="Flush"><b>Flush</b><span>Five cards of the same suit</span></li>
-              <li data-hand-rank="Straight"><b>Straight</b><span>Five cards in sequence</span></li>
-              <li data-hand-rank="Three of a Kind"><b>Three of a kind</b><span>Three cards of the same rank</span></li>
-              <li data-hand-rank="Two Pair"><b>Two pair</b><span>Two different pairs</span></li>
-              <li data-hand-rank="One Pair"><b>One pair</b><span>Two cards of the same rank</span></li>
-              <li data-hand-rank="High Card"><b>High card</b><span>No combination above</span></li>
-            </ol>
-            <p>If players have the same combination, card ranks and kickers break the tie. Identical five-card hands split the pot.</p>
-          </details>
-        </section>
+        <details class="text-xs text-zinc-400"><summary class="cursor-pointer text-zinc-300 font-semibold">How to play</summary><p id="tableRules" class="mt-2 leading-relaxed"></p></details>
         <!-- Player's Private Hole Cards Row -->
         <div id="activePlayerHandRow" class="flex items-center justify-center gap-2 overflow-x-auto custom-scrollbar pt-2 pb-1 px-2 min-h-[96px]"></div>
+        <section id="holdemHandGuide" class="hidden holdem-hand-guide" aria-label="Poker hand guide">
+          <div class="holdem-guide-row">
+            <div id="holdemStrengthMeter" class="holdem-strength-track" role="meter" aria-label="Hand category, not chance of winning" aria-valuemin="0" aria-valuemax="10" aria-valuenow="0" aria-valuetext="Waiting for cards"><div id="holdemStrengthFill" class="holdem-strength-fill"></div></div>
+            <button type="button" id="holdemRankingsButton" class="holdem-rank-button" aria-expanded="false" aria-controls="holdemRankingsPanel">Hand rankings</button>
+          </div>
+          <div id="holdemRankingsPanel" class="holdem-rankings-panel" hidden>
+            <p>Best five-card hands, strongest first. The bar shows your made hand, not your chance of winning.</p>
+            <ol>
+              <li data-hand-rank="Royal Flush"><b>Royal flush</b><span class="ranking-example" role="img" aria-label="Example: 10 of hearts, Jack of hearts, Queen of hearts, King of hearts, Ace of hearts"><span class="ranking-card red" aria-hidden="true">10<span>♥</span></span><span class="ranking-card red" aria-hidden="true">J<span>♥</span></span><span class="ranking-card red" aria-hidden="true">Q<span>♥</span></span><span class="ranking-card red" aria-hidden="true">K<span>♥</span></span><span class="ranking-card red" aria-hidden="true">A<span>♥</span></span></span></li>
+              <li data-hand-rank="Straight Flush"><b>Straight flush</b><span class="ranking-example" role="img" aria-label="Example: 5 of spades, 6 of spades, 7 of spades, 8 of spades, 9 of spades"><span class="ranking-card" aria-hidden="true">5<span>♠</span></span><span class="ranking-card" aria-hidden="true">6<span>♠</span></span><span class="ranking-card" aria-hidden="true">7<span>♠</span></span><span class="ranking-card" aria-hidden="true">8<span>♠</span></span><span class="ranking-card" aria-hidden="true">9<span>♠</span></span></span></li>
+              <li data-hand-rank="Four of a Kind"><b>Four of a kind</b><span class="ranking-example" role="img" aria-label="Example: Ace of spades, Ace of hearts, Ace of diamonds, Ace of clubs, King of spades"><span class="ranking-card" aria-hidden="true">A<span>♠</span></span><span class="ranking-card red" aria-hidden="true">A<span>♥</span></span><span class="ranking-card red" aria-hidden="true">A<span>♦</span></span><span class="ranking-card" aria-hidden="true">A<span>♣</span></span><span class="ranking-card" aria-hidden="true">K<span>♠</span></span></span></li>
+              <li data-hand-rank="Full House"><b>Full house</b><span class="ranking-example" role="img" aria-label="Example: King of spades, King of hearts, King of diamonds, Queen of clubs, Queen of diamonds"><span class="ranking-card" aria-hidden="true">K<span>♠</span></span><span class="ranking-card red" aria-hidden="true">K<span>♥</span></span><span class="ranking-card red" aria-hidden="true">K<span>♦</span></span><span class="ranking-card" aria-hidden="true">Q<span>♣</span></span><span class="ranking-card red" aria-hidden="true">Q<span>♦</span></span></span></li>
+              <li data-hand-rank="Flush"><b>Flush</b><span class="ranking-example" role="img" aria-label="Example: Ace of hearts, Jack of hearts, 8 of hearts, 5 of hearts, 2 of hearts"><span class="ranking-card red" aria-hidden="true">A<span>♥</span></span><span class="ranking-card red" aria-hidden="true">J<span>♥</span></span><span class="ranking-card red" aria-hidden="true">8<span>♥</span></span><span class="ranking-card red" aria-hidden="true">5<span>♥</span></span><span class="ranking-card red" aria-hidden="true">2<span>♥</span></span></span></li>
+              <li data-hand-rank="Straight"><b>Straight</b><span class="ranking-example" role="img" aria-label="Example: 5 of clubs, 6 of diamonds, 7 of spades, 8 of hearts, 9 of clubs"><span class="ranking-card" aria-hidden="true">5<span>♣</span></span><span class="ranking-card red" aria-hidden="true">6<span>♦</span></span><span class="ranking-card" aria-hidden="true">7<span>♠</span></span><span class="ranking-card red" aria-hidden="true">8<span>♥</span></span><span class="ranking-card" aria-hidden="true">9<span>♣</span></span></span></li>
+              <li data-hand-rank="Three of a Kind"><b>Three of a kind</b><span class="ranking-example" role="img" aria-label="Example: 8 of spades, 8 of hearts, 8 of clubs, King of diamonds, 3 of spades"><span class="ranking-card" aria-hidden="true">8<span>♠</span></span><span class="ranking-card red" aria-hidden="true">8<span>♥</span></span><span class="ranking-card" aria-hidden="true">8<span>♣</span></span><span class="ranking-card red" aria-hidden="true">K<span>♦</span></span><span class="ranking-card" aria-hidden="true">3<span>♠</span></span></span></li>
+              <li data-hand-rank="Two Pair"><b>Two pair</b><span class="ranking-example" role="img" aria-label="Example: Jack of spades, Jack of diamonds, 6 of clubs, 6 of hearts, 2 of spades"><span class="ranking-card" aria-hidden="true">J<span>♠</span></span><span class="ranking-card red" aria-hidden="true">J<span>♦</span></span><span class="ranking-card" aria-hidden="true">6<span>♣</span></span><span class="ranking-card red" aria-hidden="true">6<span>♥</span></span><span class="ranking-card" aria-hidden="true">2<span>♠</span></span></span></li>
+              <li data-hand-rank="One Pair"><b>One pair</b><span class="ranking-example" role="img" aria-label="Example: Queen of spades, Queen of hearts, 9 of clubs, 5 of diamonds, 2 of spades"><span class="ranking-card" aria-hidden="true">Q<span>♠</span></span><span class="ranking-card red" aria-hidden="true">Q<span>♥</span></span><span class="ranking-card" aria-hidden="true">9<span>♣</span></span><span class="ranking-card red" aria-hidden="true">5<span>♦</span></span><span class="ranking-card" aria-hidden="true">2<span>♠</span></span></span></li>
+              <li data-hand-rank="High Card"><b>High card</b><span class="ranking-example" role="img" aria-label="Example: Ace of clubs, Jack of spades, 8 of diamonds, 5 of hearts, 2 of clubs"><span class="ranking-card" aria-hidden="true">A<span>♣</span></span><span class="ranking-card" aria-hidden="true">J<span>♠</span></span><span class="ranking-card red" aria-hidden="true">8<span>♦</span></span><span class="ranking-card red" aria-hidden="true">5<span>♥</span></span><span class="ranking-card" aria-hidden="true">2<span>♣</span></span></span></li>
+            </ol>
+            <p>Higher cards and kickers break ties. Identical five-card hands split the pot.</p>
+          </div>
+        </section>
 
         <!-- GAME CONTROLS 1: BLACKJACK -->
         <div id="controlsBlackjack" class="hidden space-y-2">
@@ -5156,13 +5151,11 @@
       commBox.innerHTML = commHTML;
 
       const guide = state.isSpectator ? { label: 'Spectating — no private hand', level: 0, draw: '' } : describeHoldemHand(me.cards, state.holdem.community, me.pokerFolded);
-      document.getElementById('holdemStrengthName').textContent = guide.label;
-      document.getElementById('holdemStrengthLevel').textContent = guide.level ? `${guide.level} / 10` : '';
       document.getElementById('holdemStrengthFill').style.width = `${guide.level * 10}%`;
       const meter = document.getElementById('holdemStrengthMeter');
       meter.setAttribute('aria-valuenow', String(guide.level));
       meter.setAttribute('aria-valuetext', guide.level ? `${guide.category}, category ${guide.level} of 10` : guide.label);
-      document.getElementById('holdemDrawHint').textContent = guide.draw ? `Potential: ${guide.draw} — needs one card` : '';
+      meter.title = guide.level ? `${guide.label}${guide.draw ? ' · ' + guide.draw : ''}. Hand category only; not your chance of winning.` : guide.label;
       document.querySelectorAll('#holdemHandGuide [data-hand-rank]').forEach(row => {
         row.classList.toggle('is-current', Boolean(guide.category) && row.dataset.handRank === guide.category);
         if (guide.category && row.dataset.handRank === guide.category) row.setAttribute('aria-current', 'true');
@@ -5800,6 +5793,11 @@
           raiseSlider.value = val;
           document.getElementById('holdemRaiseVal').textContent = val;
         });
+      });
+      document.getElementById('holdemRankingsButton').addEventListener('click', () => {
+        const panel = document.getElementById('holdemRankingsPanel');
+        panel.hidden = !panel.hidden;
+        document.getElementById('holdemRankingsButton').setAttribute('aria-expanded', String(!panel.hidden));
       });
       document.getElementById('btnPokerFold').addEventListener('click', () => {
         dispatchTableAction('poker_fold', { seatIdx: state.activeSeatIndex });

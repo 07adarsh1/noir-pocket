@@ -60,3 +60,9 @@ assert.equal(guide('AH KH', 'QH 3H 9C 2D 7S').draw, '', 'no draws when there are
 assert.equal(guide('AS KH', '', true).level, 0, 'folded hand is not rated');
 assert.equal(context.describeHoldemHand([{ rank:'A', suit:'S', hidden:true }], []).level, 0);
 console.log('Hand guide, draw and folded-hand checks passed');
+const rankings = html.slice(html.indexOf('<div id="holdemRankingsPanel"'), html.indexOf('<!-- GAME CONTROLS 1:'));
+const rows = [...rankings.matchAll(/<li data-hand-rank="([^"]+)">([\s\S]*?)<\/li>/g)];
+assert.equal(rows.length, 10, 'all ten ranking examples are present');
+for (const [, name, row] of rows) assert.equal((row.match(/class="ranking-card(?: red)?"/g) || []).length, 5, `${name} has five example cards`);
+assert.match(rankings, /not your chance of winning/);
+console.log('Ranking examples each contain five cards');
