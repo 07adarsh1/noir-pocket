@@ -1252,6 +1252,7 @@
           <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300">LIVE</span>
         </div>
 
+        <div id="handResult" class="hidden rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-zinc-200" aria-live="polite"></div>
         <div id="turnGuidance" role="status" aria-live="polite" class="rounded-xl px-3 py-2 text-sm font-semibold bg-white/5 text-zinc-300"></div>
         <details class="text-xs text-zinc-400"><summary class="cursor-pointer text-zinc-300 font-semibold">Rules &amp; hand rankings</summary><p id="tableRules" class="mt-2 leading-relaxed"></p></details>
         <!-- Player's Private Hole Cards Row -->
@@ -2490,6 +2491,7 @@
     let roomChannel = null;
     let socket = null;
     let isSocketConnected = false;
+    let sessionRecovering = false;
 
     function getSanitizedState() {
       return JSON.parse(JSON.stringify({
@@ -2504,6 +2506,8 @@
         lastFxEvent: state.lastFxEvent,
         gamePacing: state.gamePacing,
         handHistory: state.handHistory,
+        handStartChips: state.handStartChips,
+        handResult: state.handResult,
         spectators: state.spectators,
         bj: state.bj,
         holdem: state.holdem,
@@ -2586,12 +2590,56 @@
       });
     } catch (e) {}
 
+    // Game delays retain their remaining time while the host is disconnected.
+    let gameClockPaused = false;
+    const gameTimers = new Set();
+    function armGameTimer(timer) {
+      timer.started = Date.now();
+      timer.id = setTimeout(() => {
+        gameTimers.delete(timer);
+        timer.id = null;
+        timer.callback();
+      }, timer.remaining);
+    }
+    function setGameTimeout(callback, delay) {
+      const timer = { callback, remaining: delay, id: null, started: 0 };
+      gameTimers.add(timer);
+      if (!gameClockPaused) armGameTimer(timer);
+      return timer;
+    }
+    function clearGameTimeout(timer) {
+      if (!timer) return;
+      clearTimeout(timer.id);
+      gameTimers.delete(timer);
+    }
+    function pauseGameClock() {
+      if (gameClockPaused) return;
+      gameClockPaused = true;
+      for (const timer of gameTimers) {
+        if (timer.id !== null) {
+          clearTimeout(timer.id);
+          timer.remaining = Math.max(0, timer.remaining - (Date.now() - timer.started));
+          timer.id = null;
+        }
+      }
+    }
+    function resumeGameClock() {
+      if (!gameClockPaused) return;
+      gameClockPaused = false;
+      for (const timer of gameTimers) if (timer.id === null) armGameTimer(timer);
+    }
+    function clearGameTimers() {
+      for (const timer of gameTimers) clearTimeout(timer.id);
+      gameTimers.clear();
+      gameClockPaused = false;
+    }
+
     // =========================================================================
     // TIER 1: HOST AUTHORITY ACTION DISPATCHER & RELAY
     // =========================================================================
     function dispatchTableAction(action, payload = {}) {
       const host = state.players.find(p => p.id === state.hostId);
-      if (state.inRoom && socket && (!isSocketConnected || (host && host.isDisconnected))) {
+      if (state.inRoom && socket && (!isSocketConnected || sessionRecovering || gameClockPaused || (host && host.isDisconnected))) {
         showToast('Waiting for the connection to recover');
         return;
       }
@@ -2714,6 +2762,7 @@
       updateTurnTimerDisplay(seatIdx);
 
       window.__turnCountdownInterval = setInterval(() => {
+        if (gameClockPaused || (socket && !isSocketConnected)) return;
         state.turnSecondsLeft--;
         updateTurnTimerDisplay(seatIdx);
 
@@ -2847,12 +2896,20 @@
           console.log('[NOIR Socket] Connected to server, ID:', socket.id);
           const myId = getStoredMyId();
           if (state.inRoom && state.roomCode) {
+            sessionRecovering = true;
+            renderAll();
             socket.emit('reconnect_session', { roomCode: state.roomCode, playerId: myId }, (res) => {
               if (res && res.ok && res.state) {
+                sessionRecovering = false;
                 applyRemoteState(res.state);
+                resumeGameClock();
+                renderAll();
                 showToast('Reconnected to table');
               } else if (state.hostId === myId) {
-                socket.emit('create_room', { roomCode: state.roomCode, state: getSanitizedState() });
+                socket.emit('create_room', { roomCode: state.roomCode, state: getSanitizedState() }, result => {
+                  if (result && result.ok) { sessionRecovering = false; resumeGameClock(); renderAll(); }
+                  else showToast((result && result.error) || 'Could not restore room');
+                });
               } else {
                 const me = state.players[state.activeSeatIndex] || {
                   id: myId,
@@ -2860,7 +2917,10 @@
                   avatar: state.selectedAvatar || '01',
                   chips: 2500
                 };
-                socket.emit('join_room', { roomCode: state.roomCode, player: me });
+                socket.emit('join_room', { roomCode: state.roomCode, player: me, asSpectator: state.isSpectator }, result => {
+                  if (result && result.ok && result.state) { sessionRecovering = false; applyRemoteState(result.state); }
+                  else showToast((result && result.error) || 'Could not restore room');
+                });
               }
             });
           }
@@ -2868,6 +2928,7 @@
 
         socket.on('disconnect', () => {
           isSocketConnected = false;
+          if (state.inRoom && isHostUser()) pauseGameClock();
           updateSyncIndicator(false);
           console.log('[NOIR Socket] Disconnected from server');
           renderAll();
@@ -3312,6 +3373,10 @@
     }
 
     function hostStartGame() {
+      if (state.inRoom && socket && (!isSocketConnected || sessionRecovering || gameClockPaused)) {
+        showToast('Waiting for the connection to recover');
+        return;
+      }
       if (!isHostUser()) {
         showToast('Waiting for the host to start the table');
         return;
@@ -3330,6 +3395,34 @@
       switchGameMode(state.gameMode);
       broadcastRoomState();
       showToast('Game started!');
+    }
+
+    function beginHandResults() {
+      state.handStartChips = Object.fromEntries(state.players.map(p => [p.id, p.chips]));
+      state.handResult = null;
+    }
+    function finishHandResults(title) {
+      state.handResult = {
+        title,
+        players: state.players.map(p => ({ name: p.name, change: p.chips - (state.handStartChips?.[p.id] ?? p.chips) }))
+      };
+    }
+    function renderHandResult() {
+      const container = document.getElementById('handResult');
+      const result = state.handResult;
+      container.classList.toggle('hidden', !result);
+      container.replaceChildren();
+      if (!result) return;
+      const title = document.createElement('div');
+      title.className = 'font-bold text-white';
+      title.textContent = result.title;
+      container.appendChild(title);
+      for (const player of result.players) {
+        const row = document.createElement('div');
+        row.className = 'mt-1 text-xs text-zinc-300';
+        row.textContent = `${player.name}: ${player.change > 0 ? '+' : player.change < 0 ? '−' : ''}$${Math.abs(player.change).toLocaleString()}`;
+        container.appendChild(row);
+      }
     }
 
     function recordMove(actorName, shortTag, fullMessage, seatIdx = null) {
@@ -3373,7 +3466,10 @@
     }
 
     function switchGameMode(newMode) {
-      clearTimeout(window.__aiTurnTimer);
+      if (state.inRoom && socket && (!isSocketConnected || sessionRecovering || gameClockPaused)) { showToast('Waiting for the connection to recover'); return; }
+      clearGameTimers();
+      clearTurnCountdown();
+      state.handResult = null;
       state.gameMode = newMode;
       const myId = getStoredMyId();
       const myIdx = state.players.findIndex(p => p.id === myId);
@@ -3452,6 +3548,7 @@
       if (state.bj.deck.length < 26) {
         state.bj.deck = buildDeck(4);
       }
+      beginHandResults();
       state.bj.phase = 'playing';
       state.bj.dealerHoleHidden = true;
       state.bj.dealerCards = [popCardFromDeck(state.bj.deck), popCardFromDeck(state.bj.deck)];
@@ -3473,7 +3570,7 @@
     }
 
     function advanceBlackjackTurn() {
-      clearTimeout(window.__aiTurnTimer);
+      clearGameTimeout(window.__aiTurnTimer);
       while (
         state.bj.turnSeat < state.players.length &&
         state.players[state.bj.turnSeat].bjStatus !== 'PLAYING'
@@ -3498,7 +3595,7 @@
       if (activeP.isBot || (state.autoPlayFriends && state.bj.turnSeat !== state.activeSeatIndex)) {
         clearTurnCountdown();
         const botThinkTime = delays.botDelay + secureRandomInt(delays.isFast ? 200 : 600);
-        window.__aiTurnTimer = setTimeout(() => {
+        window.__aiTurnTimer = setGameTimeout(() => {
           const score = calcBlackjackScore(activeP.cards).total;
           if (score < 17) {
             bjHit(state.bj.turnSeat);
@@ -3526,20 +3623,20 @@
         state.bj.turnSeat++;
         broadcastRoomState();
         renderAll();
-        setTimeout(advanceBlackjackTurn, 1000);
+        setGameTimeout(advanceBlackjackTurn, 1000);
       } else if (total === 21) {
         p.bjStatus = '21';
         recordMove(p.name, '21', `${p.name} hit 21!`, seatIdx);
         state.bj.turnSeat++;
         broadcastRoomState();
         renderAll();
-        setTimeout(advanceBlackjackTurn, 1000);
+        setGameTimeout(advanceBlackjackTurn, 1000);
       } else {
         recordMove(p.name, `Hit (${total})`, `${p.name} hits (${total})`, seatIdx);
         broadcastRoomState();
         renderAll();
         if (seatIdx !== state.activeSeatIndex) {
-          setTimeout(advanceBlackjackTurn, 800);
+          setGameTimeout(advanceBlackjackTurn, 800);
         } else {
           advanceBlackjackTurn();
         }
@@ -3556,7 +3653,7 @@
       state.bj.turnSeat++;
       broadcastRoomState();
       renderAll();
-      setTimeout(advanceBlackjackTurn, 800);
+      setGameTimeout(advanceBlackjackTurn, 800);
     }
 
     function bjDoubleDown(seatIdx) {
@@ -3573,7 +3670,7 @@
       state.bj.turnSeat++;
       broadcastRoomState();
       renderAll();
-      setTimeout(advanceBlackjackTurn, 1000);
+      setGameTimeout(advanceBlackjackTurn, 1000);
     }
 
     function bjSplitPair(seatIdx) {
@@ -3592,7 +3689,7 @@
       }
       broadcastRoomState();
       renderAll();
-      setTimeout(advanceBlackjackTurn, 800);
+      setGameTimeout(advanceBlackjackTurn, 800);
     }
 
     function runAutomatedDealerBlackjack() {
@@ -3611,7 +3708,7 @@
         if (curScore < 17) {
           state.bannerText = `Dealer takes a card (${curScore} < 17)...`;
           renderAll();
-          setTimeout(() => {
+          setGameTimeout(() => {
             state.bj.dealerCards.push(popCardFromDeck(state.bj.deck));
             const newScore = calcBlackjackScore(state.bj.dealerCards).total;
             if (newScore > 21) {
@@ -3621,7 +3718,7 @@
             }
             broadcastRoomState();
             renderAll();
-            setTimeout(stepDealer, delays.dealerStep);
+            setGameTimeout(stepDealer, delays.dealerStep);
           }, delays.dealerStep);
           return;
         }
@@ -3660,6 +3757,7 @@
         const status = (me && me.bjStatus) || 'ROUND END';
         state.bj.phase = 'betting';
         state.bannerText = `${status} — Dealer ${dBust ? 'busted (' + dScore + ')' : 'has ' + dScore}`;
+        finishHandResults(`Blackjack — dealer ${dBust ? 'busted' : 'finished'} with ${dScore}`);
         if (status.startsWith('WIN')) {
           triggerSyncedFx({ kind: 'pot_to_winner', seatIdx: state.activeSeatIndex });
         }
@@ -3671,7 +3769,7 @@
         renderAll();
       }
 
-      setTimeout(stepDealer, delays.dealerStep);
+      setGameTimeout(stepDealer, delays.dealerStep);
     }
 
     // =========================================================================
@@ -3748,7 +3846,7 @@
     }
 
     function startHoldemHand() {
-      clearTimeout(window.__aiTurnTimer);
+      clearGameTimeout(window.__aiTurnTimer);
       resetAnimationTracking(false);
       const n = state.players.length;
       state.holdem.deck = buildDeck(1);
@@ -3770,6 +3868,7 @@
         p.pokerRole = i === state.holdem.dealerIdx ? 'BTN' : i === sbIdx ? 'SB' : i === bbIdx ? 'BB' : '';
       }
 
+      beginHandResults();
       const sbAmt = Math.min(state.holdem.smallBlind, state.players[sbIdx].chips);
       state.players[sbIdx].chips -= sbAmt;
       state.players[sbIdx].pokerBet = sbAmt;
@@ -3787,7 +3886,7 @@
     }
 
     function checkHoldemProgression() {
-      clearTimeout(window.__aiTurnTimer);
+      clearGameTimeout(window.__aiTurnTimer);
       const activePlayers = state.players.filter(p => !p.pokerFolded);
       if (activePlayers.length === 1) {
         clearTurnCountdown();
@@ -3800,6 +3899,7 @@
         winner.chips += state.holdem.pot;
         state.holdem.phase = 'showdown';
         state.bannerText = `${winner.name} wins $${state.holdem.pot}`;
+        finishHandResults(`${winner.name} wins the pot — all other players folded`);
         broadcastRoomState();
         renderAll();
         return;
@@ -3839,7 +3939,7 @@
       if (curr.isBot || (state.autoPlayFriends && state.holdem.turnSeat !== state.activeSeatIndex && state.holdem.phase !== 'showdown')) {
         clearTurnCountdown();
         const botThinkMs = delays.botDelay + secureRandomInt(delays.isFast ? 200 : 800);
-        window.__aiTurnTimer = setTimeout(() => {
+        window.__aiTurnTimer = setGameTimeout(() => {
           const ev = evaluate7CardPoker([...curr.cards, ...state.holdem.community]);
           if (toCall > 250 && ev.score < 1000000 && Math.random() < 0.55) {
             pokerActionFold(state.holdem.turnSeat);
@@ -3874,7 +3974,7 @@
         );
         broadcastRoomState();
         renderAll();
-        setTimeout(() => {
+        setGameTimeout(() => {
           state.holdem.turnSeat = (state.holdem.dealerIdx + 1) % state.players.length;
           checkHoldemProgression();
         }, delays.streetPause);
@@ -3885,7 +3985,7 @@
         state.holdem.community.push(popCardFromDeck(state.holdem.deck));
         broadcastRoomState();
         renderAll();
-        setTimeout(() => {
+        setGameTimeout(() => {
           state.holdem.turnSeat = (state.holdem.dealerIdx + 1) % state.players.length;
           checkHoldemProgression();
         }, delays.streetPause);
@@ -3896,7 +3996,7 @@
         state.holdem.community.push(popCardFromDeck(state.holdem.deck));
         broadcastRoomState();
         renderAll();
-        setTimeout(() => {
+        setGameTimeout(() => {
           state.holdem.turnSeat = (state.holdem.dealerIdx + 1) % state.players.length;
           checkHoldemProgression();
         }, delays.streetPause);
@@ -3942,6 +4042,7 @@
       }
 
       state.bannerText = `${winners.map(w => w.name).join(' & ')} won $${state.holdem.pot} (${bestLabel})`;
+      finishHandResults(`${winners.map(w => w.name).join(' & ')} win with ${bestLabel}`);
       broadcastRoomState();
       renderAll();
     }
@@ -3961,7 +4062,7 @@
       state.holdem.turnSeat = (state.holdem.turnSeat + 1) % state.players.length;
       broadcastRoomState();
       renderAll();
-      setTimeout(checkHoldemProgression, 750);
+      setGameTimeout(checkHoldemProgression, 750);
     }
 
     function pokerActionCheckCall(seatIdx) {
@@ -3988,7 +4089,7 @@
       state.holdem.turnSeat = (state.holdem.turnSeat + 1) % state.players.length;
       broadcastRoomState();
       renderAll();
-      setTimeout(checkHoldemProgression, 750);
+      setGameTimeout(checkHoldemProgression, 750);
     }
 
     function pokerActionRaise(seatIdx, targetTotalBet) {
@@ -4014,7 +4115,7 @@
       state.holdem.turnSeat = (state.holdem.turnSeat + 1) % state.players.length;
       broadcastRoomState();
       renderAll();
-      setTimeout(checkHoldemProgression, 750);
+      setGameTimeout(checkHoldemProgression, 750);
     }
 
     // =========================================================================
@@ -4025,9 +4126,10 @@
     }
 
     function startBluffGame() {
-      clearTimeout(window.__aiTurnTimer);
+      clearGameTimeout(window.__aiTurnTimer);
       resetAnimationTracking(false);
       const deck = buildDeck(1);
+      beginHandResults();
       state.bluff.phase = 'playing';
       state.bluff.declaredRank = null;
       state.bluff.pile = [];
@@ -4060,6 +4162,7 @@
           state.bluff.winnerName = p.name;
           p.chips += 300;
           state.bannerText = `${p.name} won Bluff (+$300)`;
+          finishHandResults(`${p.name} wins Bluff`);
           triggerSyncedFx({ kind: 'outcome_pulse', result: 'win' });
           broadcastRoomState();
           renderAll();
@@ -4153,7 +4256,7 @@
     function bluffCallChallenge(challengerSeatIdx) {
       if (state.bluff.phase !== 'playing' || !state.bluff.lastPlay) return;
       clearTurnCountdown();
-      clearTimeout(window.__aiTurnTimer);
+      clearGameTimeout(window.__aiTurnTimer);
       const last = state.bluff.lastPlay;
       if (last.seatIndex === challengerSeatIdx) {
         showToast('Cannot call bluff on yourself');
@@ -4184,7 +4287,7 @@
       broadcastRoomState();
       renderAll();
 
-      setTimeout(() => {
+      setGameTimeout(() => {
         const loserIdx = !wasHonest ? last.seatIndex : challengerSeatIdx;
         triggerSyncedFx({
           kind: 'pile_collect',
@@ -4239,7 +4342,7 @@
     }
 
     function scheduleAiBluffTurn() {
-      clearTimeout(window.__aiTurnTimer);
+      clearGameTimeout(window.__aiTurnTimer);
       renderAll();
       if (state.bluff.phase !== 'playing') {
         clearTurnCountdown();
@@ -4252,7 +4355,7 @@
       if (activeP && (activeP.isBot || (state.autoPlayFriends && state.bluff.turnSeat !== state.activeSeatIndex))) {
         clearTurnCountdown();
         const botBluffDelay = delays.botDelay + secureRandomInt(delays.isFast ? 200 : 800);
-        window.__aiTurnTimer = setTimeout(() => {
+        window.__aiTurnTimer = setGameTimeout(() => {
           const aiIdx = state.bluff.turnSeat;
           const ai = state.players[aiIdx];
           if (!ai || ai.cards.length === 0) return;
@@ -4450,7 +4553,7 @@
 
       const notice = document.getElementById('connectionNotice');
       const host = state.players.find(p => p.id === state.hostId);
-      const connectionMessage = state.inRoom && socket && !isSocketConnected ? 'Connection lost. Reconnecting to the table…' : state.inRoom && host && host.isDisconnected ? 'Host temporarily offline. Waiting for reconnection…' : '';
+      const connectionMessage = state.inRoom && socket && (!isSocketConnected || sessionRecovering || gameClockPaused) ? 'Connection lost. Game paused while reconnecting…' : state.inRoom && host && host.isDisconnected ? 'Host temporarily offline. Waiting for reconnection…' : '';
       notice.textContent = connectionMessage;
       notice.classList.toggle('hidden', !connectionMessage);
 
@@ -4560,6 +4663,7 @@
       turnGuidance.classList.toggle('text-rose-300', isUserTurnNow && !state.isSpectator);
       document.getElementById('tableRules').textContent = gameRules[state.gameMode];
       renderHandHistory();
+      renderHandResult();
 
       const dockPanel = document.getElementById('playerDockPanel');
       const userTimerWrap = document.getElementById('userTurnTimerWrap');
@@ -5036,7 +5140,8 @@
       initSocket();
 
       function leaveCurrentRoom() {
-        clearTimeout(window.__aiTurnTimer);
+        clearGameTimers();
+        sessionRecovering = false;
         clearTurnCountdown();
         if (typeof socket !== 'undefined' && socket && isSocketConnected && state.inRoom) {
           try {
@@ -5386,11 +5491,7 @@
         }
       });
       document.getElementById('btnBjDeal').addEventListener('click', () => {
-        if (isHostUser()) {
-          dealBlackjackRound();
-        } else {
-          dispatchTableAction('bj_deal');
-        }
+        dispatchTableAction('bj_deal');
       });
       document.getElementById('btnBjHit').addEventListener('click', () => {
         dispatchTableAction('bj_hit', { seatIdx: state.activeSeatIndex });
@@ -5434,11 +5535,7 @@
         dispatchTableAction('poker_raise', { seatIdx: state.activeSeatIndex, amount: val });
       });
       document.getElementById('btnPokerNewHand').addEventListener('click', () => {
-        if (isHostUser()) {
-          startHoldemHand();
-        } else {
-          dispatchTableAction('poker_new_hand');
-        }
+        dispatchTableAction('poker_new_hand');
       });
 
       // 3. BLUFF EVENT LISTENERS
@@ -5461,11 +5558,7 @@
         dispatchTableAction('bluff_challenge', { seatIdx: state.activeSeatIndex });
       });
       document.getElementById('btnBluffNewGame').addEventListener('click', () => {
-        if (isHostUser()) {
-          startBluffGame();
-        } else {
-          dispatchTableAction('bluff_new_game');
-        }
+        dispatchTableAction('bluff_new_game');
       });
 
       // 4. DRAWER CONTROLS: PACING, CHAT, HISTORY
