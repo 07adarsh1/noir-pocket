@@ -637,7 +637,7 @@
               <div class="font-semibold text-white">Auto-Play Other Seats</div>
               <div class="text-[11px] text-zinc-400">Bots and unassigned seats make rapid smart moves</div>
             </div>
-            <input id="chkAutoFriends" type="checkbox" checked class="w-4 h-4 rounded bg-black border-white/20 text-rose-600 focus:ring-0" />
+            <input id="chkAutoFriends" type="checkbox" class="w-4 h-4 rounded bg-black border-white/20 text-rose-600 focus:ring-0" />
           </label>
 
           <button id="btnTopUpChips" type="button" class="w-full py-2.5 px-4 rounded-xl bg-charcoal-900 hover:bg-charcoal-800 border border-white/10 text-xs font-semibold text-white flex items-center justify-between transition">
@@ -1012,6 +1012,7 @@
     <!-- =========================================================================
          SCREEN 2: MULTIPLAYER WAITING ROOM
          ========================================================================= -->
+    <div id="connectionNotice" role="status" aria-live="polite" class="hidden w-full max-w-3xl mx-auto mt-3 px-4 py-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-sm text-amber-200"></div>
     <section id="waitingRoomView" class="hidden w-full max-w-3xl mx-auto py-6 sm:py-10 space-y-6">
       
       <!-- Room Header Strip -->
@@ -1085,12 +1086,17 @@
           <span id="waitingRequirementText">Ready to play</span>
         </div>
 
+        <details class="rounded-2xl bg-charcoal-900 border border-white/10 p-4 text-sm text-zinc-300">
+          <summary class="cursor-pointer font-semibold text-white">How to play</summary>
+          <p id="waitingRules" class="mt-2 text-xs leading-relaxed"></p>
+        </details>
         <!-- Bottom Room Actions: Start Game (Host) / Waiting Banner (Guest) / Leave -->
         <div class="space-y-3 pt-2">
           <button id="btnWaitingStartGame" type="button" class="w-full py-4 rounded-xl bg-white hover:bg-zinc-200 disabled:opacity-40 text-zinc-950 font-bold text-sm tracking-wide transition">
             Start Game Now
           </button>
           
+          <button id="btnWaitingReady" type="button" class="hidden w-full py-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-sm">Mark ready</button>
           <div id="guestWaitingBanner" class="hidden w-full py-3.5 px-4 rounded-2xl bg-charcoal-900 border border-white/10 text-center text-xs font-semibold text-zinc-300 flex items-center justify-center gap-2">
             <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
             <span>Waiting for room host to start the table...</span>
@@ -1246,6 +1252,8 @@
           <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300">LIVE</span>
         </div>
 
+        <div id="turnGuidance" role="status" aria-live="polite" class="rounded-xl px-3 py-2 text-sm font-semibold bg-white/5 text-zinc-300"></div>
+        <details class="text-xs text-zinc-400"><summary class="cursor-pointer text-zinc-300 font-semibold">Rules &amp; hand rankings</summary><p id="tableRules" class="mt-2 leading-relaxed"></p></details>
         <!-- Player's Private Hole Cards Row -->
         <div id="activePlayerHandRow" class="flex items-center justify-center gap-2 overflow-x-auto custom-scrollbar pt-2 pb-1 px-2 min-h-[96px]"></div>
 
@@ -2264,7 +2272,7 @@
       myPlayerId: '',
       hostId: '',
       maxSeats: 4,
-      autoPlayFriends: true,
+      autoPlayFriends: false,
       isSpectator: false,
       gamePacing: 'cinematic',
       turnSecondsLeft: 25,
@@ -2511,7 +2519,7 @@
         dot.title = 'Live Socket.IO WebSocket Connected';
       } else {
         dot.className = 'w-2 h-2 rounded-full bg-amber-400 live-sync-dot';
-        dot.title = 'Local Peer Sync Active';
+        dot.title = 'Disconnected from server';
       }
     }
 
@@ -2582,6 +2590,11 @@
     // TIER 1: HOST AUTHORITY ACTION DISPATCHER & RELAY
     // =========================================================================
     function dispatchTableAction(action, payload = {}) {
+      const host = state.players.find(p => p.id === state.hostId);
+      if (state.inRoom && socket && (!isSocketConnected || (host && host.isDisconnected))) {
+        showToast('Waiting for the connection to recover');
+        return;
+      }
       if (isHostUser()) {
         executeTableAction(action, payload);
       } else {
@@ -2644,6 +2657,15 @@
         case 'bluff_challenge':
           bluffCallChallenge(sIdx);
           break;
+        case 'set_ready': {
+          const player = state.players.find(p => p.id === payload.playerId);
+          if (state.inWaitingRoom && player && !player.isBot && player.id !== state.hostId) {
+            player.isReady = Boolean(payload.ready);
+            broadcastRoomState();
+            renderAll();
+          }
+          break;
+        }
         case 'rename_player':
           if (payload && payload.name) {
             let targetIdx = payload.seatIdx;
@@ -2821,6 +2843,7 @@
         socket.on('connect', () => {
           isSocketConnected = true;
           updateSyncIndicator(true);
+          renderAll();
           console.log('[NOIR Socket] Connected to server, ID:', socket.id);
           const myId = getStoredMyId();
           if (state.inRoom && state.roomCode) {
@@ -2847,6 +2870,7 @@
           isSocketConnected = false;
           updateSyncIndicator(false);
           console.log('[NOIR Socket] Disconnected from server');
+          renderAll();
         });
 
         socket.on('room_sync', (data) => {
@@ -2860,7 +2884,8 @@
 
         socket.on('player_action', (data) => {
           if (isHostUser() && data && data.action) {
-            executeTableAction(data.action, data.payload);
+            const payload = data.action === 'set_ready' ? { ...data.payload, playerId: data.senderPlayerId } : data.payload;
+            executeTableAction(data.action, payload);
           }
         });
 
@@ -2946,10 +2971,8 @@
                 state.players[pIdx].isDisconnected = true;
               }
             }
-            if (isHostUser()) {
-              broadcastRoomState();
-              renderAll();
-            }
+            if (isHostUser()) broadcastRoomState();
+            renderAll();
           }
         });
       } catch (err) {
@@ -3294,6 +3317,10 @@
         return;
       }
 
+      if (state.players.some(p => !p.isBot && p.id !== state.hostId && (!p.isReady || p.isDisconnected))) {
+        showToast('Wait for all players to connect and mark ready');
+        return;
+      }
       const minRequired = state.gameMode === 'bluff' ? 3 : state.gameMode === 'holdem' ? 2 : 1;
       while (state.players.length < minRequired) {
         addBotToRoom(false);
@@ -3331,13 +3358,18 @@
         container.innerHTML = '<div class="text-zinc-500 italic text-center py-2">No moves recorded yet</div>';
         return;
       }
-      container.innerHTML = state.handHistory.slice(0, 20).map(item => `
-        <div class="flex items-start gap-2 py-1 px-1.5 rounded-lg bg-black/40 border border-white/5 text-[11px]">
-          <span class="text-[9px] font-mono text-zinc-500 whitespace-nowrap mt-0.5">${item.time}</span>
-          <span class="text-[9px] font-bold px-1 rounded bg-rose-900/40 text-rose-300 font-mono shrink-0">${item.tag}</span>
-          <span class="text-zinc-300 truncate">${item.text}</span>
-        </div>
-      `).join('');
+      container.replaceChildren();
+      state.handHistory.slice(0, 20).forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'flex items-start gap-2 py-1 px-1.5 rounded-lg bg-black/40 border border-white/5 text-[11px]';
+        [item.time, item.tag, item.text].forEach((value, index) => {
+          const span = document.createElement('span');
+          span.className = ['text-[9px] font-mono text-zinc-500 whitespace-nowrap mt-0.5', 'text-[9px] font-bold px-1 rounded bg-rose-900/40 text-rose-300 font-mono shrink-0', 'text-zinc-300 break-words min-w-0'][index];
+          span.textContent = value;
+          row.appendChild(span);
+        });
+        container.appendChild(row);
+      });
     }
 
     function switchGameMode(newMode) {
@@ -4259,6 +4291,12 @@
     // =========================================================================
     // 8. SCREEN RENDERING PIPELINE
     // =========================================================================
+    const gameRules = {
+      blackjack: 'Get closer to 21 than the dealer without going over. Hit for another card, stand to keep your total, or double on your first two cards when you can afford it.',
+      holdem: 'Make the best five-card hand from your two cards and the community cards. In order: high card, pair, two pair, three of a kind, straight, flush, full house, four of a kind, straight flush.',
+      bluff: 'Play selected cards face down and claim a rank. On your turn, play, pass, or challenge the last claim. Get rid of all your cards to win.'
+    };
+
     function renderWaitingRoom() {
       const myId = getStoredMyId();
       const isHost = state.hostId === myId;
@@ -4269,6 +4307,12 @@
       document.getElementById('waitingGameModeBadge').textContent = state.gameMode.toUpperCase();
       document.getElementById('waitingPlayerCount').textContent = count;
       document.getElementById('waitingMaxPlayers').textContent = maxAllowed;
+      document.getElementById('waitingRules').textContent = gameRules[state.gameMode];
+      const me = state.players.find(p => p.id === myId);
+      const readyButton = document.getElementById('btnWaitingReady');
+      readyButton.classList.toggle('hidden', isHost || !me || state.isSpectator);
+      readyButton.textContent = me && me.isReady ? 'Ready — tap to change' : 'Mark ready';
+      const waitingForReady = state.players.some(p => !p.isBot && p.id !== state.hostId && (!p.isReady || p.isDisconnected));
 
       const hostBotControls = document.getElementById('hostBotControls');
       const btnStart = document.getElementById('btnWaitingStartGame');
@@ -4290,7 +4334,7 @@
       const reqText = document.getElementById('waitingRequirementText');
       const canStart = count >= minRequired;
       if (btnStart) {
-        btnStart.disabled = false;
+        btnStart.disabled = waitingForReady;
         if (canStart) {
           btnStart.innerHTML = '<span>Start Game Now</span>';
         } else {
@@ -4298,7 +4342,7 @@
         }
       }
       if (reqText) {
-        reqText.textContent = canStart
+        reqText.textContent = waitingForReady ? 'Waiting for all players to connect and mark ready.' : canStart
           ? `Ready to start table! (${count} seated, min ${minRequired} required)`
           : `Need at least ${minRequired} players/bots to start ${state.gameMode.toUpperCase()} (${count}/${minRequired}) — clicking Start will auto-fill bots!`;
       }
@@ -4318,20 +4362,22 @@
           const renameBtnHTML = isMe
             ? `<button type="button" id="btnWaitingRenameMe" class="text-[11px] font-mono text-zinc-300 hover:text-white px-2.5 py-1 rounded-md bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 transition">Rename</button>`
             : '';
-          const tagBadge = p.isHost
+          const tagBadge = p.isDisconnected
+            ? `<span class="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-bold">RECONNECTING</span>`
+            : p.isHost
             ? `<span class="px-2.5 py-0.5 rounded-full bg-rose-600/20 text-rose-300 border border-rose-500/30 text-[10px] font-bold">HOST</span>`
             : p.isBot
             ? `<span class="px-2.5 py-0.5 rounded-full bg-white/10 text-zinc-300 text-[10px] font-bold">BOT</span>`
             : isMe
             ? `<span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold">YOU</span>`
-            : `<span class="px-2.5 py-0.5 rounded-full bg-white/5 text-zinc-400 text-[10px] font-medium">READY</span>`;
+            : `<span class="px-2.5 py-0.5 rounded-full bg-white/5 text-zinc-400 text-[10px] font-medium">${p.isReady ? 'READY' : 'NOT READY'}</span>`;
 
           rosterHTML += `
             <div class="flex items-center justify-between p-3.5 rounded-2xl bg-charcoal-900 border border-white/5 shadow-md">
               <div class="flex items-center gap-3 min-w-0">
                 <div class="relative shrink-0">
                   <span class="w-10 h-10 rounded-lg ${isMe ? 'bg-zinc-100 text-zinc-950 font-bold' : 'bg-zinc-800 text-zinc-300'} border border-white/10 flex items-center justify-center text-xs font-bold font-mono">${initials}</span>
-                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 absolute -bottom-0.5 -right-0.5 ring-2 ring-charcoal-950"></span>
+                  <span class="w-2.5 h-2.5 rounded-full ${p.isDisconnected ? 'bg-amber-400' : 'bg-emerald-400'} absolute -bottom-0.5 -right-0.5 ring-2 ring-charcoal-950"></span>
                 </div>
                 <div class="truncate">
                   <div class="flex items-center gap-1.5 truncate">
@@ -4402,12 +4448,18 @@
         cards: []
       };
 
+      const notice = document.getElementById('connectionNotice');
+      const host = state.players.find(p => p.id === state.hostId);
+      const connectionMessage = state.inRoom && socket && !isSocketConnected ? 'Connection lost. Reconnecting to the table…' : state.inRoom && host && host.isDisconnected ? 'Host temporarily offline. Waiting for reconnection…' : '';
+      notice.textContent = connectionMessage;
+      notice.classList.toggle('hidden', !connectionMessage);
+
       // Top Nav Bar Sync
-      document.getElementById('navUserChipsVal').textContent = (me.chips || 2500).toLocaleString();
+      document.getElementById('navUserChipsVal').textContent = (me.chips ?? 2500).toLocaleString();
       document.getElementById('lobbyPlayerNameDisplay').textContent = me.name;
       document.getElementById('lobbyPlayerAvatar').textContent = getPlayerInitials(me.name);
       const lobbyChipsEl = document.getElementById('lobbyChipsDisplay');
-      if (lobbyChipsEl) lobbyChipsEl.textContent = (me.chips || 2500).toLocaleString();
+      if (lobbyChipsEl) lobbyChipsEl.textContent = (me.chips ?? 2500).toLocaleString();
 
       if (!state.inRoom) {
         lobbyView.classList.remove('hidden');
@@ -4501,6 +4553,13 @@
         (state.gameMode === 'holdem' && state.holdem.phase !== 'showdown') ||
         (state.gameMode === 'bluff' && state.bluff.phase === 'playing');
       const isUserTurnNow = isRoundActive && activeTurnIdx === state.activeSeatIndex;
+
+      const turnGuidance = document.getElementById('turnGuidance');
+      const activePlayer = state.players[activeTurnIdx];
+      turnGuidance.textContent = isRoundActive && activePlayer ? (isUserTurnNow && !state.isSpectator ? 'Your turn — choose an action below' : `${activePlayer.name}’s turn`) : (state.bannerText || 'Waiting for the next hand');
+      turnGuidance.classList.toggle('text-rose-300', isUserTurnNow && !state.isSpectator);
+      document.getElementById('tableRules').textContent = gameRules[state.gameMode];
+      renderHandHistory();
 
       const dockPanel = document.getElementById('playerDockPanel');
       const userTimerWrap = document.getElementById('userTurnTimerWrap');
@@ -4779,10 +4838,11 @@
       const isMyHoldemTurn = !isShowdown && state.holdem.turnSeat === state.activeSeatIndex && !me.pokerFolded;
       document.getElementById('btnPokerFold').disabled = !isMyHoldemTurn;
       document.getElementById('btnPokerCheckCall').disabled = !isMyHoldemTurn;
-      document.getElementById('btnPokerRaise').disabled = !isMyHoldemTurn;
-      document.getElementById('holdemRaiseSlider').disabled = !isMyHoldemTurn;
+      const canRaise = isMyHoldemTurn && me.chips > toCall;
+      document.getElementById('btnPokerRaise').disabled = !canRaise;
+      document.getElementById('holdemRaiseSlider').disabled = !canRaise;
       document.querySelectorAll('.poker-preset-btn').forEach(b => {
-        b.disabled = !isMyHoldemTurn;
+        b.disabled = !canRaise;
       });
 
       document.getElementById('holdemRaiseRow').classList.toggle('hidden', isShowdown);
@@ -4919,10 +4979,8 @@
       const isMyBluffTurn = state.bluff.phase === 'playing' && state.bluff.turnSeat === state.activeSeatIndex;
       const targetRank = state.bluff.declaredRank || state.bluff.chosenRankInput;
       const btnPlay = document.getElementById('btnBluffPlayCards');
-      btnPlay.textContent = `Play ${
-        selectedList.length || 1
-      }x ${targetRank}`;
-      btnPlay.disabled = !isMyBluffTurn;
+      btnPlay.textContent = selectedList.length ? `Play ${selectedList.length}x ${targetRank}` : 'Select cards to play';
+      btnPlay.disabled = !isMyBluffTurn || selectedList.length === 0;
       document.getElementById('btnBluffPass').disabled = !isMyBluffTurn || !state.bluff.lastPlay;
       document.getElementById('btnBluffChallenge').disabled = !isMyBluffTurn || !state.bluff.lastPlay;
       document.getElementById('bluffActionGrid').classList.toggle('hidden', state.bluff.phase === 'gameover');
@@ -5245,6 +5303,10 @@
 
       document.getElementById('btnWaitingAddBot').addEventListener('click', addBotToRoom);
       document.getElementById('btnWaitingStartGame').addEventListener('click', hostStartGame);
+      document.getElementById('btnWaitingReady').addEventListener('click', () => {
+        const me = state.players.find(p => p.id === getStoredMyId());
+        if (me) dispatchTableAction('set_ready', { playerId: me.id, ready: !me.isReady });
+      });
       document.getElementById('btnWaitingLeave').addEventListener('click', leaveCurrentRoom);
       document.getElementById('btnWaitingGameSwitch').addEventListener('click', () => {
         const modes = ['blackjack', 'holdem', 'bluff'];
