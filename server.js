@@ -335,7 +335,7 @@ io.on('connection', (socket) => {
             id: player.id,
             name: player.name || ('Player ' + (roomEntry.state.players.length + 1)),
             avatar: player.avatar || '02',
-            chips: player.chips || (roomEntry.state.players[0] && roomEntry.state.players[0].chips) || 2500,
+            chips: 5000,
             isHost: false,
             isBot: false,
             cards: Array.isArray(player.cards) ? player.cards : [],
@@ -410,6 +410,7 @@ io.on('connection', (socket) => {
       const code = roomCode.toUpperCase();
       const roomEntry = rooms.get(code);
       if (!roomEntry) return;
+      if (action === 'rebuy_chips' && (socket.data.roomCode !== code || socket.data.isSpectator || !socket.data.playerId || !(roomEntry.state.players || []).some(p => p.id === socket.data.playerId))) return;
 
       // Real-time player rename handler (authoritative server sync)
       if (action === 'rename_player' && payload && payload.name) {

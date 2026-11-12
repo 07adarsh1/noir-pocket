@@ -10,7 +10,8 @@
     "deploy:netlify": "npx netlify deploy --prod --dir=.",
     "test:recovery": "node test-recovery.js",
     "test:gameplay": "node test-gameplay.js",
-    "test:persistence": "node test-persistence.js"
+    "test:persistence": "node test-persistence.js",
+    "test:rebuy": "node test-rebuy.js"
   },
   "keywords": [
     "card-game",

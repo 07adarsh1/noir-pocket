@@ -649,7 +649,7 @@
         <!-- User Balance Button -->
         <button id="btnUserChipsPill" type="button" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-xs font-medium transition" title="Click to view profile or top up">
           <span class="noir-chip-mini"></span>
-          <span class="font-mono font-bold text-white">$<span id="navUserChipsVal">2,500</span></span>
+          <span class="font-mono font-bold text-white">$<span id="navUserChipsVal">5,000</span></span>
         </button>
 
         <!-- Rules Button -->
@@ -705,8 +705,8 @@
           </label>
 
           <button id="btnTopUpChips" type="button" class="w-full py-2.5 px-4 rounded-xl bg-charcoal-900 hover:bg-charcoal-800 border border-white/10 text-xs font-semibold text-white flex items-center justify-between transition">
-            <span>Add Bankroll Chips</span>
-            <span class="text-rose-400 font-mono font-bold">+$1,000</span>
+            <span>Rebuy chips when broke</span>
+            <span class="text-rose-400 font-mono font-bold">$5,000</span>
           </button>
 
           <button id="btnDownloadHtml" type="button" class="w-full py-2.5 px-4 rounded-xl bg-charcoal-900 hover:bg-charcoal-800 border border-white/10 text-xs font-semibold text-zinc-300 hover:text-white flex items-center justify-between transition">
@@ -1062,7 +1062,7 @@
           <span id="lobbyPlayerAvatar" class="w-7 h-7 rounded bg-zinc-900 border border-zinc-700 text-white font-mono font-bold text-xs flex items-center justify-center">AL</span>
           <div class="flex items-center gap-2">
             <span class="text-white font-medium" id="lobbyPlayerNameDisplay">Alex</span>
-            <span class="text-[10px] text-zinc-500 font-mono">• Bankroll $<span id="lobbyChipsDisplay">2,500</span></span>
+            <span class="text-[10px] text-zinc-500 font-mono">• Bankroll $<span id="lobbyChipsDisplay">5,000</span></span>
           </div>
         </div>
         <button id="btnOpenProfileModal" type="button" class="px-3 py-1 rounded bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white font-mono text-[11px] transition border border-zinc-800">
@@ -1289,7 +1289,7 @@
           <!-- Bankroll Button/Badge -->
           <div id="activeBankrollPill" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs sm:text-sm font-bold text-white shadow-md">
             <span class="noir-chip-mini"></span>
-            <span class="font-mono">$<span id="activePlayerChips">2,500</span></span>
+            <span class="font-mono">$<span id="activePlayerChips">5,000</span></span>
           </div>
         </div>
 
@@ -1316,6 +1316,11 @@
         </div>
 
         <div id="handResult" class="hidden rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-zinc-200" aria-live="polite"></div>
+        <div id="rebuyPanel" class="hidden rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-100" role="status">
+          <div class="font-semibold">You are out of chips</div>
+          <div id="rebuyHelp" class="mt-1 text-xs text-amber-200/80">Rebuy 5,000 chips to join the next hand.</div>
+          <button id="btnRebuy" type="button" class="mt-3 w-full rounded-xl bg-amber-200 px-4 py-3 text-xs font-bold text-zinc-950 disabled:opacity-40">Rebuy 5,000 chips</button>
+        </div>
         <div id="turnGuidance" role="status" aria-live="polite" class="rounded-xl px-3 py-2 text-sm font-semibold bg-white/5 text-zinc-300"></div>
         <details class="text-xs text-zinc-400"><summary class="cursor-pointer text-zinc-300 font-semibold">Rules &amp; hand rankings</summary><p id="tableRules" class="mt-2 leading-relaxed"></p></details>
         <!-- Player's Private Hole Cards Row -->
@@ -1472,9 +1477,7 @@
           <div>
             <label for="selectStartChips" class="block text-xs font-semibold text-zinc-300 mb-1.5 uppercase font-mono tracking-wider">Starting Chips</label>
             <select id="selectStartChips" class="w-full px-3 py-2.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs font-semibold text-white focus:outline-none focus:border-zinc-500">
-              <option value="1000">$1,000</option>
-              <option value="2500" selected>$2,500</option>
-              <option value="5000">$5,000</option>
+              <option value="5000" selected>$5,000 for each player</option>
             </select>
           </div>
           <div>
@@ -2324,6 +2327,7 @@
     // =========================================================================
     // 3. STATE & STORAGE / BROADCAST SYNC
     // =========================================================================
+    const STARTING_CHIPS = 5000;
     const BOT_NAMES = ['Aarav', 'Priya', 'Rohan', 'Kabir', 'Meera', 'Dev', 'Zoya'];
 
     const state = {
@@ -2722,6 +2726,26 @@
       }
     }
 
+    function canRebuy(player) {
+      if (!player || player.isBot || player.chips !== 0) return false;
+      if (state.inWaitingRoom) return true;
+      if (state.gameMode === 'blackjack') return state.bj.phase === 'betting';
+      if (state.gameMode === 'holdem') return state.holdem.phase === 'showdown';
+      return state.bluff.phase === 'gameover';
+    }
+    function rebuyChips(playerId) {
+      const player = state.players.find(p => p.id === playerId);
+      if (!canRebuy(player)) return false;
+      player.chips = STARTING_CHIPS;
+      player.bjBet = 100;
+      player.bjStatus = '';
+      player.lastMoveBadge = 'REBUY';
+      recordMove(player.name, 'Rebuy', `${player.name} rebuys $5,000 in chips`);
+      broadcastRoomState();
+      renderAll();
+      return true;
+    }
+
     function executeTableAction(action, payload = {}) {
       let sIdx = payload.seatIdx;
       if (sIdx === undefined && payload.playerId) {
@@ -2768,6 +2792,9 @@
           break;
         case 'bluff_challenge':
           bluffCallChallenge(sIdx);
+          break;
+        case 'rebuy_chips':
+          rebuyChips(payload.playerId);
           break;
         case 'set_ready': {
           const player = state.players.find(p => p.id === payload.playerId);
@@ -2989,7 +3016,7 @@
                   id: myId,
                   name: (document.getElementById('inputPlayerName')?.value || 'Alex').trim(),
                   avatar: state.selectedAvatar || '01',
-                  chips: 2500
+                  chips: STARTING_CHIPS
                 };
                 socket.emit('join_room', { roomCode: state.roomCode, player: me, asSpectator: state.isSpectator }, result => {
                   if (result && result.ok && result.state) { sessionRecovering = false; applyRemoteState(result.state); }
@@ -3019,7 +3046,7 @@
 
         socket.on('player_action', (data) => {
           if (isHostUser() && data && data.action) {
-            const payload = data.action === 'set_ready' ? { ...data.payload, playerId: data.senderPlayerId } : data.payload;
+            const payload = ['set_ready', 'rebuy_chips'].includes(data.action) ? { ...data.payload, playerId: data.senderPlayerId } : data.payload;
             executeTableAction(data.action, payload);
           }
         });
@@ -3044,7 +3071,7 @@
                   id: p.id,
                   name: p.name,
                   avatar: p.avatar || '02',
-                  chips: p.chips || (state.players[0] && state.players[0].chips) || 2500,
+                  chips: STARTING_CHIPS,
                   isHost: false,
                   isBot: false,
                   cards: [],
@@ -3195,7 +3222,7 @@
           id: myId,
           name: hostName,
           avatar: myAvatar,
-          chips: startChips || 2500,
+          chips: STARTING_CHIPS,
           isHost: true,
           isBot: false,
           cards: [],
@@ -3269,7 +3296,7 @@
           id: myId,
           name: myName,
           avatar: myAvatar || '02',
-          chips: (state.players[0] && state.players[0].chips) || 2500,
+          chips: STARTING_CHIPS,
           isHost: false,
           isBot: false,
           cards: [],
@@ -3360,7 +3387,7 @@
           id: myId,
           name: myName,
           avatar: myAvatar,
-          chips: 2500,
+          chips: STARTING_CHIPS,
           isHost: false,
           isBot: false
         };
@@ -3409,7 +3436,7 @@
         id: 'bot_' + Date.now().toString(36) + '_' + secureRandomInt(999),
         name: botName,
         avatar: botAvatar,
-        chips: (state.players[0] && state.players[0].chips) || 2500,
+        chips: STARTING_CHIPS,
         isHost: false,
         isBot: true,
         cards: [],
@@ -3605,9 +3632,6 @@
       for (const p of state.players) {
         p.cards = [];
         p.bjStatus = '';
-        if (p.chips < 25) {
-          p.chips = 1000;
-        }
         if (!p.bjBet || p.bjBet > p.chips) {
           p.bjBet = Math.min(100, Math.max(25, p.chips));
         }
@@ -3618,6 +3642,7 @@
     }
 
     function dealBlackjackRound() {
+      if (!state.players.some(p => p.chips > 0)) { showToast('Rebuy chips before dealing'); return; }
       resetAnimationTracking(false);
       if (state.bj.deck.length < 26) {
         state.bj.deck = buildDeck(4);
@@ -3628,6 +3653,7 @@
       state.bj.dealerCards = [popCardFromDeck(state.bj.deck), popCardFromDeck(state.bj.deck)];
 
       for (const p of state.players) {
+        if (p.chips <= 0) { p.cards = []; p.bjBet = 0; p.bjStatus = 'OUT'; p.lastMoveBadge = 'REBUY'; continue; }
         const bet = Math.min(p.chips, Math.max(25, p.bjBet || 100));
         p.bjBet = bet;
         p.chips -= bet;
@@ -3802,6 +3828,7 @@
         const dBust = dScore > 21;
 
         for (const p of state.players) {
+          if (p.bjStatus === 'OUT') continue;
           const pScore = calcBlackjackScore(p.cards).total;
           const isNatural = p.cards.length === 2 && pScore === 21;
           if (pScore > 21) {
@@ -3920,6 +3947,8 @@
     }
 
     function startHoldemHand() {
+      const funded = state.players.filter(p => p.chips > 0);
+      if (funded.length < 2) { showToast('At least two players need chips to start a hand'); return; }
       clearGameTimeout(window.__aiTurnTimer);
       resetAnimationTracking(false);
       const n = state.players.length;
@@ -3927,18 +3956,18 @@
       state.holdem.community = [];
       state.holdem.pot = 0;
       state.holdem.phase = 'preflop';
-      state.holdem.dealerIdx = (state.holdem.dealerIdx + 1) % n;
+      const nextFunded = index => { do { index = (index + 1) % n; } while (state.players[index].chips <= 0); return index; };
+      state.holdem.dealerIdx = nextFunded(state.holdem.dealerIdx);
       state.holdem.actedThisStreet = {};
 
-      const sbIdx = (state.holdem.dealerIdx + 1) % n;
-      const bbIdx = (state.holdem.dealerIdx + 2) % n;
+      const sbIdx = funded.length === 2 ? state.holdem.dealerIdx : nextFunded(state.holdem.dealerIdx);
+      const bbIdx = nextFunded(sbIdx);
 
       for (let i = 0; i < n; i++) {
         const p = state.players[i];
-        if (p.chips < 100) p.chips = 1000;
-        p.cards = [popCardFromDeck(state.holdem.deck), popCardFromDeck(state.holdem.deck)];
+        p.cards = p.chips > 0 ? [popCardFromDeck(state.holdem.deck), popCardFromDeck(state.holdem.deck)] : [];
         p.pokerBet = 0;
-        p.pokerFolded = false;
+        p.pokerFolded = p.chips <= 0;
         p.pokerRole = i === state.holdem.dealerIdx ? 'BTN' : i === sbIdx ? 'SB' : i === bbIdx ? 'BB' : '';
       }
 
@@ -4639,7 +4668,7 @@
 
       const me = state.players[state.activeSeatIndex] || {
         name: document.getElementById('inputPlayerName').value || 'Alex',
-        chips: 2500,
+        chips: STARTING_CHIPS,
         avatar: state.selectedAvatar || '01',
         cards: []
       };
@@ -4651,11 +4680,11 @@
       notice.classList.toggle('hidden', !connectionMessage);
 
       // Top Nav Bar Sync
-      document.getElementById('navUserChipsVal').textContent = (me.chips ?? 2500).toLocaleString();
+      document.getElementById('navUserChipsVal').textContent = (me.chips ?? STARTING_CHIPS).toLocaleString();
       document.getElementById('lobbyPlayerNameDisplay').textContent = me.name;
       document.getElementById('lobbyPlayerAvatar').textContent = getPlayerInitials(me.name);
       const lobbyChipsEl = document.getElementById('lobbyChipsDisplay');
-      if (lobbyChipsEl) lobbyChipsEl.textContent = (me.chips ?? 2500).toLocaleString();
+      if (lobbyChipsEl) lobbyChipsEl.textContent = (me.chips ?? STARTING_CHIPS).toLocaleString();
 
       if (!state.inRoom) {
         lobbyView.classList.remove('hidden');
@@ -4757,6 +4786,11 @@
       document.getElementById('tableRules').textContent = gameRules[state.gameMode];
       renderHandHistory();
       renderHandResult();
+      const needsRebuy = !state.isSpectator && me.id === getStoredMyId() && me.chips === 0;
+      document.getElementById('rebuyPanel').classList.toggle('hidden', !needsRebuy);
+      document.getElementById('btnRebuy').disabled = !canRebuy(me);
+      document.getElementById('rebuyHelp').textContent = canRebuy(me) ? 'Rebuy 5,000 chips to join the next hand.' : 'You can rebuy when the current hand ends.';
+      document.getElementById('btnTopUpChips').disabled = !canRebuy(me);
 
       const dockPanel = document.getElementById('playerDockPanel');
       const userTimerWrap = document.getElementById('userTurnTimerWrap');
@@ -4966,6 +5000,7 @@
       const isMyTurn = state.bj.phase === 'playing' && state.bj.turnSeat === state.activeSeatIndex;
       const canSplit = isMyTurn && me.cards.length === 2 && me.cards[0].rank === me.cards[1].rank && me.chips >= me.bjBet;
       const canDouble = isMyTurn && me.cards.length === 2 && me.chips >= me.bjBet;
+      document.getElementById('btnBjDeal').disabled = !state.players.some(p => p.chips > 0);
       document.getElementById('btnBjHit').disabled = !isMyTurn;
       document.getElementById('btnBjStand').disabled = !isMyTurn;
       document.getElementById('btnBjSplit').disabled = !canSplit;
@@ -5275,7 +5310,7 @@
       document.querySelectorAll('[data-lobby-quick-game]').forEach(btn => {
         btn.addEventListener('click', () => {
           const game = btn.getAttribute('data-lobby-quick-game');
-          createPrivateRoom(2500, 4, game, true);
+          createPrivateRoom(STARTING_CHIPS, 4, game, true);
         });
       });
 
@@ -5317,7 +5352,7 @@
         const hostInput = document.getElementById('inputCreateHostName');
         const hostName = (hostInput?.value || getStoredPlayerName()).trim().slice(0, 14) || 'Alex';
         saveStoredPlayerName(hostName);
-        const chips = parseInt(document.getElementById('selectStartChips').value, 10) || 2500;
+        const chips = STARTING_CHIPS;
         const maxSeats = parseInt(document.getElementById('selectFriendSeats').value, 10) || 4;
         document.getElementById('createRoomModal').classList.add('hidden');
         createPrivateRoom(chips, maxSeats, modalChosenGame);
@@ -5554,14 +5589,13 @@
         state.autoPlayFriends = e.target.checked;
         showToast(state.autoPlayFriends ? 'Auto-play on' : 'Pass-and-play mode');
       });
-      document.getElementById('btnTopUpChips').addEventListener('click', () => {
-        const me = state.players[state.activeSeatIndex] || state.players[0];
-        if (me) {
-          me.chips += 1000;
-          showToast('+$1,000 added to bankroll');
-          renderAll();
-        }
-      });
+      const requestRebuy = () => {
+        const player = state.players.find(p => p.id === getStoredMyId());
+        if (!canRebuy(player)) { showToast('You can rebuy when you are out of chips and the hand has ended'); return; }
+        dispatchTableAction('rebuy_chips', { playerId: player.id });
+      };
+      document.getElementById('btnTopUpChips').addEventListener('click', requestRebuy);
+      document.getElementById('btnRebuy').addEventListener('click', requestRebuy);
       document.getElementById('btnLeaveRoom').addEventListener('click', leaveCurrentRoom);
 
       // Quick Reaction Buttons

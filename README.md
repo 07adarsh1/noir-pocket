@@ -14,6 +14,7 @@
 - **👑 Host Authority Architecture:** Single authoritative engine managed by the host socket with zero race conditions.
 - **📱 Mobile Reconnection & 45s Grace Window:** Seamlessly restores player state upon Wi-Fi or screen sleep reconnections.
 - **⏳ Turn Inactivity Auto-Timers:** 25-second turn countdown rings with auto-action safeguards (Auto-Stand, Auto-Check/Fold, Auto-Pass).
+- **🪙 5,000-chip starting stack and rebuy:** Each new player starts with 5,000 virtual chips. Players at zero can rebuy 5,000 between hands; the host synchronizes the rebuy across the table.
 - **💬 Table Chat & Banter:** Live chat input and quick preset reaction buttons with floating speech bubbles over player seats.
 - **⚡ Game Pacing Toggle:** Switch between **Cinematic** (~720ms deals, 2.4s bot delays) and **Turbo Fast** (~320ms deals, 850ms bot delays).
 - **👀 Spectator Mode:** Full tables allow guests to enter as spectators without taking seats.
@@ -51,7 +52,7 @@ By default rooms are stored in memory and are lost if the server restarts. For d
 
 For development and restart testing, set `ROOM_STORE_FILE` to a private path. File storage is not durable on an ephemeral Render filesystem. `DATABASE_URL` takes precedence when both are set. `/health` reports `roomStorage` as `postgresql`, `file`, or `memory` without exposing credentials.
 
-Run `npm run test:recovery`, `npm run test:gameplay`, and `npm run test:persistence` for the focused checks.
+Run `npm run test:recovery`, `npm run test:gameplay`, `npm run test:rebuy`, and `npm run test:persistence` for the focused checks.
 
 ---
 
