@@ -667,7 +667,12 @@
       #holdemRankingsPanel { max-height:min(42dvh,320px); overflow-y:auto; overscroll-behavior:contain; }
     }
     @media (max-width:359px) {
-      header > div { padding-left:10px; padding-right:10px; }
+      header > div { padding-left:8px; padding-right:8px; }
+      header > div > div:last-child { gap:3px; }
+      #btnNavRules, #btnNavMenu { padding:5px; }
+      #activeHandEvalBadge { white-space:nowrap; font-size:10px; }
+      #activeBankrollPill { padding:4px 6px; gap:4px; font-size:10px; }
+      #dockTurnTimerPill { padding:2px 4px; font-size:9px; }
       #btnNavLogo > div:first-child { display:none; }
       #centerHoldem > div:first-child { gap:4px; }
       #holdemPotPill, #holdemCallPill { padding:5px 7px; white-space:nowrap; font-size:10px; }
@@ -5214,7 +5219,7 @@
       const ev = evaluate7CardPoker([...me.cards, ...state.holdem.community]);
       document.getElementById('activeHandEvalBadge').textContent = me.pokerFolded
         ? 'Hand Folded'
-        : ev.label ? `Current Hand: ${ev.label}` : 'Hole Cards';
+        : ev.label ? ev.label : 'Hole Cards';
 
       const handRow = document.getElementById('activePlayerHandRow');
       handRow.className = 'flex items-center justify-center gap-2.5 overflow-x-auto custom-scrollbar pt-2 pb-1 px-2 min-h-[96px]';
