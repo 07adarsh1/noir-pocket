@@ -11,7 +11,8 @@
     "test:recovery": "node test-recovery.js",
     "test:gameplay": "node test-gameplay.js",
     "test:persistence": "node test-persistence.js",
-    "test:rebuy": "node test-rebuy.js"
+    "test:rebuy": "node test-rebuy.js",
+    "test:cards": "node test-cards.js"
   },
   "keywords": [
     "card-game",

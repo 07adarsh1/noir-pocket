@@ -588,6 +588,30 @@
     }
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior:auto !important; animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; } }
 
+
+    /* Card faces and backs */
+    .playing-card:not(.card-back) {
+      background: linear-gradient(145deg, #fffef8 0%, #f1ede2 100%);
+      border: 1px solid #d8d0bd;
+      box-shadow: 0 7px 18px rgba(0,0,0,.32), inset 0 0 0 1px rgba(255,255,255,.9);
+      cursor: default;
+    }
+    .playing-card:not(.card-back) .card-corner-rank { font-family: Georgia, serif; font-size: 14px; font-weight: 700; letter-spacing:-.04em; }
+    .playing-card:not(.card-back).card-sm .card-corner-rank { font-size: 10px; }
+    .playing-card:not(.card-back) .card-center { opacity:.94; }
+    .playing-card[data-card-uid] { cursor:pointer; touch-action:manipulation; }
+    .playing-card[data-card-uid]:focus-visible { outline:3px solid #f0cf8d; outline-offset:3px; z-index:30; }
+    @media (hover:hover) { .playing-card[data-card-uid]:not(.selected):hover { transform:translateY(-7px) rotateZ(var(--rest-rot,0deg)); box-shadow:0 15px 25px rgba(0,0,0,.45); z-index:20; } }
+    .playing-card.selected:not(.card-back) { transform:translate3d(0,-12px,0) rotateZ(0deg) !important; border-color:#bb9155; box-shadow:0 0 0 3px #d8b573, 0 13px 24px rgba(0,0,0,.5); z-index:25; }
+    .playing-card.selected:not(.card-back)::after { content:'✓'; position:absolute; right:4px; top:4px; display:grid; place-items:center; width:17px; height:17px; border-radius:50%; background:#214b38; color:#fff9e9; font:700 11px/1 Inter,sans-serif; z-index:4; }
+    .playing-card.card-back { background:#eee6d5; border:1px solid #d7c8a8; }
+    .playing-card.card-back::before { inset:3px; border-radius:6px; border:1px solid #bda77e; background:repeating-linear-gradient(45deg,transparent 0 5px,rgba(222,201,155,.12) 5px 6px),repeating-linear-gradient(-45deg,transparent 0 5px,rgba(222,201,155,.12) 5px 6px),radial-gradient(circle at 50% 40%,#315445,#142b24); }
+    .playing-card.card-back::after { content:'N'; width:29px; height:29px; border:1px solid #d5bf94; border-radius:50%; background:#1b382c; color:#f0dfb9; font:400 17px/1 Georgia,serif; text-shadow:none; box-shadow:0 0 0 3px rgba(212,189,144,.12); }
+    .playing-card.card-sm.card-back::after { width:15px; height:15px; font-size:9px; }
+    #activePlayerHandRow.bluff-hand { justify-content:flex-start; gap:8px; padding:20px 8px 10px; scroll-padding-inline:8px; min-height:132px; }
+    #activePlayerHandRow.bluff-hand .playing-card { margin-left:0; }
+    @media (min-width:640px) { #activePlayerHandRow.bluff-hand { min-height:148px; } }
+
   </style>
 </head>
 <body class="bg-noir-radial text-zinc-100 selection:bg-rose-600 selection:text-white min-h-[100dvh] flex flex-col justify-between">
@@ -1883,7 +1907,7 @@
 
       if (isFaceDown) {
         const smClass = opts.small ? 'card-sm' : '';
-        return `<div class="playing-card card-back ${smClass}" ${styleAttr} ${dataAttrs}></div>`;
+        return `<div class="playing-card card-back ${smClass}" role="img" aria-label="Face-down card" ${styleAttr} ${dataAttrs}></div>`;
       }
 
       const rank = String(card.rank || 'A').toUpperCase();
@@ -1892,13 +1916,18 @@
       const isRed = (suit === 'H' || suit === 'D');
       const colorClass = isRed ? 'text-rose-600' : 'text-[#0a0a0f]';
       const selClass = opts.selected ? 'selected' : '';
-      const clickAttr = opts.selectable ? `data-card-uid="${card.uid}"` : '';
+      const suitNames = { S: 'spades', H: 'hearts', D: 'diamonds', C: 'clubs' };
+      const rankNames = { A: 'Ace', K: 'King', Q: 'Queen', J: 'Jack' };
+      const cardLabel = `${rankNames[rank] || rank} of ${suitNames[suit]}`;
+      const clickAttr = opts.selectable
+        ? `data-card-uid="${card.uid}" role="button" tabindex="0" aria-label="${cardLabel}" aria-pressed="${Boolean(opts.selected)}"`
+        : `role="img" aria-label="${cardLabel}"`;
       const svgIcon = SUIT_SVG[suit] || SUIT_SVG.S;
       const miniSvg = SUIT_SVG_MINI[suit] || SUIT_SVG_MINI.S;
 
       if (opts.small) {
         return `
-          <div class="playing-card card-sm ${colorClass}" ${styleAttr} ${dataAttrs}>
+          <div class="playing-card card-sm ${colorClass}" role="img" aria-label="${cardLabel}" ${styleAttr} ${dataAttrs}>
             <div class="card-corner-tl">
               <span class="card-corner-rank">${rank}</span>
               <span class="card-corner-suit">${miniSvg}</span>
@@ -2056,6 +2085,9 @@
       const flyer = targetEl.cloneNode(true);
       flyer.removeAttribute('data-anim-key');
       flyer.removeAttribute('data-card-uid');
+      flyer.setAttribute('aria-hidden', 'true');
+      flyer.removeAttribute('tabindex');
+      flyer.removeAttribute('role');
       flyer.classList.add('is-animating');
       flyer.style.position = 'absolute';
       flyer.style.left = (endRect.left - stageRect.left) + 'px';
@@ -5173,8 +5205,8 @@
       document.getElementById('bluffSelectedCount').textContent = selectedList.length;
 
       const handRow = document.getElementById('activePlayerHandRow');
-      const overlapClass = me.cards.length > 7 ? '-space-x-4' : 'gap-2';
-      handRow.className = `flex items-center justify-center ${overlapClass} overflow-x-auto custom-scrollbar pt-2 pb-1 px-3 min-h-[96px]`;
+      handRow.className = 'bluff-hand flex items-center overflow-x-auto custom-scrollbar';
+      handRow.setAttribute('aria-label', 'Your cards. Select up to four cards to play.');
       handRow.innerHTML = me.cards
         .map((c, idx) =>
           renderCardHTML(c, {
@@ -5188,7 +5220,7 @@
         .join('');
 
       handRow.querySelectorAll('[data-card-uid]').forEach(cardEl => {
-        cardEl.addEventListener('click', () => {
+        const toggleCard = (restoreFocus = false) => {
           const uid = cardEl.getAttribute('data-card-uid');
           if (selectedMap[uid]) {
             delete selectedMap[uid];
@@ -5205,6 +5237,17 @@
             }
           }
           renderAll();
+          if (restoreFocus) {
+            const replacement = Array.from(handRow.querySelectorAll('[data-card-uid]')).find(el => el.getAttribute('data-card-uid') === uid);
+            if (replacement) replacement.focus({ preventScroll: true });
+          }
+        };
+        cardEl.addEventListener('click', () => toggleCard(false));
+        cardEl.addEventListener('keydown', event => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            toggleCard(true);
+          }
         });
       });
 
