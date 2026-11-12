@@ -2814,7 +2814,7 @@
         socket = io({
           transports: ['websocket', 'polling'],
           reconnection: true,
-          reconnectionAttempts: 20,
+          reconnectionAttempts: Infinity,
           reconnectionDelay: 1000
         });
 
@@ -2902,9 +2902,32 @@
           }
         });
 
-        socket.on('player_reconnected', () => {
+        socket.on('player_reconnected', (data) => {
+          const player = data && state.players.find(p => p.id === data.playerId);
+          if (player) {
+            player.isDisconnected = false;
+            player.disconnectedAt = null;
+            if (player.isBot && player.name.endsWith(' (AI)')) {
+              player.isBot = false;
+              player.name = player.name.slice(0, -5);
+            }
+          }
+          if (isHostUser()) broadcastRoomState();
+          renderAll();
           pulseMultiplayerSyncDot();
           showToast('Player reconnected to room');
+        });
+
+        socket.on('player_timed_out', (data) => {
+          if (!isHostUser() || !data) return;
+          const player = state.players.find(p => p.id === data.playerId);
+          if (player && player.isDisconnected && !player.isBot) {
+            player.isBot = true;
+            player.isDisconnected = false;
+            player.name += ' (AI)';
+            broadcastRoomState();
+            renderAll();
+          }
         });
 
         socket.on('player_disconnected', (data) => {
@@ -2914,7 +2937,7 @@
             if (pIdx !== -1) {
               const plName = state.players[pIdx].name;
               showToast(`${plName} disconnected`);
-              if (state.inWaitingRoom && isHostUser()) {
+              if (data.left && state.inWaitingRoom && isHostUser()) {
                 state.players.splice(pIdx, 1);
                 broadcastRoomState();
                 renderAll();
@@ -3053,7 +3076,7 @@
     function seatPlayerInRoom(roomData, cleanCode, myId, myName, myAvatar) {
       const currentCount = (roomData.players || []).length;
       const maxAllowed = roomData.maxSeats || 6;
-      const existingIdx = (roomData.players || []).findIndex(p => p.id === myId || p.name.toLowerCase() === myName.toLowerCase());
+      const existingIdx = (roomData.players || []).findIndex(p => p.id === myId);
 
       if (existingIdx === -1 && currentCount >= maxAllowed) {
         const wantsSpectate = confirm(`Room ${cleanCode} is full (${maxAllowed}/${maxAllowed} players).\n\nWould you like to enter as a Spectator?`);
@@ -3196,7 +3219,11 @@
               seatPlayerInRoom(res.state, cleanCode, myId, myName, myAvatar);
             }
           } else {
-            attemptLocalStorageJoin();
+            if (res && res.error === 'Room is full' && !asSpectator && confirm('Room is full. Join as a spectator?')) {
+              joinWithRoomCode(cleanCode, myName, myAvatar, true);
+            } else {
+              showToast((res && res.error) || 'Unable to join room');
+            }
           }
         });
         return;

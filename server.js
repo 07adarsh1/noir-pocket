@@ -18,7 +18,9 @@ const MIME_TYPES = {
 };
 
 const server = http.createServer((req, res) => {
-  let reqPath = decodeURI(req.url.split('?')[0]);
+  let reqPath;
+  try { reqPath = decodeURIComponent(req.url.split('?')[0]); }
+  catch { res.writeHead(400); res.end('Bad Request'); return; }
 
   // Dedicated UptimeRobot / Health Check Endpoint
   if (reqPath === '/health' || reqPath === '/ping') {
@@ -48,8 +50,9 @@ const server = http.createServer((req, res) => {
 
   if (reqPath === '/' || reqPath === '') reqPath = '/index.html';
 
-  const safePath = path.normalize(reqPath).replace(/^(\.\.[\/\\])+/, '');
-  const filePath = path.join(PUBLIC_DIR, safePath);
+  // Only public assets should be served; never expose source, configuration or Git data.
+  if (reqPath !== '/index.html') { res.writeHead(404); res.end('Not Found'); return; }
+  const filePath = path.join(PUBLIC_DIR, 'index.html');
 
   fs.stat(filePath, (err, stats) => {
     if (err || !stats.isFile()) {
@@ -205,6 +208,10 @@ io.on('connection', (socket) => {
         return;
       }
       const code = roomCode.toUpperCase();
+      if (rooms.has(code)) {
+        if (typeof ack === 'function') ack({ ok: false, error: 'Room code already in use' });
+        return;
+      }
       socket.join(code);
       socket.data.roomCode = code;
       socket.data.playerId = (state && (state.myPlayerId || state.hostId)) || null;
@@ -236,16 +243,23 @@ io.on('connection', (socket) => {
         return;
       }
 
-      let roomEntry = rooms.get(code);
-      if (!roomEntry) {
-        roomEntry = {
-          roomCode: code,
-          hostSocketId: socket.id,
-          state: null,
-          updatedAt: Date.now(),
-          disconnectTimers: {}
-        };
-        rooms.set(code, roomEntry);
+      const roomEntry = rooms.get(code);
+      if (!roomEntry || !roomEntry.state) {
+        if (typeof ack === 'function') ack({ ok: false, error: 'Room not found or expired' });
+        return;
+      }
+      if (!player || !player.id) {
+        if (typeof ack === 'function') ack({ ok: false, error: 'Player identity required' });
+        return;
+      }
+      const existingPlayer = (roomEntry.state.players || []).some(p => p.id === player.id);
+      if (!asSpectator && !existingPlayer && roomEntry.state.players.length >= (roomEntry.state.maxSeats || 6)) {
+        if (typeof ack === 'function') ack({ ok: false, error: 'Room is full' });
+        return;
+      }
+      if (roomEntry.disconnectTimers[player.id]) {
+        clearTimeout(roomEntry.disconnectTimers[player.id]);
+        delete roomEntry.disconnectTimers[player.id];
       }
 
       socket.join(code);
@@ -323,31 +337,10 @@ io.on('connection', (socket) => {
       if (!roomCode || !state) return;
       const code = roomCode.toUpperCase();
 
-      let roomEntry = rooms.get(code);
-      if (!roomEntry) {
-        roomEntry = {
-          roomCode: code,
-          hostSocketId: socket.id,
-          state,
-          updatedAt: Date.now(),
-          disconnectTimers: {}
-        };
-        rooms.set(code, roomEntry);
-      } else {
-        // Enforce Host Authority: Only the room host is permitted to overwrite authoritative state
-        const isHost = (socket.id === roomEntry.hostSocketId) ||
-                       (state.hostId && socket.data.playerId === state.hostId);
-        if (!isHost) {
-          // Reject state sync from non-host guests so they cannot overwrite unmasked cards with masked cards
-          return;
-        }
-        roomEntry.state = state;
-        roomEntry.updatedAt = Date.now();
-        // Update host socket id if sender is room host
-        if (state.hostId && socket.data.playerId === state.hostId) {
-          roomEntry.hostSocketId = socket.id;
-        }
-      }
+      const roomEntry = rooms.get(code);
+      if (!roomEntry || socket.id !== roomEntry.hostSocketId) return;
+      roomEntry.state = state;
+      roomEntry.updatedAt = Date.now();
 
       // Distribute anti-cheat masked state to each participant
       broadcastMaskedRoomState(code);
@@ -439,16 +432,26 @@ io.on('connection', (socket) => {
         if (typeof ack === 'function') ack({ ok: false, error: 'Room expired or not found' });
         return;
       }
+      const isSpectator = (roomEntry.state.spectators || []).some(s => s.id === playerId);
+      if (!(roomEntry.state.players || []).some(p => p.id === playerId) && !isSpectator) {
+        if (typeof ack === 'function') ack({ ok: false, error: 'Player not found in room' });
+        return;
+      }
 
       socket.join(code);
       socket.data.roomCode = code;
       socket.data.playerId = playerId;
+      socket.data.isSpectator = isSpectator;
 
       // Find player in room state and clear disconnected status
       const p = (roomEntry.state.players || []).find(pl => pl.id === playerId);
       if (p) {
         p.isDisconnected = false;
         p.disconnectedAt = null;
+        if (p.isBot && p.name.endsWith(' (AI)')) {
+          p.isBot = false;
+          p.name = p.name.slice(0, -5);
+        }
       }
 
       // Clear any pending timeout for this player
@@ -464,7 +467,9 @@ io.on('connection', (socket) => {
         roomEntry.hostSocketId = socket.id;
       }
 
-      const masked = maskStateForPlayer(roomEntry.state, playerId, socket.data.isSpectator);
+      const masked = roomEntry.state.hostId === playerId
+        ? roomEntry.state
+        : maskStateForPlayer(roomEntry.state, playerId, isSpectator);
       if (typeof ack === 'function') ack({ ok: true, state: masked });
 
       socket.to(code).emit('player_reconnected', { playerId });
@@ -480,6 +485,8 @@ io.on('connection', (socket) => {
     const playerId = (data && data.playerId) || socket.data.playerId;
     if (code) {
       socket.leave(code);
+      socket.data.roomCode = null;
+      socket.data.playerId = null;
       const roomEntry = rooms.get(code);
       if (roomEntry && roomEntry.state && Array.isArray(roomEntry.state.players) && playerId) {
         roomEntry.state.players = roomEntry.state.players.filter(p => p.id !== playerId);
@@ -487,7 +494,7 @@ io.on('connection', (socket) => {
       }
       socket.to(code).emit('player_disconnected', {
         socketId: socket.id,
-        playerId
+        playerId, left: true
       });
       broadcastMaskedRoomState(code);
       console.log(`[Player Left] ${socket.id} (${playerId}) from Room ${code}`);
@@ -502,6 +509,9 @@ io.on('connection', (socket) => {
     if (code && playerId) {
       const roomEntry = rooms.get(code);
       if (roomEntry && roomEntry.state) {
+        // A newer connection for this identity supersedes this socket.
+        const peers = io.sockets.adapter.rooms.get(code) || new Set();
+        if ([...peers].some(id => { const peer = io.sockets.sockets.get(id); return peer && peer.data.playerId === playerId; })) return;
         const p = (roomEntry.state.players || []).find(pl => pl.id === playerId);
         if (p && !p.isBot) {
           p.isDisconnected = true;
@@ -511,7 +521,7 @@ io.on('connection', (socket) => {
           if (!roomEntry.disconnectTimers) roomEntry.disconnectTimers = {};
           if (roomEntry.disconnectTimers[playerId]) clearTimeout(roomEntry.disconnectTimers[playerId]);
 
-          roomEntry.disconnectTimers[playerId] = setTimeout(() => {
+          if (playerId !== roomEntry.state.hostId) roomEntry.disconnectTimers[playerId] = setTimeout(() => {
             const freshEntry = rooms.get(code);
             if (!freshEntry || !freshEntry.state) return;
             const targetP = (freshEntry.state.players || []).find(pl => pl.id === playerId);
@@ -521,6 +531,8 @@ io.on('connection', (socket) => {
               targetP.name += ' (AI)';
               targetP.isDisconnected = false;
               console.log(`[Player Timed Out] ${playerId} converted to bot in Room ${code}`);
+              const host = io.sockets.sockets.get(freshEntry.hostSocketId);
+              if (host) host.emit('player_timed_out', { playerId });
               broadcastMaskedRoomState(code);
             }
           }, 45000);
