@@ -2,7 +2,7 @@
 <html lang="en" class="dark">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>NOIR — Premium Multiplayer Card Lounge</title>
   <meta name="description" content="Sleek, minimal, high-stakes multiplayer card gaming. Play Blackjack, Texas Hold'em, and Bluff with friends in real time." />
   <meta property="og:title" content="NOIR — Premium Multiplayer Card Lounge" />
@@ -23,7 +23,7 @@
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script>
     if (typeof tailwind !== "undefined") {
       tailwind.config = {
@@ -524,6 +524,70 @@
     button:not(:disabled):active {
       transform: scale(0.97);
     }
+
+    /* Private club refresh */
+    :root { --club-ink: #0c0d0e; --club-gold: #d8bd8b; --club-cream: #f4eee3; }
+    .bg-noir-radial { background: radial-gradient(ellipse at 12% 4%, rgba(118,57,48,.17), transparent 37%), radial-gradient(ellipse at 84% 20%, rgba(30,78,65,.16), transparent 40%), #0b0c0d; }
+    header { background: rgba(12,13,14,.91) !important; border-color: rgba(216,189,139,.14) !important; }
+    #btnNavLogo > div:first-child { background: #d8bd8b; border-color: #d8bd8b; transform: rotate(45deg); border-radius: 8px; }
+    #btnNavLogo > div:first-child svg { color: #161510; transform: rotate(-45deg); }
+    .noir-glass { background: linear-gradient(145deg, rgba(29,31,29,.96), rgba(17,19,19,.96)); border-color: rgba(216,189,139,.16); box-shadow: 0 22px 55px rgba(0,0,0,.32); }
+    .noir-table { background: radial-gradient(ellipse at 50% 32%, #294b3c 0%, #1a352c 48%, #101c19 100%); border: 5px solid #3e352b; box-shadow: inset 0 0 0 1px rgba(231,204,159,.2), inset 0 0 95px rgba(0,0,0,.44), 0 24px 70px rgba(0,0,0,.4); }
+    .noir-table::before { border-color: rgba(233,211,173,.18); }
+    .noir-table::after { border-color: rgba(233,211,173,.13); }
+    #lobbyView { max-width: 1160px; }
+    .club-hero { position: relative; overflow: hidden; text-align: left; max-width: none; margin: 0; padding: clamp(28px,5vw,64px); border: 1px solid rgba(216,189,139,.2); border-radius: 28px; background: radial-gradient(ellipse at 78% 38%, rgba(102,58,49,.26), transparent 43%), linear-gradient(115deg,#18231f,#121715 58%,#201a18); box-shadow: 0 26px 75px rgba(0,0,0,.27); }
+    .club-hero::after { content:'♠'; position:absolute; right:6%; top:50%; transform:translateY(-50%) rotate(12deg); font-family:Georgia,serif; font-size:clamp(180px,26vw,330px); line-height:1; color:rgba(216,189,139,.07); pointer-events:none; }
+    .club-hero > * { position:relative; z-index:1; }
+    .club-eyebrow { display:inline-flex; align-items:center; gap:9px; color:#ddc89e; font:600 10px/1.2 'JetBrains Mono',monospace; letter-spacing:.16em; text-transform:uppercase; }
+    .club-eyebrow::before { content:''; width:7px; height:7px; border-radius:50%; background:#d6b47b; box-shadow:0 0 14px #d6b47b; }
+    .club-hero h1 { font-family:'DM Serif Display', Georgia, serif; font-weight:400; letter-spacing:-.035em; font-size:clamp(48px,7vw,82px); line-height:.98; margin:20px 0 15px; }
+    .club-hero h1 em { color:#ddc59b; font-weight:400; }
+    .club-hero .hero-copy { max-width:440px; margin:0; color:#c2c4b9; font-size:15px; line-height:1.7; }
+    .club-hero .hero-meta { margin-top:26px; color:#b9aa91; font:500 10px/1.5 'JetBrains Mono',monospace; letter-spacing:.12em; text-transform:uppercase; }
+    .club-command { max-width:none; margin:-29px 28px 0; position:relative; z-index:2; }
+    #lobbyView > .club-command { margin-top:-29px; }
+    .club-command > div { padding:9px; border-radius:18px; border-color:rgba(216,189,139,.18); background:#161a18; box-shadow:0 16px 35px rgba(0,0,0,.3); }
+    #btnOpenCreateModal { background:#dfc69a; color:#1b1a15; min-height:50px; border-radius:11px; }
+    #btnOpenCreateModal:hover { background:#f1dcba; }
+    #inputJoinCode { min-height:50px; background:#101412; border-color:#38403a; text-transform:uppercase; }
+    #btnJoinRoom { min-height:50px; border-radius:11px; background:#2a3630; border-color:#45574a; }
+    .club-section-heading { display:flex; justify-content:space-between; align-items:end; gap:16px; margin:42px 0 0; }
+    .club-section-heading h2 { font:400 clamp(30px,4vw,42px)/1 'DM Serif Display',Georgia,serif; color:#f4eee3; }
+    .club-section-heading p { color:#a5a99e; font-size:13px; margin-top:8px; }
+    .club-section-heading span { font:500 10px 'JetBrains Mono',monospace; letter-spacing:.12em; color:#b19e7e; text-transform:uppercase; white-space:nowrap; }
+    .club-games { margin-top:20px !important; gap:16px; }
+    .club-games > div { background:linear-gradient(160deg,#1b211d,#141715) !important; border-color:rgba(216,189,139,.15) !important; border-radius:20px; padding:18px; }
+    .club-games > div:hover { border-color:rgba(216,189,139,.45) !important; transform:translateY(-3px); }
+    .club-games > div > div > div:first-child { background:radial-gradient(ellipse at center,#30473a,#19251f 75%) !important; border-color:rgba(216,189,139,.13); border-radius:13px; }
+    .club-games h3 { font-family:'DM Serif Display',Georgia,serif; font-size:24px; font-weight:400; letter-spacing:0; }
+    .club-games p { font-size:13px; line-height:1.6; }
+    .club-games button[data-lobby-quick-game] { min-height:45px; background:#2a3430; border-color:#3d4b41; border-radius:11px; }
+    .club-games button[data-lobby-quick-game]:hover { background:#dfc69a; color:#171812; }
+    #turnGuidance { border:1px solid rgba(216,189,139,.16); background:#233a2d; color:#f4eee3; padding:12px 15px; }
+    #playerDockPanel { border-color:rgba(216,189,139,.2); }
+    #handResult { background:rgba(33,74,53,.42); border-color:rgba(163,197,156,.3); }
+    #tableView button:disabled, #waitingRoomView button:disabled { opacity:.38; cursor:not-allowed; }
+    button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible { outline:2px solid #e2c58e; outline-offset:3px; }
+    input, textarea { user-select:text; }
+    @media (max-width: 639px) {
+      header > div { height:auto !important; min-height:64px; flex-wrap:wrap; padding-top:10px; padding-bottom:10px; gap:8px; }
+      #gameSelectorPills { order:3; width:100%; justify-content:center; overflow-x:auto; }
+      #gameSelectorPills button { flex:1; white-space:nowrap; min-height:36px; }
+      #roomHeaderBadge { padding:5px 7px; }
+      #btnHeaderCopyCode span { display:none; }
+      .club-hero { padding:32px 24px 48px; border-radius:21px; }
+      .club-hero::after { opacity:.55; right:-8%; }
+      .club-hero .hero-copy { max-width:270px; font-size:14px; }
+      #lobbyView > .club-command { margin:-25px 12px 0; }
+      .club-section-heading { margin-top:30px; }
+      .club-section-heading span { display:none; }
+      .club-games { gap:12px; }
+      .noir-table { border-width:4px; }
+      #playerDockPanel button { min-height:44px; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior:auto !important; animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; } }
+
   </style>
 </head>
 <body class="bg-noir-radial text-zinc-100 selection:bg-rose-600 selection:text-white min-h-[100dvh] flex flex-col justify-between">
@@ -726,21 +790,16 @@
          ========================================================================= -->
     <section id="lobbyView" class="w-full max-w-5xl mx-auto space-y-10 py-6 sm:py-10">
       
-      <!-- Minimalist Architectural Hero Header -->
-      <div class="text-center space-y-3 max-w-2xl mx-auto pt-2">
-        <h1 class="text-4xl sm:text-6xl font-light tracking-tight text-white font-serif">
-          The private table.
-        </h1>
-        <p class="text-xs sm:text-sm text-zinc-400 font-mono tracking-widest uppercase">
-          Blackjack &bull; Texas Hold'em &bull; Bluff
-        </p>
-        <p class="text-xs sm:text-sm text-zinc-400 max-w-md mx-auto leading-relaxed pt-1">
-          Zero sign-ups. Zero latency. Instant private tables with real-time multiplayer card action.
-        </p>
+      <!-- Welcome -->
+      <div class="club-hero">
+        <div class="club-eyebrow">A little room for a good game</div>
+        <h1>Good cards.<br><em>Better company.</em></h1>
+        <p class="hero-copy">Your favorite card games, around one private table. Invite your people, take a seat, and play at your own pace.</p>
+        <p class="hero-meta">Blackjack &nbsp; / &nbsp; Texas Hold'em &nbsp; / &nbsp; Bluff</p>
       </div>
 
       <!-- Command Bar: Host Table or Join with Code -->
-      <div class="max-w-xl mx-auto">
+      <div class="club-command">
         <div class="bg-zinc-950/90 border border-zinc-800 rounded-xl p-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           
           <button id="btnOpenCreateModal" type="button" class="flex-1 py-3 px-5 rounded-lg bg-white hover:bg-zinc-200 text-zinc-950 font-bold text-xs uppercase tracking-wider transition flex items-center justify-center gap-2">
@@ -753,7 +812,7 @@
           <div class="hidden sm:block h-6 w-px bg-zinc-800 my-auto"></div>
 
           <div class="flex items-center gap-2 flex-1">
-            <input id="inputJoinCode" type="text" maxlength="8" placeholder="ROOM CODE" class="w-full px-3.5 py-3 rounded-lg bg-zinc-900 border border-zinc-800 font-mono uppercase text-xs sm:text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-zinc-500 transition tracking-widest text-center sm:text-left" />
+            <input id="inputJoinCode" aria-label="Room code" type="text" maxlength="8" placeholder="ROOM CODE" class="w-full px-3.5 py-3 rounded-lg bg-zinc-900 border border-zinc-800 font-mono uppercase text-xs sm:text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-zinc-500 transition tracking-widest text-center sm:text-left" />
             <button id="btnJoinRoom" type="button" class="py-3 px-5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs uppercase tracking-wider transition shrink-0 border border-zinc-700/60">
               Join
             </button>
@@ -762,8 +821,12 @@
         </div>
       </div>
 
+      <div class="club-section-heading">
+        <div><h2>Pick your game.</h2><p>Three classics. One table. Plenty of good company.</p></div>
+        <span>01 — Choose your game</span>
+      </div>
       <!-- 3 EDITORIAL GAME CARDS -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
+      <div class="club-games grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
         
         <!-- Game 1: Blackjack -->
         <div class="bg-[#090a10] border border-zinc-800 hover:border-zinc-700 rounded-xl p-6 flex flex-col justify-between group transition">
@@ -976,20 +1039,20 @@
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-6 border-t border-zinc-800/60">
         <div class="space-y-1">
           <div class="text-[10px] font-mono text-zinc-500 tracking-wider">01 // ROOMS</div>
-          <div class="text-xs font-semibold text-white">Instant Access</div>
-          <div class="text-xs text-zinc-400 leading-relaxed">Direct room generation with shareable links. No accounts, signups, or tracking.</div>
+          <div class="text-xs font-semibold text-white">Easy to join</div>
+          <div class="text-xs text-zinc-400 leading-relaxed">Share a room code or invite link and bring your friends to the table.</div>
         </div>
 
         <div class="space-y-1">
           <div class="text-[10px] font-mono text-zinc-500 tracking-wider">02 // PROTOCOL</div>
-          <div class="text-xs font-semibold text-white">Authoritative Masking</div>
-          <div class="text-xs text-zinc-400 leading-relaxed">Server-side filtering protects hidden cards across sockets until legal showdown.</div>
+          <div class="text-xs font-semibold text-white">Private hands</div>
+          <div class="text-xs text-zinc-400 leading-relaxed">Your cards stay hidden from other players until it is time to reveal them.</div>
         </div>
 
         <div class="space-y-1">
           <div class="text-[10px] font-mono text-zinc-500 tracking-wider">03 // ENGINE</div>
-          <div class="text-xs font-semibold text-white">Zero Latency</div>
-          <div class="text-xs text-zinc-400 leading-relaxed">Direct WebSocket relay with smooth 60fps animations and crisp tactile sound fx.</div>
+          <div class="text-xs font-semibold text-white">Play together</div>
+          <div class="text-xs text-zinc-400 leading-relaxed">Invite friends to your room and follow every move as the game unfolds.</div>
         </div>
       </div>
 
