@@ -632,6 +632,49 @@
     .ranking-card span { font-size:12px; line-height:1; }
     @media (max-width:380px) { .holdem-rankings-panel li { grid-template-columns:18px minmax(76px,1fr) auto; gap:4px; font-size:10px; padding:5px 3px; } .ranking-card { width:21px; height:31px; } .ranking-example { gap:2px; } }
 
+
+    /* Phone layouts: preserve playable space and prevent clipped controls. */
+    @media (max-width:639px) {
+      header > div { column-gap:6px; }
+      header > div > div:first-child { gap:5px; min-width:0; }
+      #btnNavLogo { gap:5px; }
+      #btnNavLogo > div:first-child { width:28px; height:28px; }
+      #btnNavLogo > div:nth-child(2) > div:first-child > span:nth-child(2), #roomHeaderBadge > span:nth-child(2) { display:none; }
+      #roomHeaderBadge { gap:4px; padding:5px; }
+      #btnUserChipsPill { padding:6px; gap:4px; }
+      #btnNavRules, #btnNavMenu { padding:7px; }
+      #gameSelectorPills { margin-top:0; }
+      #gameSelectorPills button { padding-left:5px; padding-right:5px; font-size:11px; }
+      .waiting-footer { flex-wrap:wrap; gap:12px; }
+      .waiting-footer button { min-height:40px; text-align:left; }
+      #opponentsArc { padding-right:0; }
+      #deckShoeOrigin { opacity:0; }
+      #opponentsArc [data-opp-seat] { min-width:0; padding:8px; }
+      #holdemCommunityCards { gap:3px; min-height:74px; }
+      #holdemCommunityCards .playing-card, #holdemCommunityCards .community-card-slot { width:min(62px,calc((100vw - 94px) / 5)); height:auto; aspect-ratio:62 / 88; }
+      #holdemCommunityCards .playing-card .card-corner-rank { font-size:11px; }
+      #holdemCommunityCards .playing-card .card-corner-tl { left:3px; top:3px; }
+      #holdemCommunityCards .playing-card .card-corner-br { right:3px; bottom:3px; }
+      #holdemCommunityCards .card-center svg { max-width:21px; max-height:21px; }
+      #holdemCommunityCards .community-card-slot span { font-size:8px; letter-spacing:0; }
+      .bj-wager-chips { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); width:100%; }
+      .bj-wager-chips button { padding-left:2px; padding-right:2px; white-space:nowrap; font-size:11px; }
+      #controlsBluff > div:first-child { flex-wrap:wrap; }
+      #bluffRankButtons { flex:1 0 100%; justify-content:flex-start; }
+      #bluffRankButtons button { width:40px; height:40px; }
+      #bluffActionGrid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      #btnBluffPlayCards { grid-column:1 / -1; }
+      #holdemRankingsPanel { max-height:min(42dvh,320px); overflow-y:auto; overscroll-behavior:contain; }
+    }
+    @media (max-width:359px) {
+      #btnNavLogo > div:first-child { width:24px; height:24px; }
+      #btnNavLogo .text-sm { font-size:12px; }
+      #btnUserChipsPill { font-size:10px; }
+      #roomHeaderBadge { font-size:10px; }
+      .noir-table { padding:12px; }
+      #holdemCommunityCards .playing-card, #holdemCommunityCards .community-card-slot { width:min(62px,calc((100vw - 78px) / 5)); }
+    }
+
   </style>
 </head>
 <body class="bg-noir-radial text-zinc-100 selection:bg-rose-600 selection:text-white min-h-[100dvh] flex flex-col justify-between">
@@ -666,7 +709,7 @@
           <span class="text-zinc-500 font-mono text-[11px]">ROOM</span>
           <span id="headerRoomCode" class="font-mono font-bold text-white tracking-wider">CLUB42</span>
           <span id="headerSpectatorBadge" class="hidden px-2 py-0.5 rounded bg-amber-500/15 border border-amber-500/30 text-amber-300 font-mono text-[10px] font-bold">SPECTATING</span>
-          <button id="btnHeaderCopyCode" type="button" class="ml-1 text-[11px] font-semibold text-rose-400 hover:text-rose-300 transition flex items-center gap-1">
+          <button id="btnHeaderCopyCode" type="button" aria-label="Copy room code" class="ml-1 text-[11px] font-semibold text-rose-400 hover:text-rose-300 transition flex items-center gap-1">
             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
             </svg>
@@ -705,7 +748,7 @@
         </button>
 
         <!-- Table Settings / Menu Drawer Button -->
-        <button id="btnNavMenu" type="button" class="p-2 sm:px-3 sm:py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-xs font-medium text-zinc-300 hover:text-white transition flex items-center gap-1.5">
+        <button id="btnNavMenu" type="button" aria-label="Table menu" class="p-2 sm:px-3 sm:py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-xs font-medium text-zinc-300 hover:text-white transition flex items-center gap-1.5">
           <svg class="w-4 h-4 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
           </svg>
@@ -1209,7 +1252,7 @@
             <span>Waiting for room host to start the table...</span>
           </div>
 
-          <div class="flex items-center justify-between pt-1">
+          <div class="waiting-footer flex items-center justify-between pt-1">
             <button id="btnWaitingLeave" type="button" class="text-xs font-medium text-zinc-400 hover:text-white transition">
               ← Leave Room &amp; Return to Lobby
             </button>
@@ -1400,7 +1443,7 @@
               <span class="text-xs font-semibold text-zinc-300">
                 Wager: <span class="font-mono font-bold text-white text-sm">$<span id="bjCurrentBetInput">100</span></span>
               </span>
-              <div class="flex items-center gap-1.5">
+              <div class="bj-wager-chips flex items-center gap-1.5">
                 <button type="button" data-bj-chip="25" class="bj-chip-btn px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-mono font-bold text-white">+$25</button>
                 <button type="button" data-bj-chip="50" class="bj-chip-btn px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-mono font-bold text-white">+$50</button>
                 <button type="button" data-bj-chip="100" class="bj-chip-btn px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-mono font-bold text-white">+$100</button>
