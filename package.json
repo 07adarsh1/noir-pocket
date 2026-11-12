@@ -12,7 +12,8 @@
     "test:gameplay": "node test-gameplay.js",
     "test:persistence": "node test-persistence.js",
     "test:rebuy": "node test-rebuy.js",
-    "test:cards": "node test-cards.js"
+    "test:cards": "node test-cards.js",
+    "test:holdem": "node test-holdem.js"
   },
   "keywords": [
     "card-game",

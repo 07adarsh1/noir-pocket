@@ -3908,74 +3908,73 @@
     // =========================================================================
     // 6. ENGINE B: TEXAS HOLD'EM POKER
     // =========================================================================
+    // Compare every available five-card hand using all relevant kickers.
     function evaluate7CardPoker(cards) {
-      if (!Array.isArray(cards) || cards.length < 2) return { score: 0, label: '' };
-      const validCards = cards.filter(c => c && c.rank && !c.hidden);
-      if (validCards.length < 2) return { score: 0, label: '' };
-      const vals = validCards.map(c => RANK_VALUE[c.rank]).filter(v => v !== undefined).sort((a, b) => b - a);
-      if (vals.length === 0) return { score: 0, label: '' };
-      const counts = {};
-      const suitCards = { S: [], H: [], D: [], C: [] };
-      for (const c of validCards) {
-        const v = RANK_VALUE[c.rank];
-        if (v === undefined) continue;
-        counts[v] = (counts[v] || 0) + 1;
-        if (suitCards[c.suit]) {
-          suitCards[c.suit].push(v);
+      const valid = (Array.isArray(cards) ? cards : []).filter(c => c && RANK_VALUE[c.rank] && ['S', 'H', 'D', 'C'].includes(c.suit) && !c.hidden);
+      if (valid.length < 2) return { score: 0, label: '' };
+      const scoreHand = hand => {
+        const values = hand.map(c => RANK_VALUE[c.rank]).sort((a, b) => b - a);
+        const counts = new Map();
+        for (const value of values) counts.set(value, (counts.get(value) || 0) + 1);
+        const groups = [...counts].map(([value, count]) => ({ value, count })).sort((a, b) => b.count - a.count || b.value - a.value);
+        const unique = [...new Set(values)];
+        const straightHigh = hand.length === 5 && unique.length === 5
+          ? (unique[0] - unique[4] === 4 ? unique[0] : unique.join(',') === '14,5,4,3,2' ? 5 : 0) : 0;
+        const flush = hand.length === 5 && hand.every(c => c.suit === hand[0].suit);
+        let category, ranks, label;
+        if (flush && straightHigh) { category = 8; ranks = [straightHigh]; label = straightHigh === 14 ? 'Royal Flush' : 'Straight Flush'; }
+        else if (groups[0].count === 4) { category = 7; ranks = [groups[0].value, ...values.filter(v => v !== groups[0].value)]; label = 'Four of a Kind'; }
+        else if (groups[0].count === 3 && groups[1]?.count === 2) { category = 6; ranks = [groups[0].value, groups[1].value]; label = 'Full House'; }
+        else if (flush) { category = 5; ranks = values; label = 'Flush'; }
+        else if (straightHigh) { category = 4; ranks = [straightHigh]; label = 'Straight'; }
+        else if (groups[0].count === 3) { category = 3; ranks = [groups[0].value, ...values.filter(v => v !== groups[0].value)]; label = 'Three of a Kind'; }
+        else if (groups[0].count === 2 && groups[1]?.count === 2) { const pairs = [groups[0].value, groups[1].value].sort((a,b) => b-a); category = 2; ranks = [...pairs, ...values.filter(v => !pairs.includes(v))]; label = 'Two Pair'; }
+        else if (groups[0].count === 2) { category = 1; ranks = [groups[0].value, ...values.filter(v => v !== groups[0].value)]; label = 'One Pair'; }
+        else { category = 0; ranks = values; label = 'High Card'; }
+        let tie = 0;
+        for (let i = 0; i < 5; i++) tie = tie * 15 + (ranks[i] || 0);
+        return { score: category * 1000000 + tie, label };
+      };
+      if (valid.length < 5) return scoreHand(valid);
+      let best = { score: -1, label: '' };
+      for (let a = 0; a < valid.length - 4; a++)
+        for (let b = a + 1; b < valid.length - 3; b++)
+          for (let c = b + 1; c < valid.length - 2; c++)
+            for (let d = c + 1; d < valid.length - 1; d++)
+              for (let e = d + 1; e < valid.length; e++) {
+                const candidate = scoreHand([valid[a], valid[b], valid[c], valid[d], valid[e]]);
+                if (candidate.score > best.score) best = candidate;
+              }
+      return best;
+    }
+
+    // Each contribution level creates a pot only its contributors can win.
+    function calculateHoldemPayouts(players, community, dealerIdx) {
+      const contributions = players.map(p => Math.max(0, p.pokerCommitted || 0));
+      const levels = [...new Set(contributions.filter(n => n > 0))].sort((a, b) => a - b);
+      const payouts = players.map(() => 0);
+      const pots = [];
+      let previous = 0;
+      for (const level of levels) {
+        const contributors = contributions.map((amount, index) => amount >= level ? index : -1).filter(index => index >= 0);
+        const amount = (level - previous) * contributors.length;
+        previous = level;
+        if (contributors.length === 1) {
+          payouts[contributors[0]] += amount;
+          pots.push({ amount, winners: contributors, refund: true });
+          continue;
         }
+        let eligible = contributors.filter(i => !players[i].pokerFolded);
+        if (!eligible.length) eligible = players.map((p, i) => !p.pokerFolded ? i : -1).filter(i => i >= 0);
+        if (!eligible.length) throw new Error('Cannot award a pot without an active player');
+        const scores = eligible.map(i => evaluate7CardPoker([...players[i].cards, ...community]).score);
+        const best = Math.max(...scores);
+        const winners = eligible.filter((_, i) => scores[i] === best).sort((a,b) => ((a - dealerIdx - 1 + players.length) % players.length) - ((b - dealerIdx - 1 + players.length) % players.length));
+        const share = Math.floor(amount / winners.length), remainder = amount % winners.length;
+        winners.forEach((index, i) => { payouts[index] += share + (i < remainder ? 1 : 0); });
+        pots.push({ amount, winners, refund: false });
       }
-
-      function findStraightHigh(numList) {
-        const uniq = Array.from(new Set(numList)).sort((a, b) => b - a);
-        if (uniq.includes(14)) uniq.push(1);
-        let streak = 1;
-        for (let i = 0; i < uniq.length - 1; i++) {
-          if (uniq[i] - 1 === uniq[i + 1]) {
-            streak++;
-            if (streak >= 5) return uniq[i - 3];
-          } else {
-            streak = 1;
-          }
-        }
-        return 0;
-      }
-
-      let flushSuit = null;
-      for (const s of ['S', 'H', 'D', 'C']) {
-        if (suitCards[s] && suitCards[s].length >= 5) {
-          flushSuit = s;
-          break;
-        }
-      }
-
-      if (flushSuit) {
-        const sfHigh = findStraightHigh(suitCards[flushSuit]);
-        if (sfHigh > 0) {
-          return {
-            score: 8000000 + sfHigh,
-            label: sfHigh === 14 ? 'Royal Flush' : 'Straight Flush'
-          };
-        }
-      }
-
-      const groups = Object.entries(counts)
-        .map(([val, cnt]) => ({ val: parseInt(val, 10), cnt }))
-        .sort((a, b) => b.cnt - a.cnt || b.val - a.val);
-
-      if (!groups || groups.length === 0) return { score: vals[0] || 0, label: 'High Card' };
-      if (groups[0].cnt === 4) return { score: 7000000 + groups[0].val * 100, label: 'Four of a Kind' };
-      if (groups[0].cnt === 3 && groups[1] && groups[1].cnt >= 2) {
-        return { score: 6000000 + groups[0].val * 100 + groups[1].val, label: 'Full House' };
-      }
-      if (flushSuit) return { score: 5000000 + suitCards[flushSuit].sort((a, b) => b - a)[0], label: 'Flush' };
-      const stHigh = findStraightHigh(vals);
-      if (stHigh > 0) return { score: 4000000 + stHigh, label: 'Straight' };
-      if (groups[0].cnt === 3) return { score: 3000000 + groups[0].val * 100, label: 'Three of a Kind' };
-      if (groups[0].cnt === 2 && groups[1] && groups[1].cnt === 2) {
-        return { score: 2000000 + groups[0].val * 500 + groups[1].val * 20, label: 'Two Pair' };
-      }
-      if (groups[0].cnt === 2) return { score: 1000000 + groups[0].val * 500 + (vals[0] || 0), label: 'One Pair' };
-      return { score: vals[0] || 0, label: 'High Card' };
+      return { payouts, pots };
     }
 
     function startHoldemHand() {
@@ -3999,6 +3998,7 @@
         const p = state.players[i];
         p.cards = p.chips > 0 ? [popCardFromDeck(state.holdem.deck), popCardFromDeck(state.holdem.deck)] : [];
         p.pokerBet = 0;
+        p.pokerCommitted = 0;
         p.pokerFolded = p.chips <= 0;
         p.pokerRole = i === state.holdem.dealerIdx ? 'BTN' : i === sbIdx ? 'SB' : i === bbIdx ? 'BB' : '';
       }
@@ -4007,10 +4007,12 @@
       const sbAmt = Math.min(state.holdem.smallBlind, state.players[sbIdx].chips);
       state.players[sbIdx].chips -= sbAmt;
       state.players[sbIdx].pokerBet = sbAmt;
+      state.players[sbIdx].pokerCommitted = sbAmt;
 
       const bbAmt = Math.min(state.holdem.bigBlind, state.players[bbIdx].chips);
       state.players[bbIdx].chips -= bbAmt;
       state.players[bbIdx].pokerBet = bbAmt;
+      state.players[bbIdx].pokerCommitted = bbAmt;
 
       state.holdem.pot = sbAmt + bbAmt;
       state.holdem.currentBet = bbAmt;
@@ -4145,39 +4147,38 @@
     function resolveHoldemShowdown() {
       clearTurnCountdown();
       state.holdem.phase = 'showdown';
-      let bestScore = -1;
-      let winners = [];
-      let bestLabel = '';
-
+      // Older restored hands may predate contribution tracking.
       for (const p of state.players) {
-        if (p.pokerFolded) continue;
-        const ev = evaluate7CardPoker([...p.cards, ...state.holdem.community]);
-        p.lastShowdownLabel = ev.label;
-        if (ev.score > bestScore) {
-          bestScore = ev.score;
-          winners = [p];
-          bestLabel = ev.label;
-        } else if (ev.score === bestScore) {
-          winners.push(p);
+        if (p.pokerCommitted === undefined && state.handStartChips?.[p.id] !== undefined)
+          p.pokerCommitted = Math.max(0, state.handStartChips[p.id] - p.chips);
+      }
+      const tracked = state.players.reduce((sum, p) => sum + (p.pokerCommitted || 0), 0);
+      if (tracked !== state.holdem.pot) {
+        state.bannerText = 'Unable to settle: contribution history is incomplete';
+        broadcastRoomState();
+        renderAll();
+        return;
+      }
+      const { payouts, pots } = calculateHoldemPayouts(state.players, state.holdem.community, state.holdem.dealerIdx);
+      const winnerNames = [];
+      for (let i = 0; i < state.players.length; i++) {
+        const p = state.players[i];
+        if (!p.pokerFolded) p.lastShowdownLabel = evaluate7CardPoker([...p.cards, ...state.holdem.community]).label;
+        if (payouts[i]) {
+          p.chips += payouts[i];
+          p.lastMoveBadge = `+$${payouts[i]}`;
+          winnerNames.push(`${p.name} +$${payouts[i]}`);
         }
       }
-
-      const share = Math.floor(state.holdem.pot / Math.max(1, winners.length));
-      for (const w of winners) {
-        w.chips += share;
-        w.lastMoveBadge = 'WIN';
-      }
-
-      if (winners.length > 0) {
-        const winIdx = state.players.indexOf(winners[0]);
-        triggerSyncedFx({
-          kind: 'pot_to_winner',
-          seatIdx: winIdx
-        });
-      }
-
-      state.bannerText = `${winners.map(w => w.name).join(' & ')} won $${state.holdem.pot} (${bestLabel})`;
-      finishHandResults(`${winners.map(w => w.name).join(' & ')} win with ${bestLabel}`);
+      const firstWinner = payouts.findIndex(amount => amount > 0);
+      if (firstWinner !== -1) triggerSyncedFx({ kind: 'pot_to_winner', seatIdx: firstWinner });
+      state.bannerText = winnerNames.join(' • ') || 'No chips in pot';
+      const details = pots.map((pot, i) => {
+        const names = pot.winners.map(index => state.players[index].name).join(' & ');
+        const label = pot.refund ? '' : `, ${state.players[pot.winners[0]].lastShowdownLabel}`;
+        return `${pot.refund ? 'Uncalled bet returned to' : i === 0 ? 'Main pot' : 'Side pot'} ${names}${label} ($${pot.amount})`;
+      }).join(' • ');
+      finishHandResults(details || state.bannerText);
       broadcastRoomState();
       renderAll();
     }
@@ -4207,6 +4208,7 @@
       const needed = Math.min(p.chips, Math.max(0, state.holdem.currentBet - p.pokerBet));
       p.chips -= needed;
       p.pokerBet += needed;
+      p.pokerCommitted = (p.pokerCommitted ?? Math.max(0, (state.handStartChips?.[p.id] ?? (p.chips + needed)) - (p.chips + needed))) + needed;
       state.holdem.pot += needed;
       state.holdem.actedThisStreet[p.id] = true;
       if (needed > 0) {
@@ -4235,6 +4237,7 @@
       const added = Math.min(p.chips, Math.max(0, desired - p.pokerBet));
       p.chips -= added;
       p.pokerBet += added;
+      p.pokerCommitted = (p.pokerCommitted ?? Math.max(0, (state.handStartChips?.[p.id] ?? (p.chips + added)) - (p.chips + added))) + added;
       state.holdem.pot += added;
       if (p.pokerBet > state.holdem.currentBet) {
         state.holdem.currentBet = p.pokerBet;
