@@ -2555,6 +2555,7 @@
     let socket = null;
     let isSocketConnected = false;
     let sessionRecovering = false;
+    let restoringAfterReload = false;
 
     function getSanitizedState() {
       return JSON.parse(JSON.stringify({
@@ -2963,11 +2964,21 @@
             renderAll();
             socket.emit('reconnect_session', { roomCode: state.roomCode, playerId: myId }, (res) => {
               if (res && res.ok && res.state) {
+                const wasReloaded = restoringAfterReload;
+                restoringAfterReload = false;
                 sessionRecovering = false;
                 applyRemoteState(res.state);
                 resumeGameClock();
+                if (wasReloaded && isHostUser()) resumeRestoredHost();
                 renderAll();
                 showToast('Reconnected to table');
+              } else if (restoringAfterReload) {
+                restoringAfterReload = false;
+                sessionRecovering = false;
+                state.inRoom = false;
+                safeSetSession('noir_active_session', '');
+                renderAll();
+                showToast((res && res.error) || 'Could not restore room');
               } else if (state.hostId === myId) {
                 socket.emit('create_room', { roomCode: state.roomCode, state: getSanitizedState() }, result => {
                   if (result && result.ok) { sessionRecovering = false; resumeGameClock(); renderAll(); }
@@ -3110,13 +3121,13 @@
       if (typeof BroadcastChannel !== 'undefined') {
         roomChannel = new BroadcastChannel('noir_room_sync');
         roomChannel.onmessage = (ev) => {
-          if (ev.data && ev.data.type === 'STATE_SYNC' && ev.data.roomCode === state.roomCode) {
+          if (!isSocketConnected && ev.data && ev.data.type === 'STATE_SYNC' && ev.data.roomCode === state.roomCode) {
             applyRemoteState(ev.data.payload);
           }
         };
       }
       window.addEventListener('storage', (ev) => {
-        if (state.inRoom && ev.key === 'noir_room_' + state.roomCode && ev.newValue) {
+        if (!isSocketConnected && state.inRoom && ev.key === 'noir_room_' + state.roomCode && ev.newValue) {
           try {
             const incoming = JSON.parse(ev.newValue);
             applyRemoteState(incoming);
@@ -3138,7 +3149,7 @@
         }
 
         // 2. Local tab sync
-        if (roomChannel && state.inRoom) {
+        if (roomChannel && state.inRoom && !isSocketConnected) {
           roomChannel.postMessage({
             type: 'STATE_SYNC',
             roomCode: state.roomCode,
@@ -3147,7 +3158,7 @@
         }
 
         // 3. LocalStorage
-        safeSetRoomStore('noir_room_' + state.roomCode, JSON.stringify(payload));
+        if (!isSocketConnected) safeSetRoomStore('noir_room_' + state.roomCode, JSON.stringify(payload));
       } catch (e) {}
     }
 
@@ -4336,6 +4347,7 @@
       });
 
       state.bluff.lastReveal = {
+        challengerSeatIdx,
         accusedName: accused.name,
         challengerName: challenger.name,
         claimedRank: last.claimedRank,
@@ -4402,6 +4414,21 @@
         broadcastRoomState();
         scheduleAiBluffTurn();
       }, getPacingDelays().bluffInspect);
+    }
+
+    function resumeRestoredHost() {
+      if (state.inWaitingRoom || !state.players.length) return;
+      if (state.gameMode === 'blackjack') {
+        if (state.bj.phase === 'playing') advanceBlackjackTurn();
+        else if (state.bj.phase === 'dealer') runAutomatedDealerBlackjack();
+      } else if (state.gameMode === 'holdem' && state.holdem.phase !== 'showdown' && state.holdem.phase !== 'idle') {
+        if (String(state.bannerText).startsWith('Dealing the ')) state.holdem.turnSeat = (state.holdem.dealerIdx + 1) % state.players.length;
+        checkHoldemProgression();
+      } else if (state.gameMode === 'bluff' && state.bluff.phase === 'playing') {
+        const reveal = state.bluff.lastReveal;
+        if (reveal && state.bluff.lastPlay && Number.isInteger(reveal.challengerSeatIdx)) bluffCallChallenge(reveal.challengerSeatIdx);
+        else scheduleAiBluffTurn();
+      }
     }
 
     function scheduleAiBluffTurn() {
@@ -4601,6 +4628,9 @@
     }
 
     function renderAll() {
+      if (state.inRoom && !restoringAfterReload) {
+        safeSetSession('noir_active_session', JSON.stringify({ roomCode: state.roomCode, hostId: state.hostId, isSpectator: state.isSpectator }));
+      }
       const lobbyView = document.getElementById('lobbyView');
       const waitingRoomView = document.getElementById('waitingRoomView');
       const tableView = document.getElementById('tableView');
@@ -5199,10 +5229,23 @@
     // 10. EVENT LISTENERS & INITIALIZATION
     // =========================================================================
     window.addEventListener('DOMContentLoaded', () => {
+      // Keep only room identity in session storage; the server restores the authoritative game.
+      try {
+        const saved = JSON.parse(safeGetSession('noir_active_session') || 'null');
+        if (saved && saved.roomCode) {
+          restoringAfterReload = true;
+          state.inRoom = true;
+          state.roomCode = saved.roomCode;
+          state.hostId = saved.hostId;
+          state.isSpectator = Boolean(saved.isSpectator);
+          state.myPlayerId = getStoredMyId();
+        }
+      } catch (e) { safeSetSession('noir_active_session', ''); }
       // Connect to Live Socket.IO Game Server
       initSocket();
 
       function leaveCurrentRoom() {
+        safeSetSession('noir_active_session', '');
         clearGameTimers();
         sessionRecovering = false;
         clearTurnCountdown();

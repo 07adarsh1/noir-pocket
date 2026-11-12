@@ -43,6 +43,18 @@ npm test
 
 ---
 
+## Room recovery and durable storage
+
+Player room identity is kept in the current browser tab's session storage, so refreshing the same tab reconnects it to the current hand. On the host, the game resumes from the latest state received by the server. Closing a tab or clearing session storage removes that tab's recovery identity.
+
+By default rooms are stored in memory and are lost if the server restarts. For durable room state, create a PostgreSQL database and set `DATABASE_URL` on the Node server to its connection string. The server creates the `noir_rooms` table on startup. Follow your database provider's TLS requirements when constructing the URL. On Render, add `DATABASE_URL` in the web service's environment settings using the database connection string; do not commit credentials. Room data, including undealt and private cards, is stored in this database, so restrict its access and backups. Expired rooms are removed after six hours of inactivity. The service expects one running instance; multi-instance coordination is not supported.
+
+For development and restart testing, set `ROOM_STORE_FILE` to a private path. File storage is not durable on an ephemeral Render filesystem. `DATABASE_URL` takes precedence when both are set. `/health` reports `roomStorage` as `postgresql`, `file`, or `memory` without exposing credentials.
+
+Run `npm run test:recovery`, `npm run test:gameplay`, and `npm run test:persistence` for the focused checks.
+
+---
+
 ## 🌐 Deploy to Render
 
 1. Create a new **Web Service** on [Render](https://render.com).

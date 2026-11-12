@@ -9,7 +9,8 @@
     "deploy:vercel": "npx vercel --prod",
     "deploy:netlify": "npx netlify deploy --prod --dir=.",
     "test:recovery": "node test-recovery.js",
-    "test:gameplay": "node test-gameplay.js"
+    "test:gameplay": "node test-gameplay.js",
+    "test:persistence": "node test-persistence.js"
   },
   "keywords": [
     "card-game",
@@ -21,6 +22,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "pg": "^8.23.1",
     "socket.io": "^4.8.4"
   },
   "devDependencies": {

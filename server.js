@@ -27,6 +27,7 @@ const server = http.createServer((req, res) => {
     const healthData = JSON.stringify({
       status: 'ok',
       service: 'noir-card-lounge',
+      roomStorage: database ? 'postgresql' : storageFile ? 'file' : 'memory',
       uptime: Math.floor(process.uptime()),
       activeRooms: rooms.size,
       connectedClients: io.engine ? io.engine.clientsCount : 0,
@@ -95,6 +96,56 @@ const io = new Server(server, {
 // In-Memory Room Store
 // code -> { roomCode, hostSocketId, state, updatedAt, disconnectTimers: Map }
 const rooms = new Map();
+const ROOM_TTL_MS = 6 * 60 * 60 * 1000;
+const storageFile = process.env.ROOM_STORE_FILE;
+const databaseUrl = process.env.DATABASE_URL;
+let database = null;
+let storageQueue = Promise.resolve();
+
+// Persist only serializable room state; live socket IDs and timers never survive a restart.
+async function initializeRoomStorage() {
+  let saved = [];
+  if (databaseUrl) {
+    const { Pool } = require('pg');
+    database = new Pool({ connectionString: databaseUrl });
+    await database.query('CREATE TABLE IF NOT EXISTS noir_rooms (code text PRIMARY KEY, state jsonb NOT NULL, updated_at bigint NOT NULL)');
+    const result = await database.query('SELECT code, state, updated_at FROM noir_rooms WHERE updated_at > $1', [Date.now() - ROOM_TTL_MS]);
+    saved = result.rows.map(row => ({ code: row.code, state: row.state, updatedAt: Number(row.updated_at) }));
+    console.log('[Storage] PostgreSQL enabled');
+  } else if (storageFile) {
+    try { saved = JSON.parse(await fs.promises.readFile(storageFile, 'utf8')); }
+    catch (err) { if (err.code !== 'ENOENT') throw err; }
+    console.log('[Storage] File-backed rooms enabled');
+  } else {
+    console.warn('[Storage] In-memory rooms only; configure DATABASE_URL for restart recovery');
+  }
+  for (const entry of saved) {
+    if (!entry.code || !entry.state || entry.updatedAt <= Date.now() - ROOM_TTL_MS) continue;
+    // No participant is connected after a process restart.
+    for (const p of entry.state.players || []) if (!p.isBot) p.isDisconnected = true;
+    rooms.set(entry.code, { roomCode: entry.code, state: entry.state, updatedAt: entry.updatedAt, hostSocketId: null, disconnectTimers: {} });
+  }
+}
+function persistRooms(code, remove = false) {
+  if (!database && !storageFile) return;
+  const room = rooms.get(code);
+  const snapshot = room && JSON.parse(JSON.stringify({ code, state: room.state, updatedAt: room.updatedAt }));
+  const allRooms = storageFile ? [...rooms].map(([roomCode, value]) => ({ code: roomCode, state: value.state, updatedAt: value.updatedAt })) : null;
+  // Serialize writes so an older snapshot cannot overwrite a newer one.
+  const serialized = allRooms && JSON.stringify(allRooms);
+  storageQueue = storageQueue.catch(() => {}).then(async () => {
+    if (database) {
+      if (remove || !snapshot) await database.query('DELETE FROM noir_rooms WHERE code = $1', [code]);
+      else await database.query('INSERT INTO noir_rooms (code, state, updated_at) VALUES ($1, $2, $3) ON CONFLICT (code) DO UPDATE SET state = EXCLUDED.state, updated_at = EXCLUDED.updated_at', [code, snapshot.state, snapshot.updatedAt]);
+    } else {
+      await fs.promises.mkdir(path.dirname(path.resolve(storageFile)), { recursive: true });
+      const temp = storageFile + '.tmp';
+      await fs.promises.writeFile(temp, serialized, { mode: 0o600 });
+      await fs.promises.rename(temp, storageFile);
+    }
+  }).catch(err => { console.error('[Storage] Could not persist rooms:', err.message); });
+}
+
 
 /**
  * TIER 1: Anti-Cheat Card Secrecy Projection Engine
@@ -176,6 +227,7 @@ function maskStateForPlayer(fullState, targetPlayerId, isSpectator = false) {
 function broadcastMaskedRoomState(code) {
   const roomEntry = rooms.get(code);
   if (!roomEntry || !roomEntry.state) return;
+  persistRooms(code);
 
   const socketsInRoom = io.sockets.adapter.rooms.get(code);
   if (!socketsInRoom) return;
@@ -225,6 +277,7 @@ io.on('connection', (socket) => {
         disconnectTimers: {}
       });
 
+      persistRooms(code);
       console.log(`[Room Created] ${code} by Host Socket ${socket.id}`);
       if (typeof ack === 'function') ack({ ok: true, roomCode: code });
     } catch (err) {
@@ -472,6 +525,7 @@ io.on('connection', (socket) => {
         : maskStateForPlayer(roomEntry.state, playerId, isSpectator);
       if (typeof ack === 'function') ack({ ok: true, state: masked });
 
+      roomEntry.updatedAt = Date.now();
       socket.to(code).emit('player_reconnected', { playerId });
       broadcastMaskedRoomState(code);
     } catch (err) {
@@ -555,6 +609,7 @@ setInterval(() => {
   for (const [code, room] of rooms.entries()) {
     if (room.updatedAt < cutoff) {
       rooms.delete(code);
+      persistRooms(code, true);
     }
   }
 }, 30 * 60 * 1000);
@@ -582,6 +637,8 @@ if (keepAliveUrl) {
   }, PING_INTERVAL);
 }
 
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`NOIR Live Production Server with Anti-Cheat & Socket.IO running at http://localhost:${PORT}`);
-});
+initializeRoomStorage().then(() => {
+  server.listen(PORT, '0.0.0.0', () => {
+    console.log(`NOIR Live Production Server with Anti-Cheat & Socket.IO running at http://localhost:${PORT}`);
+  });
+}).catch(err => { console.error('[Storage] Startup failed:', err.message); process.exit(1); });
